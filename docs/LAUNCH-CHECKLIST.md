@@ -75,8 +75,8 @@
   - **Done When**: Production CI/CD executes `prisma migrate deploy` exclusively; `prisma db push` is blocked.
 - [ ] **[BEFORE-LAUNCH]** **Disaster Recovery Backup Drill** | `@devops`
   - **Done When**: An automated database snapshot is restored into a scratch instance and verified against row counts and constraint integrity.
-- [ ] **[BEFORE-LAUNCH]** **Health Check & Uptime Monitoring** | `@devops`
-  - **Done When**: An external pinger monitors `/api/health` with automated SMS/email alerts on downtime.
+- [x] **[BEFORE-LAUNCH]** **Health Check & Uptime Monitoring** | `@devops` / `@lead-eng`
+  - **Done When**: `/api/health` executes PostgreSQL heartbeat query `SELECT 1`, returning 200 with roundtrip latency or 503 on database disruption. Documented in `docs/OBSERVABILITY.md` with P0/P1 alert matrix.
 - [ ] **[BEFORE-LAUNCH]** **Wedding-Day Concierge Emergency Runbook** | `@ops`
   - **Done When**: 1-page runbook detailing CDN cache invalidation, slug transfer SOP, and emergency RSVP spreadsheet export is prepared.
 

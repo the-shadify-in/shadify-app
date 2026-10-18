@@ -59,7 +59,13 @@ export default function AdminDashboardPage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-5 text-xs">
+            <Link
+              href="/admin/health"
+              className="inline-flex items-center gap-1.5 text-[#C9933A] transition hover:text-[#C9933A]/80"
+            >
+              Operations & Health
+            </Link>
             <button
               onClick={() => {
                 document.cookie = "shadify_admin_session=; path=/; max-age=0;";
