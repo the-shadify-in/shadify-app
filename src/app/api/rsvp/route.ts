@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit } from "@/lib/ratelimit";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,21 +17,52 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      weddingId,
+      weddingId: rawWeddingId,
+      weddingSlug,
       eventId,
       guestId,
-      respondentName,
-      respondentPhone,
+      respondentName: rawRespondentName,
+      guestName,
+      respondentPhone: rawRespondentPhone,
+      guestPhone,
       attending,
       partySize = 1,
       mealPreference,
       needsStay = false,
+      needsAccommodation = false,
       arrivalNotes,
       blessingMessage,
+      notes,
+      turnstileToken,
     } = body;
 
-    // 2. Validate mandatory fields
-    if (!weddingId || !eventId || !respondentName || typeof attending !== "boolean") {
+    // 2. Cloudflare Turnstile Bot Protection Verification
+    const turnstileCheck = await verifyTurnstileToken(turnstileToken, ip);
+    if (!turnstileCheck.success) {
+      return NextResponse.json(
+        { error: turnstileCheck.error || "Bot protection check failed." },
+        { status: 403 },
+      );
+    }
+
+    // Resolve weddingId if weddingSlug is supplied
+    let weddingId = rawWeddingId;
+    if (!weddingId && weddingSlug) {
+      const w = await prisma.wedding.findUnique({
+        where: { slug: String(weddingSlug).toLowerCase().trim() },
+        select: { id: true },
+      });
+      if (w) weddingId = w.id;
+    }
+
+    const normalizedName = (rawRespondentName || guestName || "").trim();
+    const normalizedPhone = (rawRespondentPhone || guestPhone || "").trim() || null;
+    const resolvedAttending = typeof attending === "boolean" ? attending : true;
+    const resolvedNeedsStay = Boolean(needsStay || needsAccommodation);
+    const resolvedBlessing = blessingMessage || notes;
+
+    // 3. Validate mandatory fields
+    if (!weddingId || !eventId || !normalizedName) {
       return NextResponse.json({ error: "Missing required RSVP fields." }, { status: 400 });
     }
 
@@ -40,10 +72,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Party size must be between 0 and 20." }, { status: 400 });
     }
 
-    // 3. Normalized inputs
-    const normalizedName = respondentName.trim();
-    const normalizedPhone = respondentPhone ? respondentPhone.trim() : null;
-
     // 4. Create RSVP entry
     const rsvp = await prisma.eventRsvp.create({
       data: {
@@ -52,12 +80,12 @@ export async function POST(request: NextRequest) {
         guestId: guestId || null,
         respondentName: normalizedName,
         respondentPhone: normalizedPhone,
-        attending,
+        attending: resolvedAttending,
         partySize: parsedPartySize,
         mealPreference: mealPreference || null,
-        needsStay: Boolean(needsStay),
+        needsStay: resolvedNeedsStay,
         arrivalNotes: arrivalNotes ? String(arrivalNotes).slice(0, 500) : null,
-        blessingMessage: blessingMessage ? String(blessingMessage).slice(0, 1000) : null,
+        blessingMessage: resolvedBlessing ? String(resolvedBlessing).slice(0, 1000) : null,
       },
     });
 

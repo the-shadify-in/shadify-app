@@ -57,6 +57,7 @@
     "pino": "^10.4.0",
     "react": "^18",
     "react-dom": "^18",
+    "sharp": "^0.35.5",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.7"
@@ -68,6 +69,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/sharp": "^0.31.1",
     "dotenv": "^18.0.8",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",

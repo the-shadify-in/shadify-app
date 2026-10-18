@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import type { ThemeConfig, ContrastReport } from "@/lib/themes/tokens";
+import { TurnstileWidget } from "@/components/ui/turnstile";
 
 import type {
   WeddingDataDto as WeddingData,
@@ -101,6 +102,7 @@ export default function WeddingGuestClient({
   const [mealPref, setMealPref] = useState("pure_veg");
   const [needsStay, setNeedsStay] = useState(false);
   const [blessing, setBlessing] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +122,7 @@ export default function WeddingGuestClient({
           mealPreference: mealPref,
           needsAccommodation: needsStay,
           notes: blessing,
+          turnstileToken: turnstileToken || undefined,
         }),
       });
 
@@ -551,6 +554,8 @@ export default function WeddingGuestClient({
                     />
                   </div>
                 </div>
+
+                <TurnstileWidget onSuccess={setTurnstileToken} />
 
                 <div className="mt-6 flex justify-end gap-3">
                   <button

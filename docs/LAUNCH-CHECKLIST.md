@@ -49,9 +49,9 @@
   - **Done When**: In-memory rate limiting active on `/api/admin/auth/login` (5 attempts / 15 min) and `/api/promos/validate` (10 attempts / min) returning `429 Too Many Requests`.
 - [x] **[BLOCKER]** **Brand Token Isolation CI Gate** | `@lead-eng`
   - **Done When**: `scripts/check-brand-isolation.mjs` runs on pre-commit and CI, blocking any `--brand-*` tokens or marketing imports in guest wedding code (`src/app/[slug]`).
-- [ ] **[BEFORE-LAUNCH]** **Cloudflare Turnstile on Public Guest Forms** | `@security`
+- [x] **[BEFORE-LAUNCH]** **Cloudflare Turnstile on Public Guest Forms** | `@security`
   - **Done When**: RSVP and guestbook endpoints require and verify Turnstile CAPTCHA tokens server-side before persisting records.
-- [ ] **[BEFORE-LAUNCH]** **Upload Hardening & EXIF Stripping** | `@security`
+- [x] **[BEFORE-LAUNCH]** **Upload Hardening & EXIF Stripping** | `@security`
   - **Done When**: Media presign endpoint verifies MIME magic bytes, enforces plan photo limits, and Sharp pipeline strips GPS EXIF data before public R2 storage.
 
 ---
@@ -62,7 +62,7 @@
   - **Done When**: `WeddingGuestClient` executes client-side real-time checks on ISO timestamps (`hostingUntil`, ceremony times), allowing edge CDN caching without freezing countdowns or expiration gates.
 - [x] **[BLOCKER]** **WCAG AA Contrast Matrix Automation** | `@design-eng`
   - **Done When**: Automated contrast tests (`src/lib/themes/__tests__/contrast.test.ts` and `scripts/test-contrast.mjs`) verify all 5 presets (`royal-crimson`, `emerald-gold`, `ivory-minimal`, `sunset-day`, `sunset-dusk`) meet 4.5:1 text and 3:1 UI ratios.
-- [ ] **[BEFORE-LAUNCH]** **Dynamic Typography Script Verification** | `@design-eng`
+- [x] **[BEFORE-LAUNCH]** **Dynamic Typography Script Verification** | `@design-eng`
   - **Done When**: Indic font fallbacks (Noto Serif Devanagari, Rozha One, Suranna, Arima Madurai) tested for Devanagari, Telugu, Tamil, and Gujarati wedding names without FOIT/layout shifts.
 
 ---

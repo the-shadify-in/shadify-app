@@ -240,6 +240,12 @@ THEME_PRESETS["sunset-pastel"] = {
   presetId: "sunset-pastel",
 };
 
+export const INDIC_DISPLAY_FALLBACK =
+  '"Rozha One", "Noto Serif Devanagari", "Suranna", "Arima Madurai", "Noto Serif Gujarati", serif';
+
+export const INDIC_BODY_FALLBACK =
+  '"Noto Sans", "Noto Sans Devanagari", "Noto Sans Telugu", "Noto Sans Tamil", "Noto Sans Gujarati", sans-serif';
+
 /**
  * Injects theme tokens as CSS variables under the isolated `--theme-*` namespace
  */
@@ -269,8 +275,8 @@ export function getThemeCssVariables(theme: ThemeConfig): string {
     --theme-wax-seal: ${c.waxSeal};
     --theme-primary-needs-border: ${report.primaryNeedsBorder ? "1" : "0"};
     --theme-accent-text-allowed: ${report.accentTextAllowed ? "1" : "0"};
-    --theme-font-display: "${theme.typography.displayFont}", serif;
-    --theme-font-body: "${theme.typography.bodyFont}", sans-serif;
+    --theme-font-display: "${theme.typography.displayFont}", ${INDIC_DISPLAY_FALLBACK};
+    --theme-font-body: "${theme.typography.bodyFont}", ${INDIC_BODY_FALLBACK};
   `;
 }
 

@@ -30,4 +30,15 @@ describe("Authoritative Pricing Tiers", () => {
     expect(PRICING_PLANS.platinum.canHideBranding).toBe(true);
     expect(PRICING_PLANS.platinum.canCustomDomain).toBe(true);
   });
+
+  it("enforces tiered photo and video bite quotas by plan", () => {
+    expect(PRICING_PLANS.lite.maxPhotos).toBe(100);
+    expect(PRICING_PLANS.lite.maxVideoBites).toBe(0);
+
+    expect(PRICING_PLANS.premium.maxPhotos).toBe(300);
+    expect(PRICING_PLANS.premium.maxVideoBites).toBe(1);
+
+    expect(PRICING_PLANS.platinum.maxPhotos).toBe(1000);
+    expect(PRICING_PLANS.platinum.maxVideoBites).toBe(5);
+  });
 });

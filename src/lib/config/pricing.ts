@@ -14,6 +14,8 @@ export interface PricingPlan {
   features: string[];
   allowedPresets: string[];
   maxEvents: number;
+  maxPhotos: number;
+  maxVideoBites: number;
   canHideBranding: boolean;
   canCustomDomain: boolean;
 }
@@ -28,6 +30,8 @@ export const PRICING_PLANS: Record<"lite" | "premium" | "platinum", PricingPlan>
     hostingDurationYears: 5,
     rawOriginalsRetentionDays: 90,
     maxEvents: 3,
+    maxPhotos: 100,
+    maxVideoBites: 0,
     canHideBranding: false,
     canCustomDomain: false,
     allowedPresets: ["royal-crimson", "emerald-gold", "ivory-minimal"],
@@ -51,6 +55,8 @@ export const PRICING_PLANS: Record<"lite" | "premium" | "platinum", PricingPlan>
     hostingDurationYears: 5,
     rawOriginalsRetentionDays: 90,
     maxEvents: 8,
+    maxPhotos: 300,
+    maxVideoBites: 1,
     canHideBranding: true,
     canCustomDomain: false,
     allowedPresets: ["royal-crimson", "emerald-gold", "ivory-minimal", "sunset-day", "sunset-dusk"],
@@ -74,6 +80,8 @@ export const PRICING_PLANS: Record<"lite" | "premium" | "platinum", PricingPlan>
     hostingDurationYears: 5,
     rawOriginalsRetentionDays: 90,
     maxEvents: 15,
+    maxPhotos: 1000,
+    maxVideoBites: 5,
     canHideBranding: true,
     canCustomDomain: true,
     allowedPresets: [
@@ -95,3 +103,11 @@ export const PRICING_PLANS: Record<"lite" | "premium" | "platinum", PricingPlan>
     ],
   },
 };
+
+export function getPlanPhotoLimit(plan: "lite" | "premium" | "platinum"): number {
+  return PRICING_PLANS[plan]?.maxPhotos ?? 100;
+}
+
+export function getPlanVideoBiteLimit(plan: "lite" | "premium" | "platinum"): number {
+  return PRICING_PLANS[plan]?.maxVideoBites ?? 0;
+}
