@@ -15,36 +15,13 @@ import {
 } from "lucide-react";
 import type { ThemeConfig, ContrastReport } from "@/lib/themes/tokens";
 
-export interface WeddingEvent {
-  id: string;
-  title: string;
-  tag: string;
-  time: string;
-  date: string;
-  venue: string;
-  address: string;
-  mapUrl: string;
-  dressCode: string;
-}
+import type {
+  WeddingDataDto as WeddingData,
+  WeddingEventDto as WeddingEvent,
+  VipEntryDto as VipEntry,
+} from "@/features/weddings";
 
-export interface VipEntry {
-  group: string;
-  name: string;
-  tagline: string;
-}
-
-export interface WeddingData {
-  slug: string;
-  bride: string;
-  groom: string;
-  date: string;
-  venueCity: string;
-  monogram: string;
-  upiVpa: string;
-  showBranding: boolean;
-  events: WeddingEvent[];
-  vips: VipEntry[];
-}
+export type { WeddingData, WeddingEvent, VipEntry };
 
 interface WeddingGuestClientProps {
   wedding: WeddingData;
