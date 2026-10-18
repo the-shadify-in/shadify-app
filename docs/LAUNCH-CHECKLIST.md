@@ -13,8 +13,8 @@
   - **Done When**: Written confirmation received from Chartered Accountant (CA) on GST registration threshold applicability, treatment of discounts/promos on invoices, and statutory tax-inclusive line-item structure.
 - [ ] **[BLOCKER]** **Partner TDS & Commission Payout Rules** | `@founder` / `@ca`
   - **Done When**: CA confirms whether Section 194H TDS applies to vendor/photographer referral commissions (e.g. ₹1,000 per Premium wedding) and provides the payout invoicing template.
-- [ ] **[BLOCKER]** **Customer Service Agreement & Refund Policy** | `@legal` / `@founder`
-  - **Done When**: Standard agreement is published detailing the 5-year hosting window, 90-day master archive retention, event postponement terms, and non-refundable cooling-off terms.
+- [x] **[BLOCKER]** **Customer Service Agreement & Refund Policy** | `@legal` / `@founder`
+  - **Done When**: Standard agreements and policy pages published at `/terms`, `/privacy`, and `/refunds` detailing the 5-year hosting window, 90-day master archive retention, free postponements, and cooling-off terms.
 - [ ] **[BEFORE-LAUNCH]** **Photographer & Media Release Terms** | `@legal`
   - **Done When**: Short vendor terms drafted covering copyright ownership, client display rights, and DMCA/takedown mechanisms for user-uploaded photography.
 - [ ] **[BEFORE-LAUNCH]** **Trademark & Domain Clearance** | `@founder`
@@ -32,7 +32,7 @@
   - **Done When**: `NAMASTE299` (₹299 consumer discount for wedding guests) and `STUDIOPARTNER` (₹299 discount + ₹1,000 partner commission on Premium/Platinum) seeded and tested via unit tests.
 - [ ] **[BEFORE-LAUNCH]** **Manual Referral Tracking Runbook** | `@ops`
   - **Done When**: Standard operating procedure (SOP) established to log `referred_by` partner details during concierge WhatsApp intake and execute manual UPI payouts post-wedding cooling-off window.
-- [ ] **[BEFORE-LAUNCH]** **Direct WhatsApp Concierge Intake Flow** | `@product`
+- [x] **[BEFORE-LAUNCH]** **Direct WhatsApp Concierge Intake Flow** | `@product`
   - **Done When**: Marketing CTAs trigger verified WhatsApp links via `getConciergeWhatsAppUrl()` with pre-filled plan selection messages without contact book harvesting.
 
 ---

@@ -577,22 +577,24 @@ export default function HomePage() {
               </h4>
               <ul className="mt-3 space-y-2 text-xs">
                 <li>
-                  <span className="cursor-pointer hover:text-[#C9933A]">Terms of Service</span>
+                  <Link href="/terms" className="transition hover:text-[#C9933A]">
+                    Terms of Service
+                  </Link>
                 </li>
                 <li>
-                  <span className="cursor-pointer hover:text-[#C9933A]">
+                  <Link href="/privacy" className="transition hover:text-[#C9933A]">
                     Privacy Policy (DPDP Aligned)
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="cursor-pointer hover:text-[#C9933A]">
+                  <Link href="/refunds" className="transition hover:text-[#C9933A]">
                     Refund & Postponement Policy
-                  </span>
+                  </Link>
                 </li>
                 <li>
-                  <span className="cursor-pointer hover:text-[#C9933A]">
+                  <Link href="/privacy" className="transition hover:text-[#C9933A]">
                     Zero-Contact Harvesting Guarantee
-                  </span>
+                  </Link>
                 </li>
               </ul>
             </div>
