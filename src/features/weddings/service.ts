@@ -24,6 +24,27 @@ export class DuplicateSlugError extends Error {
   }
 }
 
+export class DuplicatePhoneError extends Error {
+  constructor(phone: string) {
+    super(`A user with the mobile number '${phone}' already exists.`);
+    this.name = "DuplicatePhoneError";
+  }
+}
+
+export class DuplicateEmailError extends Error {
+  constructor(email: string) {
+    super(`A user with the email address '${email}' already exists.`);
+    this.name = "DuplicateEmailError";
+  }
+}
+
+export class DuplicateDomainError extends Error {
+  constructor(domain: string) {
+    super(`The custom domain '${domain}' is already linked to another wedding.`);
+    this.name = "DuplicateDomainError";
+  }
+}
+
 /**
  * Creates a wedding with atomic guarantees:
  * - Server-side contrast validation
@@ -181,8 +202,23 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
       throw new ReservedSlugError(slug);
     }
 
-    // Prisma Unique Constraint violation (slug already exists)
+    // Prisma Unique Constraint violation (slug, phone, email, or domain)
     if (errorObj?.code === "P2002") {
+      const target = (errorObj.meta as { target?: string[] } | undefined)?.target;
+      if (Array.isArray(target)) {
+        if (target.includes("slug")) {
+          throw new DuplicateSlugError(slug);
+        }
+        if (target.includes("phone")) {
+          throw new DuplicatePhoneError(data.couplePhone || "provided phone");
+        }
+        if (target.includes("email")) {
+          throw new DuplicateEmailError(data.coupleEmail || "provided email");
+        }
+        if (target.includes("custom_domain")) {
+          throw new DuplicateDomainError("provided domain");
+        }
+      }
       throw new DuplicateSlugError(slug);
     }
 

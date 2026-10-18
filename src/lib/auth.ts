@@ -1,24 +1,37 @@
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
 
-const SESSION_COOKIE_NAME = "shadify_admin_session";
+export const SESSION_COOKIE_NAME = "shadify_admin_session";
 const SESSION_SECRET =
   process.env.ADMIN_SESSION_SECRET ?? "fallback-dev-secret-do-not-use-in-production";
 
+export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
+
+export interface AdminSession {
+  userId: string;
+  role: string;
+  exp: number;
+}
+
 /**
- * Signs a payload with HMAC-SHA256
+ * Signs a payload with HMAC-SHA256 and an explicit expiry timestamp.
  */
-export function signSessionToken(userId: string, role: string): string {
-  const payload = JSON.stringify({ userId, role, iat: Date.now() });
+export function signSessionToken(
+  userId: string,
+  role: string,
+  ttlMs = SESSION_MAX_AGE_SECONDS * 1000,
+): string {
+  const exp = Date.now() + ttlMs;
+  const payload = JSON.stringify({ userId, role, iat: Date.now(), exp });
   const encodedPayload = Buffer.from(payload).toString("base64url");
   const signature = createHmac("sha256", SESSION_SECRET).update(encodedPayload).digest("base64url");
   return `${encodedPayload}.${signature}`;
 }
 
 /**
- * Verifies an HMAC-SHA256 signed session token
+ * Verifies an HMAC-SHA256 signed session token and checks expiration.
  */
-export function verifySessionToken(token: string): { userId: string; role: string } | null {
+export function verifySessionToken(token: string): AdminSession | null {
   try {
     const [encodedPayload, signature] = token.split(".");
     if (!encodedPayload || !signature) return null;
@@ -35,7 +48,11 @@ export function verifySessionToken(token: string): { userId: string; role: strin
     }
 
     const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf-8"));
-    return { userId: payload.userId, role: payload.role };
+    if (payload.exp && Date.now() > payload.exp) {
+      return null;
+    }
+
+    return { userId: payload.userId, role: payload.role, exp: payload.exp };
   } catch {
     return null;
   }
@@ -44,11 +61,22 @@ export function verifySessionToken(token: string): { userId: string; role: strin
 /**
  * Server helper to get current admin session from cookies
  */
-export async function getAdminSession(): Promise<{ userId: string; role: string } | null> {
+export async function getAdminSession(): Promise<AdminSession | null> {
   const cookieStore = cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
   if (!sessionCookie?.value) return null;
   return verifySessionToken(sessionCookie.value);
+}
+
+/**
+ * Strict in-handler gate: requires a valid staff or super_admin session.
+ */
+export async function requireAdminSession(): Promise<AdminSession> {
+  const session = await getAdminSession();
+  if (!session || (session.role !== "super_admin" && session.role !== "staff")) {
+    throw new Error("UNAUTHORIZED_ADMIN");
+  }
+  return session;
 }
 
 /**

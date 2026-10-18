@@ -39,6 +39,12 @@ export function mapWeddingToDto(
           timeZone: "Asia/Kolkata",
         }).format(new Date(wedding.weddingDate))
       : "Wedding Day",
+    weddingDateIso: wedding.weddingDate ? new Date(wedding.weddingDate).toISOString() : undefined,
+    hostingUntil: wedding.entitlement?.hostingUntil
+      ? new Date(wedding.entitlement.hostingUntil).toISOString()
+      : wedding.contentExpiresAt
+        ? new Date(wedding.contentExpiresAt).toISOString()
+        : null,
     venueCity: wedding.events[0]?.venueAddress || "Celebration Destination",
     monogram: wedding.monogramText || `${wedding.brideName[0]} & ${wedding.groomName[0]}`,
     upiVpa: wedding.upiVpa || "",
@@ -67,6 +73,8 @@ export function mapWeddingToDto(
               e.venueMapUrl ||
               `https://maps.google.com/?q=${encodeURIComponent(`${e.venueName} ${e.venueAddress || ""}`)}`,
             dressCode: e.dressCode || "Festive Traditional",
+            startTimeIso: new Date(e.startsAt).toISOString(),
+            endTimeIso: e.endsAt ? new Date(e.endsAt).toISOString() : undefined,
           }))
         : [],
     vips:

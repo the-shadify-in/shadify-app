@@ -19,7 +19,15 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Protect /admin routes (except /admin/login)
+  // 2. Protect /api/admin routes (return 401 JSON)
+  if (pathname.startsWith("/api/admin")) {
+    const sessionCookie = request.cookies.get("shadify_admin_session");
+    if (!sessionCookie?.value) {
+      return NextResponse.json({ error: "Unauthorized: admin session required" }, { status: 401 });
+    }
+  }
+
+  // 3. Protect /admin routes (except /admin/login, redirect to login page)
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
     const sessionCookie = request.cookies.get("shadify_admin_session");
     if (!sessionCookie?.value) {

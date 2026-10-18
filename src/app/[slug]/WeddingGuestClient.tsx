@@ -34,12 +34,46 @@ export default function WeddingGuestClient({
   theme,
   contrastReport,
 }: WeddingGuestClientProps) {
+  // 1. Client-Side Real-Time Expiration Gate (ensures CDN-cached HTML flips immediately)
+  const isExpired = wedding.hostingUntil && Date.now() > new Date(wedding.hostingUntil).getTime();
+
   // Envelope state (true = sealed, false = opened)
   const [isEnvelopeOpened, setIsEnvelopeOpened] = useState(false);
   const [activeRsvpEvent, setActiveRsvpEvent] = useState<WeddingEvent | null>(null);
   const [isShagunModalOpen, setIsShagunModalOpen] = useState(false);
   const [shagunAmount, setShagunAmount] = useState<number>(2101);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Real-time countdown timer to wedding date
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const targetIso = wedding.weddingDateIso || wedding.events[0]?.startTimeIso;
+    if (!targetIso) return;
+    const targetMs = new Date(targetIso).getTime();
+
+    const updateTimer = () => {
+      const diff = targetMs - Date.now();
+      if (diff <= 0) {
+        setTimeLeft(null);
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        setTimeLeft({ days, hours, minutes, seconds });
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [wedding.weddingDateIso, wedding.events]);
 
   // Check localStorage for seen state on mount
   useEffect(() => {
@@ -108,6 +142,23 @@ export default function WeddingGuestClient({
     );
     return `https://api.whatsapp.com/send?text=${text}`;
   };
+
+  if (isExpired) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#FDFBF7] px-4 text-center text-[#1F1A2E]">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1F1A2E]/5 text-xl">
+          ⌛
+        </div>
+        <h1 className="font-serif text-2xl text-[#1F1A2E] sm:text-3xl">
+          Celebration Website Concluded
+        </h1>
+        <p className="mt-3 max-w-md text-xs leading-relaxed text-[#1F1A2E]/70 sm:text-sm">
+          The active digital invitation and gallery hosting for {wedding.bride} & {wedding.groom}
+          &apos;s wedding has concluded.
+        </p>
+      </div>
+    );
+  }
 
   const c = theme.palette;
 
@@ -207,6 +258,36 @@ export default function WeddingGuestClient({
             </span>
           </div>
 
+          {/* Real-Time Live Countdown */}
+          {timeLeft && (
+            <div className="mt-8 flex items-center justify-center gap-3 font-serif text-xs uppercase tracking-wider text-theme-accent">
+              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
+                <span className="block text-2xl font-light text-theme-text-primary">
+                  {timeLeft.days}
+                </span>
+                <span className="text-[10px] tracking-widest text-theme-text-muted">Days</span>
+              </div>
+              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
+                <span className="block text-2xl font-light text-theme-text-primary">
+                  {timeLeft.hours}
+                </span>
+                <span className="text-[10px] tracking-widest text-theme-text-muted">Hours</span>
+              </div>
+              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
+                <span className="block text-2xl font-light text-theme-text-primary">
+                  {timeLeft.minutes}
+                </span>
+                <span className="text-[10px] tracking-widest text-theme-text-muted">Mins</span>
+              </div>
+              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
+                <span className="block text-2xl font-light text-theme-text-primary">
+                  {timeLeft.seconds}
+                </span>
+                <span className="text-[10px] tracking-widest text-theme-text-muted">Secs</span>
+              </div>
+            </div>
+          )}
+
           {/* Quick Actions */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <button
@@ -264,8 +345,20 @@ export default function WeddingGuestClient({
             >
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                 <div>
-                  <div className="text-theme-on-primary inline-block rounded-md bg-theme-primary px-3 py-1 text-xs font-medium">
-                    {evt.tag} • {evt.date}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-theme-on-primary inline-block rounded-md bg-theme-primary px-3 py-1 text-xs font-medium">
+                      {evt.tag} • {evt.date}
+                    </span>
+                    {evt.startTimeIso &&
+                      Date.now() >= new Date(evt.startTimeIso).getTime() &&
+                      (!evt.endTimeIso ||
+                        Date.now() <= new Date(evt.endTimeIso).getTime() ||
+                        Date.now() <= new Date(evt.startTimeIso).getTime() + 4 * 3600 * 1000) && (
+                        <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>{" "}
+                          Happening Now
+                        </span>
+                      )}
                   </div>
                   <h3 className="mt-2 font-serif text-2xl font-light text-theme-text-primary">
                     {evt.title}

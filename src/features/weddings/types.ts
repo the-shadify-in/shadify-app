@@ -8,6 +8,8 @@ export interface WeddingEventDto {
   address: string;
   mapUrl: string;
   dressCode: string;
+  startTimeIso?: string;
+  endTimeIso?: string;
 }
 
 export interface VipEntryDto {
@@ -21,6 +23,8 @@ export interface WeddingDataDto {
   bride: string;
   groom: string;
   date: string;
+  weddingDateIso?: string;
+  hostingUntil?: string | null;
   venueCity: string;
   monogram: string;
   upiVpa: string;

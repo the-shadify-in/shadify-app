@@ -8,6 +8,9 @@ import {
   ContrastValidationError,
   ReservedSlugError,
   DuplicateSlugError,
+  DuplicatePhoneError,
+  DuplicateEmailError,
+  DuplicateDomainError,
 } from "@/features/weddings";
 
 export async function POST(req: NextRequest) {
@@ -99,6 +102,42 @@ export async function POST(req: NextRequest) {
         { error: "A wedding with this URL slug already exists. Please choose a unique slug." },
         { status: 409 },
       );
+    }
+
+    if (err instanceof DuplicatePhoneError) {
+      logRequest({
+        requestId,
+        route: "/api/admin/weddings",
+        method: "POST",
+        status: 409,
+        durationMs: Date.now() - startTime,
+        error: err.message,
+      });
+      return NextResponse.json({ error: err.message }, { status: 409 });
+    }
+
+    if (err instanceof DuplicateEmailError) {
+      logRequest({
+        requestId,
+        route: "/api/admin/weddings",
+        method: "POST",
+        status: 409,
+        durationMs: Date.now() - startTime,
+        error: err.message,
+      });
+      return NextResponse.json({ error: err.message }, { status: 409 });
+    }
+
+    if (err instanceof DuplicateDomainError) {
+      logRequest({
+        requestId,
+        route: "/api/admin/weddings",
+        method: "POST",
+        status: 409,
+        durationMs: Date.now() - startTime,
+        error: err.message,
+      });
+      return NextResponse.json({ error: err.message }, { status: 409 });
     }
 
     if (err instanceof z.ZodError) {

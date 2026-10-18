@@ -10,19 +10,28 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
-    // Simulated concierge login for development
-    // In production, this verifies bcrypt password against users table
-    if (password === "shadify2026" || password.length >= 6) {
-      document.cookie = `shadify_admin_session=demo-staff-session; path=/; max-age=86400; SameSite=Lax`;
+    try {
+      const res = await fetch("/api/admin/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Authentication failed.");
+        setLoading(false);
+        return;
+      }
+
       router.push("/admin");
-    } else {
-      setError("Invalid password. Minimum 6 characters required.");
+    } catch {
+      setError("Network error. Please try again.");
       setLoading(false);
     }
   };
