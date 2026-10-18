@@ -1,26 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Reserved system paths that can never be claimed as a wedding slug
-const RESERVED_SLUGS = new Set([
-  "admin",
-  "api",
-  "app",
-  "www",
-  "billing",
-  "login",
-  "signup",
-  "static",
-  "media",
-  "cdn",
-  "mail",
-  "support",
-  "help",
-  "w",
-  "p",
-  "dashboard",
-  "preview",
-]);
+import { RESERVED_SLUGS } from "@/lib/config/reserved-slugs";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

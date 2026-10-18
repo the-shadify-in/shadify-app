@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!rateCheck.success) {
       return NextResponse.json(
         { error: "Too many requests. Please wait a moment before trying again." },
-        { status: 429, headers: { "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)) } }
+        { status: 429, headers: { "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)) } },
       );
     }
 
@@ -68,14 +68,14 @@ export async function POST(request: NextRequest) {
     if (err?.code === "P2002" || err?.message?.includes("uq_rsvp")) {
       return NextResponse.json(
         { error: "An RSVP with this name and phone has already been submitted for this ceremony." },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     console.error("RSVP submission error:", error);
     return NextResponse.json(
       { error: "Failed to submit RSVP. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
           error: "Theme colors fail accessibility contrast requirements",
           details: err.details,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
           error:
             "That wedding URL slug is reserved or contains invalid characters. Please choose another.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         { error: "A wedding with this URL slug already exists. Please choose a unique slug." },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         { error: err.issues[0]?.message || "Invalid input data", details: err.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { error: "An unexpected database error occurred. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

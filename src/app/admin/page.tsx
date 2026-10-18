@@ -53,7 +53,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-3">
             <span className="font-serif text-2xl font-light text-[#FFF9F2]">
               Shadify{" "}
-              <span className="text-xs font-sans tracking-widest text-[#C9933A] uppercase">
+              <span className="font-sans text-xs uppercase tracking-widest text-[#C9933A]">
                 Concierge
               </span>
             </span>
@@ -117,7 +117,7 @@ export default function AdminDashboardPage() {
             </Link>
             <Link
               href="/admin/weddings/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#C9933A] to-[#DFB15B] px-5 py-2.5 text-xs font-semibold text-black hover:scale-105 transition-transform shadow-md"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#C9933A] to-[#DFB15B] px-5 py-2.5 text-xs font-semibold text-black shadow-md transition-transform hover:scale-105"
             >
               <Plus className="h-4 w-4" />
               Onboard New Wedding
@@ -141,7 +141,7 @@ export default function AdminDashboardPage() {
             </thead>
             <tbody className="divide-y divide-[#C9933A]/10">
               {weddings.map((w) => (
-                <tr key={w.id} className="hover:bg-[#1B0B10]/40 transition-colors">
+                <tr key={w.id} className="transition-colors hover:bg-[#1B0B10]/40">
                   <td className="px-5 py-4 font-serif text-sm font-medium text-[#FFF9F2]">
                     {w.couple}
                   </td>
@@ -151,15 +151,15 @@ export default function AdminDashboardPage() {
                     <span
                       className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-medium capitalize ${
                         w.status === "published"
-                          ? "bg-green-950/60 text-green-300 border border-green-500/40"
-                          : "bg-yellow-950/60 text-yellow-300 border border-yellow-500/40"
+                          ? "border border-green-500/40 bg-green-950/60 text-green-300"
+                          : "border border-yellow-500/40 bg-yellow-950/60 text-yellow-300"
                       }`}
                     >
                       {w.status}
                     </span>
                   </td>
                   <td className="px-5 py-4 text-[#E2D5C7]/80">{w.rsvps}</td>
-                  <td className="px-5 py-4 text-green-400 font-medium">{w.shagunTotal}</td>
+                  <td className="px-5 py-4 font-medium text-green-400">{w.shagunTotal}</td>
                   <td className="px-5 py-4 text-right">
                     <Link
                       href={`/${w.slug}`}

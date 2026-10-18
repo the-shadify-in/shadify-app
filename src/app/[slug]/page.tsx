@@ -106,14 +106,14 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
     new Date(dbWedding.entitlement.hostingUntil).getTime() < Date.now()
   ) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] px-4 text-center text-[#1F1A2E]">
-        <div className="w-14 h-14 mb-4 rounded-full bg-[#1F1A2E]/5 flex items-center justify-center text-xl">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#FDFBF7] px-4 text-center text-[#1F1A2E]">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1F1A2E]/5 text-xl">
           ⌛
         </div>
-        <h1 className="text-2xl sm:text-3xl font-serif text-[#1F1A2E]">
+        <h1 className="font-serif text-2xl text-[#1F1A2E] sm:text-3xl">
           Celebration Website Concluded
         </h1>
-        <p className="mt-3 max-w-md text-xs sm:text-sm text-[#1F1A2E]/70 leading-relaxed">
+        <p className="mt-3 max-w-md text-xs leading-relaxed text-[#1F1A2E]/70 sm:text-sm">
           The active digital invitation and gallery hosting for {dbWedding.brideName} &{" "}
           {dbWedding.groomName}&apos;s wedding has concluded.
         </p>

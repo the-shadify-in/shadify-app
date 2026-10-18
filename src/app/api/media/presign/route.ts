@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!weddingSlug || !filename || !contentType) {
       return NextResponse.json(
         { error: "Missing required fields: weddingSlug, filename, contentType" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

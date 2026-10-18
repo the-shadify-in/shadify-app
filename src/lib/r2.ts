@@ -24,7 +24,7 @@ export const r2Client = new S3Client({
 export async function createPresignedUploadUrl(
   key: string,
   contentType: string,
-  expiresInSeconds: number = 300
+  expiresInSeconds: number = 300,
 ): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: bucketName,
@@ -40,7 +40,7 @@ export async function createPresignedUploadUrl(
  */
 export async function createSignedDownloadUrl(
   key: string,
-  expiresInSeconds: number = 3600
+  expiresInSeconds: number = 3600,
 ): Promise<string> {
   const command = new GetObjectCommand({
     Bucket: bucketName,

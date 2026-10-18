@@ -78,10 +78,10 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
 
   // Hosting lasts 5 years from creation; master original RAWs are retained for 90 days
   const hostingUntil = new Date(
-    now.getTime() + planConfig.hostingDurationYears * 365.25 * 24 * 60 * 60 * 1000
+    now.getTime() + planConfig.hostingDurationYears * 365.25 * 24 * 60 * 60 * 1000,
   );
   const originalsExpireAt = new Date(
-    now.getTime() + planConfig.rawOriginalsRetentionDays * 24 * 60 * 60 * 1000
+    now.getTime() + planConfig.rawOriginalsRetentionDays * 24 * 60 * 60 * 1000,
   );
 
   const normalizedPhone = data.couplePhone ? `+91${data.couplePhone}` : null;

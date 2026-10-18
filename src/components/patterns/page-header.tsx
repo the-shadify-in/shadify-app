@@ -11,18 +11,18 @@ export function PageHeader({ title, description, action, className, ...props }: 
   return (
     <div
       className={cn(
-        "flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between pb-6",
-        className
+        "flex flex-col gap-1 pb-6 sm:flex-row sm:items-center sm:justify-between",
+        className,
       )}
       {...props}
     >
       <div>
-        <h1 className="text-2xl font-serif font-medium tracking-tight text-ui-text-primary">
+        <h1 className="font-serif text-2xl font-medium tracking-tight text-ui-text-primary">
           {title}
         </h1>
-        {description && <p className="text-xs text-ui-text-muted mt-0.5">{description}</p>}
+        {description && <p className="mt-0.5 text-xs text-ui-text-muted">{description}</p>}
       </div>
-      {action && <div className="mt-4 sm:mt-0 flex items-center gap-2">{action}</div>}
+      {action && <div className="mt-4 flex items-center gap-2 sm:mt-0">{action}</div>}
     </div>
   );
 }

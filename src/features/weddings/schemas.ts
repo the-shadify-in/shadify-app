@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ALLOWED_PRESETS } from "@/lib/themes/tokens";
+import { RESERVED_SLUGS } from "@/lib/config/reserved-slugs";
 
 export const CreateWeddingSchema = z.object({
   brideName: z.string().trim().min(1, "Bride's name is required").max(60),
@@ -9,11 +10,13 @@ export const CreateWeddingSchema = z.object({
   slug: z
     .string()
     .trim()
-    .toLowerCase()
     .regex(
       /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/,
-      "Slug must be 3-40 lowercase alphanumeric characters with hyphens"
-    ),
+      "Slug must be 3-40 lowercase alphanumeric characters with hyphens",
+    )
+    .refine((slug) => !RESERVED_SLUGS.has(slug), {
+      message: "This wedding slug is reserved for system use",
+    }),
   plan: z.enum(["lite", "premium", "platinum"]).default("lite"),
   themeId: z.enum(ALLOWED_PRESETS).default("royal-crimson"),
   customPrimary: z

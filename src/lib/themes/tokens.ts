@@ -280,7 +280,7 @@ export function getThemeCssVariables(theme: ThemeConfig): string {
 export function resolveTheme(
   themeId: string,
   rawConfig: unknown,
-  themeVersion = 1
+  themeVersion = 1,
 ): { theme: ThemeConfig; report: ContrastReport } {
   const basePreset = THEME_PRESETS[themeId] || THEME_PRESETS["royal-crimson"];
 

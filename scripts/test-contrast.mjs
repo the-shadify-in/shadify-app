@@ -13,11 +13,11 @@ for (const [id, colors] of Object.entries(PRESET_COLORS)) {
     allPassed = false;
   } else {
     console.log(
-      `✅ Preset "${id}": PASS (text/canvas: ${report.ratios["text-canvas"]}:1, muted/canvas: ${report.ratios["muted-canvas"]}:1)`
+      `✅ Preset "${id}": PASS (text/canvas: ${report.ratios["text-canvas"]}:1, muted/canvas: ${report.ratios["muted-canvas"]}:1)`,
     );
     if (report.primaryNeedsBorder) {
       console.log(
-        `   ℹ️  Note: Primary button fill is <3:1 against canvas; requires accent/text border.`
+        `   ℹ️  Note: Primary button fill is <3:1 against canvas; requires accent/text border.`,
       );
     }
   }
@@ -33,7 +33,7 @@ const failingIvory = {
 const regressionReport = validateContrast(failingIvory);
 if (!regressionReport.accentTextAllowed) {
   console.log(
-    `✅ Regression Test Passed: Old #DFB15B correctly flagged as accentTextAllowed: false (ratio: ${regressionReport.ratios["accent-canvas"]}:1)`
+    `✅ Regression Test Passed: Old #DFB15B correctly flagged as accentTextAllowed: false (ratio: ${regressionReport.ratios["accent-canvas"]}:1)`,
   );
 } else {
   console.error("❌ Regression Test FAILED: Old #DFB15B was incorrectly allowed to style text!");

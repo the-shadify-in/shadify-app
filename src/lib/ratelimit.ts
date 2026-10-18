@@ -38,7 +38,7 @@ export interface RateLimitResult {
 export function checkRateLimit(
   identifier: string,
   maxHits: number = 10,
-  windowMs: number = 60000
+  windowMs: number = 60000,
 ): RateLimitResult {
   const now = Date.now();
   let record = hitStore.get(identifier);

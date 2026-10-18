@@ -21,13 +21,13 @@ export default async function WeddingPreviewPage({
 
   if (!isStaff && !isPreview) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FFFBF5] text-[#1F1A2E] p-6 font-sans text-center">
-        <div className="max-w-md border border-[#EADDCF] rounded-2xl p-8 bg-white shadow-sm space-y-4">
-          <div className="h-12 w-12 mx-auto rounded-full bg-[#FFF1F6] border border-[#D6246E]/20 flex items-center justify-center text-[#D6246E] font-serif text-lg">
+      <div className="flex min-h-screen items-center justify-center bg-[#FFFBF5] p-6 text-center font-sans text-[#1F1A2E]">
+        <div className="max-w-md space-y-4 rounded-2xl border border-[#EADDCF] bg-white p-8 shadow-sm">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-[#D6246E]/20 bg-[#FFF1F6] font-serif text-lg text-[#D6246E]">
             🔒
           </div>
-          <h2 className="text-xl font-serif font-medium">Restricted Preview</h2>
-          <p className="text-xs text-[#1F1A2E]/70 leading-relaxed">
+          <h2 className="font-serif text-xl font-medium">Restricted Preview</h2>
+          <p className="text-xs leading-relaxed text-[#1F1A2E]/70">
             This preview route is protected. You must be logged into the concierge admin portal or
             possess a valid signed preview link to inspect unreleased wedding themes.
           </p>
@@ -114,7 +114,7 @@ export default async function WeddingPreviewPage({
   return (
     <>
       {/* Visual Indicator for Concierge Staff */}
-      <aside className="fixed top-3 left-1/2 -translate-x-1/2 z-50 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1 text-[11px] font-medium text-amber-900 shadow-md backdrop-blur">
+      <aside className="fixed left-1/2 top-3 z-50 -translate-x-1/2 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1 text-[11px] font-medium text-amber-900 shadow-md backdrop-blur">
         Preview Mode Active: <strong className="font-semibold">{theme.presetId}</strong> (
         {report.ok ? "Contrast Valid" : "Contrast Warning"})
       </aside>

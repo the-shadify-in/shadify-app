@@ -128,19 +128,19 @@ export function validateContrast(c: ThemeColors): ContrastReport {
   const warnings: string[] = [];
   if (!accentTextAllowed)
     warnings.push(
-      "Accent is below 4.5:1 on canvas/surface: use for borders, dividers and fills only, never reading text."
+      "Accent is below 4.5:1 on canvas/surface: use for borders, dividers and fills only, never reading text.",
     );
   if (primaryNeedsBorder) {
     const edge = contrast(c.accent, c.canvas) >= 3 ? "accent" : "text";
     warnings.push(
-      `Primary fill is below 3:1 against canvas: renderer must draw a ${edge}-colored border on primary buttons.`
+      `Primary fill is below 3:1 against canvas: renderer must draw a ${edge}-colored border on primary buttons.`,
     );
   }
   const footer = contrast(blend(c.textMuted, c.canvas, FOOTER_OPACITY), c.canvas);
   ratios["footer-effective"] = Math.round(footer * 100) / 100;
   if (footer < 3)
     warnings.push(
-      `Footer mark at ${FOOTER_OPACITY * 100}% opacity is below 3:1; raise opacity for this theme.`
+      `Footer mark at ${FOOTER_OPACITY * 100}% opacity is below 3:1; raise opacity for this theme.`,
     );
 
   return {

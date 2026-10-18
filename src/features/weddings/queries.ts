@@ -25,7 +25,7 @@ export async function getWeddingBySlug(slug: string) {
  * Transforms a Prisma Wedding record into a clean WeddingDataDto.
  */
 export function mapWeddingToDto(
-  wedding: NonNullable<Awaited<ReturnType<typeof getWeddingBySlug>>>
+  wedding: NonNullable<Awaited<ReturnType<typeof getWeddingBySlug>>>,
 ): WeddingDataDto {
   return {
     slug: wedding.slug,

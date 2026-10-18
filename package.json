@@ -2,29 +2,42 @@
   "name": "shadify-app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
+    "postinstall": "prisma generate",
+    "prepare": "husky",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "lint:brand": "node scripts/check-brand-isolation.mjs",
-    "test:contrast": "node scripts/test-contrast.mjs",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate deploy",
-    "db:validate": "prisma validate",
-    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "check": "npm run format:check && npm run lint && npm run lint:brand && npm run typecheck && npm run test",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset"
   },
-  "engines": {
-    "node": ">=20.0.0"
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
+    "*.{ts,tsx,js,jsx,mjs}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,css}": [
+    "*.{json,md,css,yml,yaml}": [
       "prettier --write"
     ]
   },
@@ -47,6 +60,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
@@ -57,8 +71,11 @@
     "lint-staged": "^17.6.0",
     "postcss": "^8",
     "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   }
 }

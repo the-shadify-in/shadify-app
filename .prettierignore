@@ -1,7 +1,6 @@
 .next
 node_modules
-dist
-out
+prisma/migrations
 coverage
-*.min.js
+public
 package-lock.json

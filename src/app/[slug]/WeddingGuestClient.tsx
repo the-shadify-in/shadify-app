@@ -104,7 +104,7 @@ export default function WeddingGuestClient({
       `🌸 *Wedding Invitation: ${wedding.bride} & ${wedding.groom}* 🌸\n\n` +
         `We would be honored by your presence as we celebrate our wedding in ${wedding.venueCity} on ${wedding.date}.\n\n` +
         `Tap here to view the royal invitation, event itinerary, and RSVP:\n` +
-        `${typeof window !== "undefined" ? window.location.href : `https://shadify.in/${wedding.slug}`}`
+        `${typeof window !== "undefined" ? window.location.href : `https://shadify.in/${wedding.slug}`}`,
     );
     return `https://api.whatsapp.com/send?text=${text}`;
   };
@@ -128,25 +128,25 @@ export default function WeddingGuestClient({
           "--theme-wax-seal": c.waxSeal,
         } as React.CSSProperties
       }
-      className="min-h-screen bg-theme-bg text-theme-text-primary selection:bg-theme-accent selection:text-theme-on-accent font-sans transition-colors duration-500 pb-24 md:pb-0"
+      className="selection:text-theme-on-accent min-h-screen bg-theme-bg pb-24 font-sans text-theme-text-primary transition-colors duration-500 selection:bg-theme-accent md:pb-0"
     >
       {/* ----------------------------------------------------------- */}
       {/* 1. ROYAL ENVELOPE OVERLAY (CSS REVEAL) */}
       {/* ----------------------------------------------------------- */}
       {!isEnvelopeOpened && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl">
-          <div className="relative w-full max-w-md rounded-2xl border border-theme-accent/40 bg-theme-envelope p-8 text-center shadow-2xl">
+          <div className="border-theme-accent/40 relative w-full max-w-md rounded-2xl border bg-theme-envelope p-8 text-center shadow-2xl">
             {/* Corner Accents */}
             <div className="absolute left-3 top-3 h-4 w-4 border-l-2 border-t-2 border-theme-accent" />
             <div className="absolute right-3 top-3 h-4 w-4 border-r-2 border-t-2 border-theme-accent" />
             <div className="absolute bottom-3 left-3 h-4 w-4 border-b-2 border-l-2 border-theme-accent" />
             <div className="absolute bottom-3 right-3 h-4 w-4 border-b-2 border-r-2 border-theme-accent" />
 
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-theme-accent/40 bg-theme-surface text-xl font-serif text-theme-accent">
+            <div className="border-theme-accent/40 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full border bg-theme-surface font-serif text-xl text-theme-accent">
               {wedding.monogram}
             </div>
 
-            <p className="text-xs tracking-[0.3em] text-theme-accent uppercase font-medium">
+            <p className="text-xs font-medium uppercase tracking-[0.3em] text-theme-accent">
               You Are Cordially Invited
             </p>
             <h1 className="mt-2 font-serif text-3xl font-light text-theme-text-primary">
@@ -160,17 +160,17 @@ export default function WeddingGuestClient({
             <div className="mt-8">
               <button
                 onClick={handleOpenEnvelope}
-                className={`group relative inline-flex items-center gap-2 rounded-full px-8 py-3 font-serif text-sm tracking-widest text-theme-on-primary bg-theme-primary shadow-lg transition-all hover:scale-105 active:scale-95 ${
+                className={`text-theme-on-primary group relative inline-flex items-center gap-2 rounded-full bg-theme-primary px-8 py-3 font-serif text-sm tracking-widest shadow-lg transition-all hover:scale-105 active:scale-95 ${
                   contrastReport.primaryNeedsBorder ? "border-2 border-theme-accent" : ""
                 }`}
               >
-                <Sparkles className="h-4 w-4 text-theme-on-primary transition-transform group-hover:rotate-45" />
+                <Sparkles className="text-theme-on-primary h-4 w-4 transition-transform group-hover:rotate-45" />
                 TAP TO OPEN INVITATION
               </button>
               <button
                 type="button"
                 onClick={handleOpenEnvelope}
-                className="mt-4 block mx-auto text-xs text-theme-text-muted hover:text-theme-accent transition underline tracking-wider opacity-80"
+                className="mx-auto mt-4 block text-xs tracking-wider text-theme-text-muted underline opacity-80 transition hover:text-theme-accent"
               >
                 Skip Reveal (View Details)
               </button>
@@ -186,7 +186,7 @@ export default function WeddingGuestClient({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.12)_0,transparent_70%)]" />
 
         <div className="relative z-10 max-w-2xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-theme-accent/40 bg-theme-surface px-4 py-1 text-xs tracking-widest text-theme-accent uppercase">
+          <div className="border-theme-accent/40 mb-4 inline-flex items-center gap-2 rounded-full border bg-theme-surface px-4 py-1 text-xs uppercase tracking-widest text-theme-accent">
             <span>Namaste &amp; Welcome</span>
           </div>
 
@@ -211,7 +211,7 @@ export default function WeddingGuestClient({
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={() => setActiveRsvpEvent(wedding.events[0])}
-              className={`rounded-full px-8 py-3 text-sm font-semibold tracking-wide bg-theme-primary text-theme-on-primary shadow-lg transition-transform hover:scale-105 ${
+              className={`text-theme-on-primary rounded-full bg-theme-primary px-8 py-3 text-sm font-semibold tracking-wide shadow-lg transition-transform hover:scale-105 ${
                 contrastReport.primaryNeedsBorder ? "border-2 border-theme-accent" : ""
               }`}
             >
@@ -220,7 +220,7 @@ export default function WeddingGuestClient({
 
             <button
               onClick={() => setIsShagunModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-theme-accent/50 bg-theme-surface px-6 py-3 text-sm font-medium text-theme-text-primary transition-colors hover:border-theme-accent"
+              className="border-theme-accent/50 inline-flex items-center gap-2 rounded-full border bg-theme-surface px-6 py-3 text-sm font-medium text-theme-text-primary transition-colors hover:border-theme-accent"
             >
               <Gift className="h-4 w-4 text-theme-accent" />
               Digital Shagun
@@ -238,7 +238,7 @@ export default function WeddingGuestClient({
           </div>
         </div>
 
-        <div className="absolute bottom-6 text-theme-accent/70 animate-bounce">
+        <div className="text-theme-accent/70 absolute bottom-6 animate-bounce">
           <ChevronDown className="h-6 w-6" />
         </div>
       </section>
@@ -248,7 +248,7 @@ export default function WeddingGuestClient({
       {/* ----------------------------------------------------------- */}
       <section className="mx-auto max-w-4xl px-4 py-20">
         <div className="mb-12 text-center">
-          <p className="text-xs font-semibold tracking-[0.25em] text-theme-accent uppercase">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
             Ceremonies &amp; Timings
           </p>
           <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
@@ -260,11 +260,11 @@ export default function WeddingGuestClient({
           {wedding.events.map((evt) => (
             <div
               key={evt.id}
-              className="relative rounded-2xl border border-theme-accent/25 bg-theme-surface p-6 transition-all hover:border-theme-accent/60"
+              className="border-theme-accent/25 hover:border-theme-accent/60 relative rounded-2xl border bg-theme-surface p-6 transition-all"
             >
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                 <div>
-                  <div className="inline-block rounded-md bg-theme-primary px-3 py-1 text-xs font-medium text-theme-on-primary">
+                  <div className="text-theme-on-primary inline-block rounded-md bg-theme-primary px-3 py-1 text-xs font-medium">
                     {evt.tag} • {evt.date}
                   </div>
                   <h3 className="mt-2 font-serif text-2xl font-light text-theme-text-primary">
@@ -288,14 +288,14 @@ export default function WeddingGuestClient({
                     href={evt.mapUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-theme-accent/40 px-4 py-2 text-xs font-medium text-theme-text-muted hover:text-theme-text-primary hover:border-theme-accent"
+                    className="border-theme-accent/40 inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-xs font-medium text-theme-text-muted hover:border-theme-accent hover:text-theme-text-primary"
                   >
                     <MapPin className="h-3.5 w-3.5 text-theme-accent" />
                     Directions
                   </a>
                   <button
                     onClick={() => setActiveRsvpEvent(evt)}
-                    className="rounded-lg bg-theme-accent px-4 py-2 text-xs font-semibold text-theme-on-accent transition-transform hover:scale-105"
+                    className="text-theme-on-accent rounded-lg bg-theme-accent px-4 py-2 text-xs font-semibold transition-transform hover:scale-105"
                   >
                     RSVP
                   </button>
@@ -309,10 +309,10 @@ export default function WeddingGuestClient({
       {/* ----------------------------------------------------------- */}
       {/* 4. MEET THE VIPS */}
       {/* ----------------------------------------------------------- */}
-      <section className="border-t border-theme-accent/10 bg-theme-surface/50 px-4 py-20">
+      <section className="border-theme-accent/10 bg-theme-surface/50 border-t px-4 py-20">
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
-            <p className="text-xs font-semibold tracking-[0.25em] text-theme-accent uppercase">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
               Family &amp; Entourage
             </p>
             <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
@@ -324,12 +324,12 @@ export default function WeddingGuestClient({
             {wedding.vips.map((vip, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-theme-accent/20 bg-theme-surface p-6 text-center"
+                className="border-theme-accent/20 rounded-xl border bg-theme-surface p-6 text-center"
               >
-                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-theme-accent/30 bg-theme-surface text-theme-accent">
+                <div className="border-theme-accent/30 mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border bg-theme-surface text-theme-accent">
                   <Heart className="h-5 w-5" />
                 </div>
-                <p className="text-xs tracking-wider text-theme-accent uppercase font-medium">
+                <p className="text-xs font-medium uppercase tracking-wider text-theme-accent">
                   {vip.group}
                 </p>
                 <h4 className="mt-1 font-serif text-lg font-medium text-theme-text-primary">
@@ -347,7 +347,7 @@ export default function WeddingGuestClient({
       {/* ----------------------------------------------------------- */}
       {activeRsvpEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className="relative w-full max-w-lg rounded-2xl border border-theme-accent/40 bg-theme-surface p-6 text-left shadow-2xl">
+          <div className="border-theme-accent/40 relative w-full max-w-lg rounded-2xl border bg-theme-surface p-6 text-left shadow-2xl">
             <button
               onClick={() => {
                 setActiveRsvpEvent(null);
@@ -370,7 +370,7 @@ export default function WeddingGuestClient({
                     setActiveRsvpEvent(null);
                     setIsSubmitted(false);
                   }}
-                  className="mt-6 rounded-full bg-theme-accent px-6 py-2 text-xs font-semibold text-theme-on-accent"
+                  className="text-theme-on-accent mt-6 rounded-full bg-theme-accent px-6 py-2 text-xs font-semibold"
                 >
                   Close
                 </button>
@@ -391,7 +391,7 @@ export default function WeddingGuestClient({
                       value={guestName}
                       onChange={(e) => setGuestName(e.target.value)}
                       placeholder="e.g. Aditi Sharma"
-                      className="mt-1 w-full rounded-lg border border-theme-accent/30 bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                      className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                     />
                   </div>
 
@@ -403,7 +403,7 @@ export default function WeddingGuestClient({
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
                       placeholder="+91 98765 43210"
-                      className="mt-1 w-full rounded-lg border border-theme-accent/30 bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                      className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                     />
                   </div>
 
@@ -416,7 +416,7 @@ export default function WeddingGuestClient({
                         max="10"
                         value={partySize}
                         onChange={(e) => setPartySize(Number(e.target.value))}
-                        className="mt-1 w-full rounded-lg border border-theme-accent/30 bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                        className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                       />
                     </div>
 
@@ -425,7 +425,7 @@ export default function WeddingGuestClient({
                       <select
                         value={mealPref}
                         onChange={(e) => setMealPref(e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-theme-accent/30 bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                        className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                       >
                         <option value="pure_veg">Pure Vegetarian</option>
                         <option value="jain">Jain (No Root Veg)</option>
@@ -440,7 +440,7 @@ export default function WeddingGuestClient({
                       id="needsStayCheck"
                       checked={needsStay}
                       onChange={(e) => setNeedsStay(e.target.checked)}
-                      className="h-4 w-4 rounded border-theme-accent/30 bg-theme-bg text-theme-accent focus:ring-0"
+                      className="border-theme-accent/30 h-4 w-4 rounded bg-theme-bg text-theme-accent focus:ring-0"
                     />
                     <label htmlFor="needsStayCheck" className="text-theme-text-muted">
                       Request hotel room allocation (for outstation guests)
@@ -454,7 +454,7 @@ export default function WeddingGuestClient({
                       value={blessing}
                       onChange={(e) => setBlessing(e.target.value)}
                       placeholder="Share a loving note with the couple..."
-                      className="mt-1 w-full rounded-lg border border-theme-accent/30 bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                      className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                     />
                   </div>
                 </div>
@@ -469,7 +469,7 @@ export default function WeddingGuestClient({
                   </button>
                   <button
                     type="submit"
-                    className="rounded-lg bg-theme-accent px-6 py-2 text-xs font-semibold text-theme-on-accent"
+                    className="text-theme-on-accent rounded-lg bg-theme-accent px-6 py-2 text-xs font-semibold"
                   >
                     Confirm RSVP
                   </button>
@@ -485,7 +485,7 @@ export default function WeddingGuestClient({
       {/* ----------------------------------------------------------- */}
       {isShagunModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
-          <div className="relative w-full max-w-sm rounded-2xl border border-theme-accent/40 bg-theme-surface p-6 text-center shadow-2xl">
+          <div className="border-theme-accent/40 relative w-full max-w-sm rounded-2xl border bg-theme-surface p-6 text-center shadow-2xl">
             <button
               onClick={() => setIsShagunModalOpen(false)}
               className="absolute right-4 top-4 text-theme-text-muted hover:text-theme-text-primary"
@@ -493,7 +493,7 @@ export default function WeddingGuestClient({
               <X className="h-5 w-5" />
             </button>
 
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-theme-accent/30 bg-theme-surface text-theme-accent">
+            <div className="border-theme-accent/30 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border bg-theme-surface text-theme-accent">
               <Gift className="h-6 w-6" />
             </div>
 
@@ -513,7 +513,7 @@ export default function WeddingGuestClient({
                   onClick={() => setShagunAmount(amt)}
                   className={`rounded-lg border py-2 text-xs font-medium transition-all ${
                     shagunAmount === amt
-                      ? "border-theme-accent bg-theme-accent text-theme-on-accent font-semibold"
+                      ? "text-theme-on-accent border-theme-accent bg-theme-accent font-semibold"
                       : "border-theme-accent/25 bg-theme-surface text-theme-text-muted hover:border-theme-accent"
                   }`}
                 >
@@ -526,9 +526,9 @@ export default function WeddingGuestClient({
             <div className="mt-6">
               <a
                 href={`upi://pay?pa=${wedding.upiVpa}&pn=${encodeURIComponent(
-                  `${wedding.bride} and ${wedding.groom} Wedding`
+                  `${wedding.bride} and ${wedding.groom} Wedding`,
                 )}&am=${shagunAmount}&cu=INR&tn=${encodeURIComponent("Wedding Shagun Blessing")}`}
-                className="block w-full rounded-full bg-theme-primary py-3 text-sm font-semibold tracking-wide text-theme-on-primary shadow-lg transition-transform hover:scale-105"
+                className="text-theme-on-primary block w-full rounded-full bg-theme-primary py-3 text-sm font-semibold tracking-wide shadow-lg transition-transform hover:scale-105"
               >
                 Send ₹{shagunAmount.toLocaleString("en-IN")} via UPI App
               </a>
@@ -544,13 +544,13 @@ export default function WeddingGuestClient({
       {/* 7. NEUTRAL MONOCHROME BRAND FOOTER (ZERO BRAND CLASH) */}
       {/* ----------------------------------------------------------- */}
       {wedding.showBranding && (
-        <footer className="border-t border-theme-accent/15 py-10 text-center text-xs text-theme-text-muted">
-          <p className="font-serif tracking-widest uppercase text-theme-text-primary/70">
+        <footer className="border-theme-accent/15 border-t py-10 text-center text-xs text-theme-text-muted">
+          <p className="text-theme-text-primary/70 font-serif uppercase tracking-widest">
             {wedding.bride} &amp; {wedding.groom} • {wedding.venueCity}
           </p>
           <p className="mt-2 text-[11px] tracking-wider opacity-75">
             Created with love on{" "}
-            <span className="font-serif tracking-normal font-semibold opacity-90">Shadify</span>
+            <span className="font-serif font-semibold tracking-normal opacity-90">Shadify</span>
           </p>
         </footer>
       )}
@@ -559,31 +559,31 @@ export default function WeddingGuestClient({
       {/* ----------------------------------------------------------- */}
       <nav
         aria-label="Mobile Quick Actions"
-        className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-theme-surface/95 backdrop-blur-md border-t border-theme-accent/20 px-4 py-2 pb-safe shadow-2xl"
+        className="bg-theme-surface/95 border-theme-accent/20 pb-safe fixed inset-x-0 bottom-0 z-40 border-t px-4 py-2 shadow-2xl backdrop-blur-md md:hidden"
       >
         <div className="flex items-center justify-around gap-2 text-center">
           <a
             href={wedding.events[0]?.mapUrl || "#itinerary"}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 py-1.5 flex flex-col items-center justify-center text-xs font-medium text-theme-text-primary hover:text-theme-accent transition"
+            className="flex flex-1 flex-col items-center justify-center py-1.5 text-xs font-medium text-theme-text-primary transition hover:text-theme-accent"
           >
-            <MapPin className="h-4 w-4 mb-0.5 text-theme-accent" />
+            <MapPin className="mb-0.5 h-4 w-4 text-theme-accent" />
             <span>Map</span>
           </a>
           <button
             type="button"
             onClick={() => setActiveRsvpEvent(wedding.events[0] || null)}
-            className="flex-1 py-2 rounded-full bg-theme-primary text-theme-on-primary text-xs font-semibold shadow-md active:scale-95 transition"
+            className="text-theme-on-primary flex-1 rounded-full bg-theme-primary py-2 text-xs font-semibold shadow-md transition active:scale-95"
           >
             RSVP
           </button>
           <button
             type="button"
             onClick={() => setIsShagunModalOpen(true)}
-            className="flex-1 py-1.5 flex flex-col items-center justify-center text-xs font-medium text-theme-text-primary hover:text-theme-accent transition"
+            className="flex flex-1 flex-col items-center justify-center py-1.5 text-xs font-medium text-theme-text-primary transition hover:text-theme-accent"
           >
-            <Gift className="h-4 w-4 mb-0.5 text-theme-accent" />
+            <Gift className="mb-0.5 h-4 w-4 text-theme-accent" />
             <span>Shagun</span>
           </button>
           <button
@@ -604,9 +604,9 @@ export default function WeddingGuestClient({
                 alert("Wedding celebration link copied to clipboard!");
               }
             }}
-            className="flex-1 py-1.5 flex flex-col items-center justify-center text-xs font-medium text-theme-text-primary hover:text-theme-accent transition"
+            className="flex flex-1 flex-col items-center justify-center py-1.5 text-xs font-medium text-theme-text-primary transition hover:text-theme-accent"
           >
-            <Share2 className="h-4 w-4 mb-0.5 text-theme-accent" />
+            <Share2 className="mb-0.5 h-4 w-4 text-theme-accent" />
             <span>Share</span>
           </button>
         </div>

@@ -83,7 +83,7 @@ export default function NewWeddingOnboardingPage() {
 
     if (!contrastReport.ok) {
       setErrorMessage(
-        "Selected colors fail accessibility contrast checks. Please adjust primary or accent."
+        "Selected colors fail accessibility contrast checks. Please adjust primary or accent.",
       );
       return;
     }
@@ -126,9 +126,9 @@ export default function NewWeddingOnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFBF5] text-[#1F1A2E] font-sans pb-20">
+    <div className="min-h-screen bg-[#FFFBF5] pb-20 font-sans text-[#1F1A2E]">
       {/* Brand Header */}
-      <header className="border-b border-[#EADDCF] bg-white px-6 py-4 sticky top-0 z-30">
+      <header className="sticky top-0 z-30 border-b border-[#EADDCF] bg-white px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
@@ -139,12 +139,12 @@ export default function NewWeddingOnboardingPage() {
               Back to Weddings
             </Link>
             <div className="h-4 w-px bg-[#EADDCF]" />
-            <h1 className="text-base font-serif font-medium text-[#1F1A2E]">
+            <h1 className="font-serif text-base font-medium text-[#1F1A2E]">
               Concierge Onboarding — New Wedding
             </h1>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF1F6] px-3 py-1 text-xs font-medium text-[#D6246E] border border-[#D6246E]/20">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6246E]/20 bg-[#FFF1F6] px-3 py-1 text-xs font-medium text-[#D6246E]">
             <Sparkles className="h-3.5 w-3.5" />
             MVP-0 Monolith
           </span>
@@ -155,12 +155,12 @@ export default function NewWeddingOnboardingPage() {
         {/* Success Modal */}
         {createdWedding && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-md rounded-2xl border border-green-200 bg-white p-8 text-center shadow-2xl space-y-4">
+            <div className="w-full max-w-md space-y-4 rounded-2xl border border-green-200 bg-white p-8 text-center shadow-2xl">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700">
                 <CheckCircle2 className="h-8 w-8" />
               </div>
 
-              <h2 className="text-2xl font-serif text-[#1F1A2E]">Wedding Created!</h2>
+              <h2 className="font-serif text-2xl text-[#1F1A2E]">Wedding Created!</h2>
               <p className="text-xs text-[#1F1A2E]/70">
                 The royal digital invitation for{" "}
                 <strong>
@@ -169,11 +169,11 @@ export default function NewWeddingOnboardingPage() {
                 is published in draft mode.
               </p>
 
-              <div className="rounded-xl border border-[#EADDCF] bg-[#FFFBF5] p-3 text-xs font-mono break-all text-[#1F1A2E]/80">
+              <div className="break-all rounded-xl border border-[#EADDCF] bg-[#FFFBF5] p-3 font-mono text-xs text-[#1F1A2E]/80">
                 shadify.in{createdWedding.url}
               </div>
 
-              <div className="pt-4 flex flex-col gap-2">
+              <div className="flex flex-col gap-2 pt-4">
                 <a
                   href={createdWedding.url}
                   target="_blank"
@@ -195,8 +195,8 @@ export default function NewWeddingOnboardingPage() {
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {errorMessage && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900 flex items-start gap-2.5">
-              <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
               <div>
                 <p className="font-semibold">Unable to create wedding</p>
                 <p className="mt-0.5 opacity-90">{errorMessage}</p>
@@ -205,9 +205,9 @@ export default function NewWeddingOnboardingPage() {
           )}
 
           {/* 1. Couple & Venue Basics */}
-          <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-6">
+          <section className="space-y-6 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
                 1. Couple &amp; Ceremony Basics
               </h2>
               <p className="text-xs text-[#1F1A2E]/60">Names, wedding date, city, and URL slug.</p>
@@ -275,8 +275,8 @@ export default function NewWeddingOnboardingPage() {
               <label className="block text-xs font-medium text-[#1F1A2E]/80">
                 Custom Guest URL Slug *
               </label>
-              <div className="mt-1 flex rounded-lg border border-[#EADDCF] focus-within:border-[#D6246E] bg-white overflow-hidden">
-                <span className="inline-flex items-center px-3 text-xs text-[#1F1A2E]/50 bg-gray-50 border-r border-[#EADDCF]">
+              <div className="mt-1 flex overflow-hidden rounded-lg border border-[#EADDCF] bg-white focus-within:border-[#D6246E]">
+                <span className="inline-flex items-center border-r border-[#EADDCF] bg-gray-50 px-3 text-xs text-[#1F1A2E]/50">
                   shadify.in/
                 </span>
                 <input
@@ -299,9 +299,9 @@ export default function NewWeddingOnboardingPage() {
           </section>
 
           {/* 2. Pricing Plan */}
-          <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-4">
+          <section className="space-y-4 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
                 2. Pricing Tier &amp; Entitlements
               </h2>
               <p className="text-xs text-[#1F1A2E]/60">
@@ -319,19 +319,19 @@ export default function NewWeddingOnboardingPage() {
                     className={`cursor-pointer rounded-xl border p-4 transition-all ${
                       plan === tierKey
                         ? "border-[#D6246E] bg-[#FFF1F6] shadow-sm"
-                        : "border-[#EADDCF] hover:border-[#D6246E]/50 bg-white"
+                        : "border-[#EADDCF] bg-white hover:border-[#D6246E]/50"
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-xs capitalize text-[#1F1A2E]">
+                      <span className="text-xs font-semibold capitalize text-[#1F1A2E]">
                         {planData.name}
                       </span>
-                      <span className="font-serif font-bold text-sm text-[#D6246E]">
+                      <span className="font-serif text-sm font-bold text-[#D6246E]">
                         ₹{planData.priceInr.toLocaleString("en-IN")}
                       </span>
                     </div>
                     <p className="mt-1 text-[11px] text-[#1F1A2E]/70">{planData.tagline}</p>
-                    <div className="mt-3 text-[10px] space-y-1 text-[#1F1A2E]/60 border-t border-[#EADDCF]/60 pt-2">
+                    <div className="mt-3 space-y-1 border-t border-[#EADDCF]/60 pt-2 text-[10px] text-[#1F1A2E]/60">
                       <p>• {planData.hostingDurationYears}-Year Web Hosting</p>
                       <p>• {planData.rawOriginalsRetentionDays}-Day RAW Retention</p>
                       <p>
@@ -346,9 +346,9 @@ export default function NewWeddingOnboardingPage() {
           </section>
 
           {/* 3. Theme & Color Palette Selection */}
-          <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-6">
+          <section className="space-y-6 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
                 3. Luxury Theme Preset &amp; Contrast Audit
               </h2>
               <p className="text-xs text-[#1F1A2E]/60">
@@ -373,21 +373,21 @@ export default function NewWeddingOnboardingPage() {
                       }}
                       className={`rounded-xl border p-3 text-left transition-all ${
                         themeId === presetKey
-                          ? "border-[#1F1A2E] bg-white ring-2 ring-[#1F1A2E] shadow"
+                          ? "border-[#1F1A2E] bg-white shadow ring-2 ring-[#1F1A2E]"
                           : "border-[#EADDCF] hover:bg-gray-50"
                       }`}
                     >
-                      <div className="h-6 w-full rounded flex overflow-hidden border border-gray-200 mb-2">
+                      <div className="mb-2 flex h-6 w-full overflow-hidden rounded border border-gray-200">
                         <div
-                          className="w-1/2 h-full"
+                          className="h-full w-1/2"
                           style={{ backgroundColor: p.palette.canvas }}
                         />
                         <div
-                          className="w-1/4 h-full"
+                          className="h-full w-1/4"
                           style={{ backgroundColor: p.palette.primary }}
                         />
                         <div
-                          className="w-1/4 h-full"
+                          className="h-full w-1/4"
                           style={{ backgroundColor: p.palette.accent }}
                         />
                       </div>
@@ -397,12 +397,12 @@ export default function NewWeddingOnboardingPage() {
                       <p className="text-[10px] text-[#1F1A2E]/60">{p.typography.displayFont}</p>
                     </button>
                   );
-                }
+                },
               )}
             </div>
 
             {/* Custom Color Overrides */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 border-t border-[#EADDCF] pt-6">
+            <div className="grid grid-cols-1 gap-4 border-t border-[#EADDCF] pt-6 sm:grid-cols-3">
               <div>
                 <label className="block text-xs font-medium text-[#1F1A2E]/80">
                   Custom Primary Hex (Optional)
@@ -419,7 +419,7 @@ export default function NewWeddingOnboardingPage() {
                     value={customPrimary}
                     onChange={(e) => setCustomPrimary(e.target.value)}
                     placeholder={activeBasePreset.palette.primary}
-                    className="w-full rounded-lg border border-[#EADDCF] px-3 py-1.5 text-xs font-mono uppercase"
+                    className="w-full rounded-lg border border-[#EADDCF] px-3 py-1.5 font-mono text-xs uppercase"
                   />
                 </div>
               </div>
@@ -440,7 +440,7 @@ export default function NewWeddingOnboardingPage() {
                     value={customAccent}
                     onChange={(e) => setCustomAccent(e.target.value)}
                     placeholder={activeBasePreset.palette.accent}
-                    className="w-full rounded-lg border border-[#EADDCF] px-3 py-1.5 text-xs font-mono uppercase"
+                    className="w-full rounded-lg border border-[#EADDCF] px-3 py-1.5 font-mono text-xs uppercase"
                   />
                 </div>
               </div>
@@ -467,8 +467,8 @@ export default function NewWeddingOnboardingPage() {
             <div
               className={`rounded-xl border p-4 text-xs ${
                 contrastReport.ok
-                  ? "bg-green-50 border-green-200 text-green-900"
-                  : "bg-red-50 border-red-200 text-red-900"
+                  ? "border-green-200 bg-green-50 text-green-900"
+                  : "border-red-200 bg-red-50 text-red-900"
               }`}
             >
               <div className="flex items-center justify-between font-semibold">
@@ -485,7 +485,7 @@ export default function NewWeddingOnboardingPage() {
               </div>
 
               {contrastReport.warnings.length > 0 && (
-                <div className="mt-2 text-[11px] opacity-85 space-y-0.5 border-t border-current/20 pt-1.5">
+                <div className="border-current/20 mt-2 space-y-0.5 border-t pt-1.5 text-[11px] opacity-85">
                   {contrastReport.warnings.map((w, i) => (
                     <p key={i}>• {w}</p>
                   ))}
@@ -495,9 +495,9 @@ export default function NewWeddingOnboardingPage() {
           </section>
 
           {/* 4. Couple Financial & WhatsApp Contact */}
-          <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-4">
+          <section className="space-y-4 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
                 4. Direct UPI Shagun &amp; Couple Contact
               </h2>
               <p className="text-xs text-[#1F1A2E]/60">
@@ -511,7 +511,7 @@ export default function NewWeddingOnboardingPage() {
                 <label className="block text-xs font-medium text-[#1F1A2E]/80">
                   Couple&apos;s UPI VPA (Optional)
                 </label>
-                <div className="mt-1 relative rounded-lg">
+                <div className="relative mt-1 rounded-lg">
                   <input
                     type="text"
                     value={upiVpa}
@@ -570,7 +570,7 @@ export default function NewWeddingOnboardingPage() {
               disabled={isSubmitting || !contrastReport.ok}
               className={`rounded-full px-8 py-2.5 text-xs font-semibold text-white shadow transition-all ${
                 isSubmitting || !contrastReport.ok
-                  ? "bg-gray-400 cursor-not-allowed opacity-60"
+                  ? "cursor-not-allowed bg-gray-400 opacity-60"
                   : "bg-[#D6246E] hover:opacity-95"
               }`}
             >
