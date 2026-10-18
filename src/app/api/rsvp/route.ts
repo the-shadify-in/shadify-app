@@ -31,19 +31,13 @@ export async function POST(request: NextRequest) {
 
     // 2. Validate mandatory fields
     if (!weddingId || !eventId || !respondentName || typeof attending !== "boolean") {
-      return NextResponse.json(
-        { error: "Missing required RSVP fields." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required RSVP fields." }, { status: 400 });
     }
 
     // Party size check (1 to 20)
     const parsedPartySize = Number(partySize);
     if (parsedPartySize < 0 || parsedPartySize > 20) {
-      return NextResponse.json(
-        { error: "Party size must be between 0 and 20." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Party size must be between 0 and 20." }, { status: 400 });
     }
 
     // 3. Normalized inputs

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import { THEME_PRESETS, validateContrast } from "@/lib/themes/tokens";
 import { PRICING_PLANS } from "@/lib/config/pricing";
+import { logRequest } from "@/lib/log";
 
 const CreateWeddingSchema = z.object({
   brideName: z.string().trim().min(1, "Bride's name is required").max(60),
@@ -14,16 +15,30 @@ const CreateWeddingSchema = z.object({
     .string()
     .trim()
     .toLowerCase()
-    .regex(/^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/, "Slug must be 3-40 lowercase alphanumeric characters with hyphens"),
+    .regex(
+      /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$/,
+      "Slug must be 3-40 lowercase alphanumeric characters with hyphens"
+    ),
   plan: z.enum(["lite", "premium", "platinum"]).default("lite"),
-  themeId: z.enum(["royal-crimson", "emerald-gold", "ivory-minimal", "sunset-day", "sunset-dusk"]).default("royal-crimson"),
-  customPrimary: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  customAccent: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  themeId: z
+    .enum(["royal-crimson", "emerald-gold", "ivory-minimal", "sunset-day", "sunset-dusk"])
+    .default("royal-crimson"),
+  customPrimary: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  customAccent: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   monogramText: z.string().trim().max(8).optional(),
   upiVpa: z
     .string()
     .trim()
-    .regex(/^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/, "Must be a valid UPI ID (e.g. name@okhdfcbank)")
+    .regex(
+      /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/,
+      "Must be a valid UPI ID (e.g. name@okhdfcbank)"
+    )
     .optional(),
   couplePhone: z
     .string()
@@ -33,9 +48,19 @@ const CreateWeddingSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const requestId = crypto.randomUUID();
+  const startTime = Date.now();
+
   // 1. Auth Guard (Concierge Staff Only)
   const session = await getAdminSession();
   if (!session) {
+    logRequest({
+      requestId,
+      route: "/api/admin/weddings",
+      method: "POST",
+      status: 401,
+      durationMs: Date.now() - startTime,
+    });
     return NextResponse.json({ error: "Unauthorized. Staff session required." }, { status: 401 });
   }
 
@@ -182,6 +207,15 @@ export async function POST(req: NextRequest) {
       return wedding;
     });
 
+    logRequest({
+      requestId,
+      route: "/api/admin/weddings",
+      method: "POST",
+      status: 200,
+      durationMs: Date.now() - startTime,
+      weddingId: result.id,
+    });
+
     return NextResponse.json({
       success: true,
       weddingId: result.id,
@@ -189,20 +223,40 @@ export async function POST(req: NextRequest) {
       url: `/w/${result.slug}`,
     });
   } catch (err: unknown) {
-    console.error("Failed to create wedding:", err);
-
     const errorObj = err as Record<string, unknown> | undefined;
 
     // PostgreSQL Trigger / Check Constraint (block_reserved_slug or slug format)
-    if (errorObj?.code === "23514" || (typeof errorObj?.message === "string" && errorObj.message.includes("is reserved"))) {
+    if (
+      errorObj?.code === "23514" ||
+      (typeof errorObj?.message === "string" && errorObj.message.includes("is reserved"))
+    ) {
+      logRequest({
+        requestId,
+        route: "/api/admin/weddings",
+        method: "POST",
+        status: 409,
+        durationMs: Date.now() - startTime,
+        error: "Reserved slug constraint triggered",
+      });
       return NextResponse.json(
-        { error: "That wedding URL slug is reserved or contains invalid characters. Please choose another." },
+        {
+          error:
+            "That wedding URL slug is reserved or contains invalid characters. Please choose another.",
+        },
         { status: 409 }
       );
     }
 
     // Prisma Unique Constraint violation (slug already exists)
     if (errorObj?.code === "P2002") {
+      logRequest({
+        requestId,
+        route: "/api/admin/weddings",
+        method: "POST",
+        status: 409,
+        durationMs: Date.now() - startTime,
+        error: "Duplicate slug constraint triggered",
+      });
       return NextResponse.json(
         { error: "A wedding with this URL slug already exists. Please choose a unique slug." },
         { status: 409 }
@@ -210,11 +264,28 @@ export async function POST(req: NextRequest) {
     }
 
     if (err instanceof z.ZodError) {
+      logRequest({
+        requestId,
+        route: "/api/admin/weddings",
+        method: "POST",
+        status: 400,
+        durationMs: Date.now() - startTime,
+        error: err.issues[0]?.message,
+      });
       return NextResponse.json(
         { error: err.issues[0]?.message || "Invalid input data", details: err.issues },
         { status: 400 }
       );
     }
+
+    logRequest({
+      requestId,
+      route: "/api/admin/weddings",
+      method: "POST",
+      status: 500,
+      durationMs: Date.now() - startTime,
+      error: err,
+    });
 
     return NextResponse.json(
       { error: "An unexpected database error occurred. Please try again." },

@@ -1,17 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Heart, 
-  MapPin, 
-  Calendar, 
-  Clock, 
-  Gift, 
-  Share2, 
-  CheckCircle, 
-  Sparkles, 
+import {
+  Heart,
+  MapPin,
+  Calendar,
+  Clock,
+  Gift,
+  Share2,
+  CheckCircle,
+  Sparkles,
   X,
-  ChevronDown
+  ChevronDown,
 } from "lucide-react";
 import type { ThemeConfig, ContrastReport } from "@/lib/themes/tokens";
 
@@ -106,9 +106,9 @@ export default function WeddingGuestClient({
   const getWhatsAppShareUrl = () => {
     const text = encodeURIComponent(
       `🌸 *Wedding Invitation: ${wedding.bride} & ${wedding.groom}* 🌸\n\n` +
-      `We would be honored by your presence as we celebrate our wedding in ${wedding.venueCity} on ${wedding.date}.\n\n` +
-      `Tap here to view the royal invitation, event itinerary, and RSVP:\n` +
-      `${typeof window !== "undefined" ? window.location.href : `https://shadify.in/w/${wedding.slug}`}`
+        `We would be honored by your presence as we celebrate our wedding in ${wedding.venueCity} on ${wedding.date}.\n\n` +
+        `Tap here to view the royal invitation, event itinerary, and RSVP:\n` +
+        `${typeof window !== "undefined" ? window.location.href : `https://shadify.in/w/${wedding.slug}`}`
     );
     return `https://api.whatsapp.com/send?text=${text}`;
   };
@@ -150,11 +150,15 @@ export default function WeddingGuestClient({
               {wedding.monogram}
             </div>
 
-            <p className="text-xs tracking-[0.3em] text-theme-accent uppercase font-medium">You Are Cordially Invited</p>
+            <p className="text-xs tracking-[0.3em] text-theme-accent uppercase font-medium">
+              You Are Cordially Invited
+            </p>
             <h1 className="mt-2 font-serif text-3xl font-light text-theme-text-primary">
               {wedding.bride} <span className="text-theme-accent">&amp;</span> {wedding.groom}
             </h1>
-            <p className="mt-1 text-sm text-theme-text-muted">{wedding.date} • {wedding.venueCity}</p>
+            <p className="mt-1 text-sm text-theme-text-muted">
+              {wedding.date} • {wedding.venueCity}
+            </p>
 
             {/* Wax Seal Action Button */}
             <div className="mt-8">
@@ -241,8 +245,12 @@ export default function WeddingGuestClient({
       {/* ----------------------------------------------------------- */}
       <section className="mx-auto max-w-4xl px-4 py-20">
         <div className="mb-12 text-center">
-          <p className="text-xs font-semibold tracking-[0.25em] text-theme-accent uppercase">Ceremonies &amp; Timings</p>
-          <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">The Wedding Itinerary</h2>
+          <p className="text-xs font-semibold tracking-[0.25em] text-theme-accent uppercase">
+            Ceremonies &amp; Timings
+          </p>
+          <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
+            The Wedding Itinerary
+          </h2>
         </div>
 
         <div className="space-y-6">
@@ -256,7 +264,9 @@ export default function WeddingGuestClient({
                   <div className="inline-block rounded-md bg-theme-primary px-3 py-1 text-xs font-medium text-theme-on-primary">
                     {evt.tag} • {evt.date}
                   </div>
-                  <h3 className="mt-2 font-serif text-2xl font-light text-theme-text-primary">{evt.title}</h3>
+                  <h3 className="mt-2 font-serif text-2xl font-light text-theme-text-primary">
+                    {evt.title}
+                  </h3>
                   <div className="mt-2 flex flex-wrap gap-4 text-xs text-theme-text-muted">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5 text-theme-accent" />
@@ -299,8 +309,12 @@ export default function WeddingGuestClient({
       <section className="border-t border-theme-accent/10 bg-theme-surface/50 px-4 py-20">
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
-            <p className="text-xs font-semibold tracking-[0.25em] text-theme-accent uppercase">Family &amp; Entourage</p>
-            <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">Meet the VIPs</h2>
+            <p className="text-xs font-semibold tracking-[0.25em] text-theme-accent uppercase">
+              Family &amp; Entourage
+            </p>
+            <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
+              Meet the VIPs
+            </h2>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -312,8 +326,12 @@ export default function WeddingGuestClient({
                 <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-theme-accent/30 bg-theme-surface text-theme-accent">
                   <Heart className="h-5 w-5" />
                 </div>
-                <p className="text-xs tracking-wider text-theme-accent uppercase font-medium">{vip.group}</p>
-                <h4 className="mt-1 font-serif text-lg font-medium text-theme-text-primary">{vip.name}</h4>
+                <p className="text-xs tracking-wider text-theme-accent uppercase font-medium">
+                  {vip.group}
+                </p>
+                <h4 className="mt-1 font-serif text-lg font-medium text-theme-text-primary">
+                  {vip.name}
+                </h4>
                 <p className="mt-2 text-xs text-theme-text-muted">{vip.tagline}</p>
               </div>
             ))}
@@ -476,9 +494,12 @@ export default function WeddingGuestClient({
               <Gift className="h-6 w-6" />
             </div>
 
-            <h3 className="font-serif text-2xl font-light text-theme-text-primary">Digital Shagun</h3>
+            <h3 className="font-serif text-2xl font-light text-theme-text-primary">
+              Digital Shagun
+            </h3>
             <p className="mt-1 text-xs text-theme-text-muted">
-              Bless {wedding.bride} &amp; {wedding.groom} directly into their bank account via UPI (₹0 commission).
+              Bless {wedding.bride} &amp; {wedding.groom} directly into their bank account via UPI
+              (₹0 commission).
             </p>
 
             {/* Presets with the traditional ₹1 shagun coin */}
@@ -526,9 +547,7 @@ export default function WeddingGuestClient({
           </p>
           <p className="mt-2 text-[11px] tracking-wider opacity-75">
             Created with love on{" "}
-            <span className="font-serif tracking-normal font-semibold opacity-90">
-              Shadify
-            </span>
+            <span className="font-serif tracking-normal font-semibold opacity-90">Shadify</span>
           </p>
         </footer>
       )}

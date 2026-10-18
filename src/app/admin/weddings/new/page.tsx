@@ -2,18 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  ArrowLeft, 
-  Sparkles, 
-  CheckCircle2, 
-  AlertCircle, 
-  ExternalLink
-} from "lucide-react";
+import { ArrowLeft, Sparkles, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { THEME_PRESETS, validateContrast, type PresetId } from "@/lib/themes/tokens";
 import { PRICING_PLANS } from "@/lib/config/pricing";
 
 export default function NewWeddingOnboardingPage() {
-
   // Form State
   const [brideName, setBrideName] = useState("");
   const [groomName, setGroomName] = useState("");
@@ -40,8 +33,14 @@ export default function NewWeddingOnboardingPage() {
   // Auto-generate slug when names change (if slug hasn't been manually edited)
   useEffect(() => {
     if (!isSlugManual && brideName && groomName) {
-      const b = brideName.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-      const g = groomName.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+      const b = brideName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+      const g = groomName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
       const year = weddingDate ? new Date(weddingDate).getFullYear() : "";
       if (b && g) {
         setSlug(`${b}-${g}${year ? `-${year}` : ""}`);
@@ -83,7 +82,9 @@ export default function NewWeddingOnboardingPage() {
     setErrorMessage(null);
 
     if (!contrastReport.ok) {
-      setErrorMessage("Selected colors fail accessibility contrast checks. Please adjust primary or accent.");
+      setErrorMessage(
+        "Selected colors fail accessibility contrast checks. Please adjust primary or accent."
+      );
       return;
     }
 
@@ -161,7 +162,11 @@ export default function NewWeddingOnboardingPage() {
 
               <h2 className="text-2xl font-serif text-[#1F1A2E]">Wedding Created!</h2>
               <p className="text-xs text-[#1F1A2E]/70">
-                The royal digital invitation for <strong>{brideName} &amp; {groomName}</strong> is published in draft mode.
+                The royal digital invitation for{" "}
+                <strong>
+                  {brideName} &amp; {groomName}
+                </strong>{" "}
+                is published in draft mode.
               </p>
 
               <div className="rounded-xl border border-[#EADDCF] bg-[#FFFBF5] p-3 text-xs font-mono break-all text-[#1F1A2E]/80">
@@ -202,13 +207,17 @@ export default function NewWeddingOnboardingPage() {
           {/* 1. Couple & Venue Basics */}
           <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-6">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">1. Couple &amp; Ceremony Basics</h2>
+              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+                1. Couple &amp; Ceremony Basics
+              </h2>
               <p className="text-xs text-[#1F1A2E]/60">Names, wedding date, city, and URL slug.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Bride&apos;s Name *</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Bride&apos;s Name *
+                </label>
                 <input
                   type="text"
                   required
@@ -220,7 +229,9 @@ export default function NewWeddingOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Groom&apos;s Name *</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Groom&apos;s Name *
+                </label>
                 <input
                   type="text"
                   required
@@ -232,7 +243,9 @@ export default function NewWeddingOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Wedding Date *</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Wedding Date *
+                </label>
                 <input
                   type="date"
                   required
@@ -243,7 +256,9 @@ export default function NewWeddingOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Venue City / Destination *</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Venue City / Destination *
+                </label>
                 <input
                   type="text"
                   required
@@ -257,7 +272,9 @@ export default function NewWeddingOnboardingPage() {
 
             {/* Slug URL */}
             <div>
-              <label className="block text-xs font-medium text-[#1F1A2E]/80">Custom Guest URL Slug *</label>
+              <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                Custom Guest URL Slug *
+              </label>
               <div className="mt-1 flex rounded-lg border border-[#EADDCF] focus-within:border-[#D6246E] bg-white overflow-hidden">
                 <span className="inline-flex items-center px-3 text-xs text-[#1F1A2E]/50 bg-gray-50 border-r border-[#EADDCF]">
                   shadify.in/w/
@@ -275,7 +292,8 @@ export default function NewWeddingOnboardingPage() {
                 />
               </div>
               <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
-                Lowercase letters, numbers, and hyphens only. Guarded against reserved platform routes (code 23514).
+                Lowercase letters, numbers, and hyphens only. Guarded against reserved platform
+                routes (code 23514).
               </p>
             </div>
           </section>
@@ -283,8 +301,12 @@ export default function NewWeddingOnboardingPage() {
           {/* 2. Pricing Plan */}
           <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-4">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">2. Pricing Tier &amp; Entitlements</h2>
-              <p className="text-xs text-[#1F1A2E]/60">Select the couple&apos;s contracted package.</p>
+              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+                2. Pricing Tier &amp; Entitlements
+              </h2>
+              <p className="text-xs text-[#1F1A2E]/60">
+                Select the couple&apos;s contracted package.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -301,7 +323,9 @@ export default function NewWeddingOnboardingPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-xs capitalize text-[#1F1A2E]">{planData.name}</span>
+                      <span className="font-semibold text-xs capitalize text-[#1F1A2E]">
+                        {planData.name}
+                      </span>
                       <span className="font-serif font-bold text-sm text-[#D6246E]">
                         ₹{planData.priceInr.toLocaleString("en-IN")}
                       </span>
@@ -310,7 +334,10 @@ export default function NewWeddingOnboardingPage() {
                     <div className="mt-3 text-[10px] space-y-1 text-[#1F1A2E]/60 border-t border-[#EADDCF]/60 pt-2">
                       <p>• {planData.hostingDurationYears}-Year Web Hosting</p>
                       <p>• {planData.rawOriginalsRetentionDays}-Day RAW Retention</p>
-                      <p>• {planData.canHideBranding ? "Zero Shadify branding" : "Neutral footer mark"}</p>
+                      <p>
+                        •{" "}
+                        {planData.canHideBranding ? "Zero Shadify branding" : "Neutral footer mark"}
+                      </p>
                     </div>
                   </div>
                 );
@@ -321,45 +348,65 @@ export default function NewWeddingOnboardingPage() {
           {/* 3. Theme & Color Palette Selection */}
           <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-6">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">3. Luxury Theme Preset &amp; Contrast Audit</h2>
-              <p className="text-xs text-[#1F1A2E]/60">Choose one of the 5 curated presets. Real-time WCAG AA verification runs on every keystroke.</p>
+              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+                3. Luxury Theme Preset &amp; Contrast Audit
+              </h2>
+              <p className="text-xs text-[#1F1A2E]/60">
+                Choose one of the 5 curated presets. Real-time WCAG AA verification runs on every
+                keystroke.
+              </p>
             </div>
 
             {/* Presets Grid */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-              {(Object.keys(THEME_PRESETS).filter(k => k !== "sunset-pastel") as PresetId[]).map((presetKey) => {
-                const p = THEME_PRESETS[presetKey];
-                return (
-                  <button
-                    type="button"
-                    key={presetKey}
-                    onClick={() => {
-                      setThemeId(presetKey);
-                      setCustomPrimary("");
-                      setCustomAccent("");
-                    }}
-                    className={`rounded-xl border p-3 text-left transition-all ${
-                      themeId === presetKey
-                        ? "border-[#1F1A2E] bg-white ring-2 ring-[#1F1A2E] shadow"
-                        : "border-[#EADDCF] hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="h-6 w-full rounded flex overflow-hidden border border-gray-200 mb-2">
-                      <div className="w-1/2 h-full" style={{ backgroundColor: p.palette.canvas }} />
-                      <div className="w-1/4 h-full" style={{ backgroundColor: p.palette.primary }} />
-                      <div className="w-1/4 h-full" style={{ backgroundColor: p.palette.accent }} />
-                    </div>
-                    <p className="text-xs font-semibold capitalize text-[#1F1A2E]">{presetKey.replace("-", " ")}</p>
-                    <p className="text-[10px] text-[#1F1A2E]/60">{p.typography.displayFont}</p>
-                  </button>
-                );
-              })}
+              {(Object.keys(THEME_PRESETS).filter((k) => k !== "sunset-pastel") as PresetId[]).map(
+                (presetKey) => {
+                  const p = THEME_PRESETS[presetKey];
+                  return (
+                    <button
+                      type="button"
+                      key={presetKey}
+                      onClick={() => {
+                        setThemeId(presetKey);
+                        setCustomPrimary("");
+                        setCustomAccent("");
+                      }}
+                      className={`rounded-xl border p-3 text-left transition-all ${
+                        themeId === presetKey
+                          ? "border-[#1F1A2E] bg-white ring-2 ring-[#1F1A2E] shadow"
+                          : "border-[#EADDCF] hover:bg-gray-50"
+                      }`}
+                    >
+                      <div className="h-6 w-full rounded flex overflow-hidden border border-gray-200 mb-2">
+                        <div
+                          className="w-1/2 h-full"
+                          style={{ backgroundColor: p.palette.canvas }}
+                        />
+                        <div
+                          className="w-1/4 h-full"
+                          style={{ backgroundColor: p.palette.primary }}
+                        />
+                        <div
+                          className="w-1/4 h-full"
+                          style={{ backgroundColor: p.palette.accent }}
+                        />
+                      </div>
+                      <p className="text-xs font-semibold capitalize text-[#1F1A2E]">
+                        {presetKey.replace("-", " ")}
+                      </p>
+                      <p className="text-[10px] text-[#1F1A2E]/60">{p.typography.displayFont}</p>
+                    </button>
+                  );
+                }
+              )}
             </div>
 
             {/* Custom Color Overrides */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 border-t border-[#EADDCF] pt-6">
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Custom Primary Hex (Optional)</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Custom Primary Hex (Optional)
+                </label>
                 <div className="mt-1 flex items-center gap-2">
                   <input
                     type="color"
@@ -378,7 +425,9 @@ export default function NewWeddingOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Custom Accent Hex (Optional)</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Custom Accent Hex (Optional)
+                </label>
                 <div className="mt-1 flex items-center gap-2">
                   <input
                     type="color"
@@ -397,7 +446,9 @@ export default function NewWeddingOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Monogram Initials</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Monogram Initials
+                </label>
                 <input
                   type="text"
                   maxLength={8}
@@ -413,13 +464,22 @@ export default function NewWeddingOnboardingPage() {
             </div>
 
             {/* Real-Time Contrast Feedback Banner */}
-            <div className={`rounded-xl border p-4 text-xs ${
-              contrastReport.ok ? "bg-green-50 border-green-200 text-green-900" : "bg-red-50 border-red-200 text-red-900"
-            }`}>
+            <div
+              className={`rounded-xl border p-4 text-xs ${
+                contrastReport.ok
+                  ? "bg-green-50 border-green-200 text-green-900"
+                  : "bg-red-50 border-red-200 text-red-900"
+              }`}
+            >
               <div className="flex items-center justify-between font-semibold">
                 <span className="flex items-center gap-2">
-                  {contrastReport.ok ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-red-600" />}
-                  Live Accessibility Contrast Check: {contrastReport.ok ? "PASSES ALL RULES" : "CONTRAST VIOLATION"}
+                  {contrastReport.ok ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                  )}
+                  Live Accessibility Contrast Check:{" "}
+                  {contrastReport.ok ? "PASSES ALL RULES" : "CONTRAST VIOLATION"}
                 </span>
                 <span>Text on Canvas: {contrastReport.ratios["text-canvas"]}:1</span>
               </div>
@@ -437,13 +497,20 @@ export default function NewWeddingOnboardingPage() {
           {/* 4. Couple Financial & WhatsApp Contact */}
           <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm space-y-4">
             <div>
-              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">4. Direct UPI Shagun &amp; Couple Contact</h2>
-              <p className="text-xs text-[#1F1A2E]/60">VPA bank address for zero-commission cash blessings, and WhatsApp coordination details.</p>
+              <h2 className="text-lg font-serif font-medium text-[#1F1A2E]">
+                4. Direct UPI Shagun &amp; Couple Contact
+              </h2>
+              <p className="text-xs text-[#1F1A2E]/60">
+                VPA bank address for zero-commission cash blessings, and WhatsApp coordination
+                details.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Couple&apos;s UPI VPA (Optional)</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Couple&apos;s UPI VPA (Optional)
+                </label>
                 <div className="mt-1 relative rounded-lg">
                   <input
                     type="text"
@@ -453,11 +520,15 @@ export default function NewWeddingOnboardingPage() {
                     className="w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
                   />
                 </div>
-                <p className="mt-1 text-[11px] text-[#1F1A2E]/50">Opens directly in GPay, PhonePe, Paytm with ₹0 fee.</p>
+                <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
+                  Opens directly in GPay, PhonePe, Paytm with ₹0 fee.
+                </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Couple WhatsApp Mobile *</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Couple WhatsApp Mobile *
+                </label>
                 <input
                   type="tel"
                   required
@@ -466,11 +537,15 @@ export default function NewWeddingOnboardingPage() {
                   placeholder="9876543210"
                   className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
                 />
-                <p className="mt-1 text-[11px] text-[#1F1A2E]/50">Used for concierge invites and owner access.</p>
+                <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
+                  Used for concierge invites and owner access.
+                </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">Couple Email (Optional)</label>
+                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                  Couple Email (Optional)
+                </label>
                 <input
                   type="email"
                   value={coupleEmail}

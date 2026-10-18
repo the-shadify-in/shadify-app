@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { PRESET_COLORS } from "./presets";
-import { 
-  validateContrast, 
-  contrast, 
-  blend, 
-  type ThemeColors, 
+import {
+  validateContrast,
+  contrast,
+  blend,
+  type ThemeColors,
   type ContrastReport,
-  FOOTER_OPACITY 
+  FOOTER_OPACITY,
 } from "./contrast";
 
 export { validateContrast, contrast, blend, FOOTER_OPACITY };
@@ -26,16 +26,16 @@ export const ALLOWED_DISPLAY_FONTS = [
   "Playfair Display",
   "Cinzel",
   "Cormorant Garamond",
-  "Rozha One",      // Devanagari / Hindi display
-  "Suranna",        // Telugu serif
-  "Arima Madurai",  // Tamil elegant
+  "Rozha One", // Devanagari / Hindi display
+  "Suranna", // Telugu serif
+  "Arima Madurai", // Tamil elegant
 ] as const;
 
 export const ALLOWED_BODY_FONTS = [
   "Inter",
   "Plus Jakarta Sans",
   "Outfit",
-  "Noto Sans",      // Multilingual Indic fallback
+  "Noto Sans", // Multilingual Indic fallback
 ] as const;
 
 export const ALLOWED_PRESETS = [
@@ -47,7 +47,7 @@ export const ALLOWED_PRESETS = [
   "sunset-pastel", // alias of sunset-dusk for backward compatibility
 ] as const;
 
-export type PresetId = typeof ALLOWED_PRESETS[number];
+export type PresetId = (typeof ALLOWED_PRESETS)[number];
 
 /**
  * Zod Schema for Wedding Theme Configuration (Stored in DB as validated JSON)
@@ -56,16 +56,16 @@ export const ThemeConfigSchema = z.object({
   version: z.number().int().min(1).default(1),
   presetId: z.enum(ALLOWED_PRESETS),
   palette: z.object({
-    canvas: hexColorSchema,        // Page canvas background
-    surface: hexColorSchema,       // Card / Container background
-    text: hexColorSchema,          // High contrast heading & reading text
-    textMuted: hexColorSchema,     // Secondary labels, timestamps
-    primary: hexColorSchema,       // Key button / action fill
-    onPrimary: hexColorSchema,     // Label on primary fill
-    accent: hexColorSchema,        // Ornament, badge fill, borders (text only if it passes)
-    onAccent: hexColorSchema,      // Label on accent fill
-    envelopeBg: hexColorSchema,    // Envelope paper color
-    waxSeal: hexColorSchema,       // Wax seal color
+    canvas: hexColorSchema, // Page canvas background
+    surface: hexColorSchema, // Card / Container background
+    text: hexColorSchema, // High contrast heading & reading text
+    textMuted: hexColorSchema, // Secondary labels, timestamps
+    primary: hexColorSchema, // Key button / action fill
+    onPrimary: hexColorSchema, // Label on primary fill
+    accent: hexColorSchema, // Ornament, badge fill, borders (text only if it passes)
+    onAccent: hexColorSchema, // Label on accent fill
+    envelopeBg: hexColorSchema, // Envelope paper color
+    waxSeal: hexColorSchema, // Wax seal color
   }),
   typography: z.object({
     displayFont: z.enum(ALLOWED_DISPLAY_FONTS),

@@ -3,7 +3,7 @@
 - **Status**: Accepted
 - **Date**: 2026-10-18
 - **Deciders**: Technical Lead & Product Owner
-- **Context**: 
+- **Context**:
   Indian weddings feature diverse, high-intensity color palettes (Crimson & Gold, Emerald, Blush Pastel, Ivory Silk). If platform brand colors (such as Rani Pink or Marigold) bleed into guest wedding sites, they clash with the couple's aesthetic and feel like unwanted advertisements. Furthermore, allowing raw CSS overrides from couples introduces layout breakage and XSS risks.
 
 ---

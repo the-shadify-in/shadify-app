@@ -2,11 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { 
-  Plus, 
-  Eye,
-  LogOut
-} from "lucide-react";
+import { Plus, Eye, LogOut } from "lucide-react";
 
 export default function AdminDashboardPage() {
   // Demo weddings for concierge staff
@@ -56,7 +52,10 @@ export default function AdminDashboardPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="font-serif text-2xl font-light text-[#FFF9F2]">
-              Shadify <span className="text-xs font-sans tracking-widest text-[#C9933A] uppercase">Concierge</span>
+              Shadify{" "}
+              <span className="text-xs font-sans tracking-widest text-[#C9933A] uppercase">
+                Concierge
+              </span>
             </span>
           </div>
 
@@ -81,7 +80,9 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-4">
           <div className="rounded-xl border border-[#C9933A]/20 bg-[#14080C] p-5">
             <p className="text-xs text-[#E2D5C7]/60">Active Weddings</p>
-            <h3 className="mt-1 font-serif text-3xl font-light text-[#FFF9F2]">{weddings.length}</h3>
+            <h3 className="mt-1 font-serif text-3xl font-light text-[#FFF9F2]">
+              {weddings.length}
+            </h3>
           </div>
           <div className="rounded-xl border border-[#C9933A]/20 bg-[#14080C] p-5">
             <p className="text-xs text-[#E2D5C7]/60">Total RSVPs Confirmed</p>
@@ -101,7 +102,9 @@ export default function AdminDashboardPage() {
         <div className="mt-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 className="font-serif text-2xl font-light text-[#FFF9F2]">Managed Weddings</h2>
-            <p className="text-xs text-[#E2D5C7]/60">Create, preview, and update wedding websites</p>
+            <p className="text-xs text-[#E2D5C7]/60">
+              Create, preview, and update wedding websites
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -139,7 +142,9 @@ export default function AdminDashboardPage() {
             <tbody className="divide-y divide-[#C9933A]/10">
               {weddings.map((w) => (
                 <tr key={w.id} className="hover:bg-[#1B0B10]/40 transition-colors">
-                  <td className="px-5 py-4 font-serif text-sm font-medium text-[#FFF9F2]">{w.couple}</td>
+                  <td className="px-5 py-4 font-serif text-sm font-medium text-[#FFF9F2]">
+                    {w.couple}
+                  </td>
                   <td className="px-5 py-4 text-[#E2D5C7]/80">{w.date}</td>
                   <td className="px-5 py-4 text-[#C9933A]">{w.plan}</td>
                   <td className="px-5 py-4">

@@ -28,11 +28,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function WeddingGuestPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+export default async function WeddingGuestPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
 
   // IMPORTANT: No searchParams are accessed in this route!
@@ -67,7 +63,8 @@ export default async function WeddingGuestPage({
           Celebration Website Concluded
         </h1>
         <p className="mt-3 max-w-md text-xs sm:text-sm text-[#1F1A2E]/70 leading-relaxed">
-          The active digital invitation and gallery hosting for {dbWedding.brideName} & {dbWedding.groomName}&apos;s wedding has concluded.
+          The active digital invitation and gallery hosting for {dbWedding.brideName} &{" "}
+          {dbWedding.groomName}&apos;s wedding has concluded.
         </p>
       </div>
     );
@@ -222,11 +219,5 @@ export default async function WeddingGuestPage({
   const overrides = (dbWedding?.themeConfig as Record<string, unknown> | null) ?? null;
   const { theme, report } = resolveTheme(presetId, overrides);
 
-  return (
-    <WeddingGuestClient
-      wedding={wedding}
-      theme={theme}
-      contrastReport={report}
-    />
-  );
+  return <WeddingGuestClient wedding={wedding} theme={theme} contrastReport={report} />;
 }

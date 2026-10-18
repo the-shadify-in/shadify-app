@@ -3,7 +3,7 @@
 - **Status**: Accepted
 - **Date**: 2026-10-18
 - **Deciders**: Technical Lead & Product Owner
-- **Context**: 
+- **Context**:
   The initial architecture proposed 9 separate microservices, Redis caching, PgBouncer, a separate Vite React admin dashboard, Meta WhatsApp Cloud API integration, Three.js 3D wax seals, and indefinite RAW photo storage. For a solo developer launching the first 20–50 weddings, this represented massive premature optimization, high operational burn, and risk of delayed launch.
 
 ---

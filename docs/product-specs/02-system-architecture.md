@@ -83,4 +83,3 @@ During peak ceremonial moments (Varmala / Sangeet), 500+ guests open the site si
 4. **Managed Postgres Pooling**: Serverless pooler handles concurrent guest RSVP bursts without socket exhaustion.
 5. **R2 Direct Presigned Uploads**: High-resolution photos upload directly from client browser to Cloudflare R2 via presigned URLs — bypassing Next.js server memory and bandwidth entirely.
 6. **Sharp 3-Tier Image Renditions**: Raw 25MB photos converted into `thumb_400.webp` (~25 KB) and `preview_1600.webp` (~180 KB), with master originals expiring at 90 days.
-

@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
 
 const SESSION_COOKIE_NAME = "shadify_admin_session";
-const SESSION_SECRET = process.env.ADMIN_SESSION_SECRET ?? "fallback-dev-secret-do-not-use-in-production";
+const SESSION_SECRET =
+  process.env.ADMIN_SESSION_SECRET ?? "fallback-dev-secret-do-not-use-in-production";
 
 /**
  * Signs a payload with HMAC-SHA256
@@ -10,9 +11,7 @@ const SESSION_SECRET = process.env.ADMIN_SESSION_SECRET ?? "fallback-dev-secret-
 export function signSessionToken(userId: string, role: string): string {
   const payload = JSON.stringify({ userId, role, iat: Date.now() });
   const encodedPayload = Buffer.from(payload).toString("base64url");
-  const signature = createHmac("sha256", SESSION_SECRET)
-    .update(encodedPayload)
-    .digest("base64url");
+  const signature = createHmac("sha256", SESSION_SECRET).update(encodedPayload).digest("base64url");
   return `${encodedPayload}.${signature}`;
 }
 
@@ -58,9 +57,7 @@ export async function getAdminSession(): Promise<{ userId: string; role: string 
 export function signPreviewToken(slug: string, ttlMs = 24 * 60 * 60 * 1000): string {
   const expiresAt = Date.now() + ttlMs;
   const payload = Buffer.from(JSON.stringify({ slug, exp: expiresAt })).toString("base64url");
-  const signature = createHmac("sha256", SESSION_SECRET)
-    .update(payload)
-    .digest("base64url");
+  const signature = createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 }
 
@@ -73,9 +70,7 @@ export function verifyPreviewToken(token?: string | null, slug?: string): boolea
     const [payloadB64, signature] = token.split(".");
     if (!payloadB64 || !signature) return false;
 
-    const expectedSig = createHmac("sha256", SESSION_SECRET)
-      .update(payloadB64)
-      .digest("base64url");
+    const expectedSig = createHmac("sha256", SESSION_SECRET).update(payloadB64).digest("base64url");
 
     const sigBuf = Buffer.from(signature);
     const expBuf = Buffer.from(expectedSig);
@@ -92,4 +87,3 @@ export function verifyPreviewToken(token?: string | null, slug?: string): boolea
     return false;
   }
 }
-

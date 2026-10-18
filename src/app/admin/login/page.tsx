@@ -34,7 +34,9 @@ export default function AdminLoginPage() {
           <Shield className="h-6 w-6" />
         </div>
 
-        <h1 className="text-center font-serif text-2xl font-light text-[#FFF9F2]">Staff Concierge</h1>
+        <h1 className="text-center font-serif text-2xl font-light text-[#FFF9F2]">
+          Staff Concierge
+        </h1>
         <p className="mt-1 text-center text-xs text-[#E2D5C7]/60">
           Shadify Internal Management Portal
         </p>

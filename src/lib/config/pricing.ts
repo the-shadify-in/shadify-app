@@ -76,7 +76,14 @@ export const PRICING_PLANS: Record<"lite" | "premium" | "platinum", PricingPlan>
     maxEvents: 15,
     canHideBranding: true,
     canCustomDomain: true,
-    allowedPresets: ["royal-crimson", "emerald-gold", "ivory-minimal", "sunset-day", "sunset-dusk", "bespoke"],
+    allowedPresets: [
+      "royal-crimson",
+      "emerald-gold",
+      "ivory-minimal",
+      "sunset-day",
+      "sunset-dusk",
+      "bespoke",
+    ],
     features: [
       "Everything in Premium",
       "Bespoke designer theme tailored to invitation card",

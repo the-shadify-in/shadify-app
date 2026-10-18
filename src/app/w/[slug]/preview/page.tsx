@@ -28,7 +28,8 @@ export default async function WeddingPreviewPage({
           </div>
           <h2 className="text-xl font-serif font-medium">Restricted Preview</h2>
           <p className="text-xs text-[#1F1A2E]/70 leading-relaxed">
-            This preview route is protected. You must be logged into the concierge admin portal or possess a valid signed preview link to inspect unreleased wedding themes.
+            This preview route is protected. You must be logged into the concierge admin portal or
+            possess a valid signed preview link to inspect unreleased wedding themes.
           </p>
           <div className="pt-2">
             <Link
@@ -114,14 +115,11 @@ export default async function WeddingPreviewPage({
     <>
       {/* Visual Indicator for Concierge Staff */}
       <aside className="fixed top-3 left-1/2 -translate-x-1/2 z-50 rounded-full border border-amber-300 bg-amber-50/95 px-4 py-1 text-[11px] font-medium text-amber-900 shadow-md backdrop-blur">
-        Preview Mode Active: <strong className="font-semibold">{theme.presetId}</strong> ({report.ok ? "Contrast Valid" : "Contrast Warning"})
+        Preview Mode Active: <strong className="font-semibold">{theme.presetId}</strong> (
+        {report.ok ? "Contrast Valid" : "Contrast Warning"})
       </aside>
 
-      <WeddingGuestClient
-        wedding={wedding}
-        theme={theme}
-        contrastReport={report}
-      />
+      <WeddingGuestClient wedding={wedding} theme={theme} contrastReport={report} />
     </>
   );
 }

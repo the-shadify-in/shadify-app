@@ -10,17 +10,17 @@
 
 The `docs/` directory contains the authoritative specifications for the platform:
 
-| Document | Title | Scope & Purpose |
-|---|---|---|
-| [`00-master-plan.md`](./product-specs/00-master-plan.md) | **Master Plan & Architecture** | High-level system principles, monorepo-to-monolith evolution, and coding standards. |
-| [`01-product-vision-and-mvp.md`](./product-specs/01-product-vision-and-mvp.md) | **Product Vision & Unit Economics** | Lean MVP-0 scope, pricing tiers (Lite/Premium/Platinum), GST & gateway margins, break-even matrix. |
-| [`02-system-architecture.md`](./product-specs/02-system-architecture.md) | **System Architecture & Caching** | Monolith topology, Cloudflare edge CDN, ISR caching, R2 presigned upload mechanics. |
-| [`03-data-models-and-security.md`](./product-specs/03-data-models-and-security.md) | **Data Models & Security** | PostgreSQL 16 schema, paise accounting, DPDP compliance audit tables, slug reservation triggers. |
-| [`04-guest-experience-and-lifecycle.md`](./product-specs/04-guest-experience-and-lifecycle.md) | **Guest Experience & Lifecycle** | CSS/Lottie envelope reveal, video bite invites, per-event itinerary, UPI Shagun deep link, VIP cards. |
-| [`05-photography-and-ai-pipeline.md`](./product-specs/05-photography-and-ai-pipeline.md) | **Photography & Storage** | 90-day RAW lifecycle rule, WebP renditions, audience privacy tiers (public/family/private), Phase 2 AI face search. |
-| [`06-hospitality-and-roadmap.md`](./product-specs/06-hospitality-and-roadmap.md) | **Hospitality & Expansion** | Destination room and cab allocations, emergency contact cards, future mobile app roadmap. |
-| [`adr/`](./adr/) | **Architecture Decision Records** | Accepted architectural decisions (monolith economics, dual token namespaces). |
-| [`archive/`](./archive/) | **Archived SQL Reference** | Raw SQL drafts (`shadify-schema-mvp0.sql`, `rls-policies.optional.sql`). |
+| Document                                                                                       | Title                               | Scope & Purpose                                                                                                     |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [`00-master-plan.md`](./product-specs/00-master-plan.md)                                       | **Master Plan & Architecture**      | High-level system principles, monorepo-to-monolith evolution, and coding standards.                                 |
+| [`01-product-vision-and-mvp.md`](./product-specs/01-product-vision-and-mvp.md)                 | **Product Vision & Unit Economics** | Lean MVP-0 scope, pricing tiers (Lite/Premium/Platinum), GST & gateway margins, break-even matrix.                  |
+| [`02-system-architecture.md`](./product-specs/02-system-architecture.md)                       | **System Architecture & Caching**   | Monolith topology, Cloudflare edge CDN, ISR caching, R2 presigned upload mechanics.                                 |
+| [`03-data-models-and-security.md`](./product-specs/03-data-models-and-security.md)             | **Data Models & Security**          | PostgreSQL 16 schema, paise accounting, DPDP compliance audit tables, slug reservation triggers.                    |
+| [`04-guest-experience-and-lifecycle.md`](./product-specs/04-guest-experience-and-lifecycle.md) | **Guest Experience & Lifecycle**    | CSS/Lottie envelope reveal, video bite invites, per-event itinerary, UPI Shagun deep link, VIP cards.               |
+| [`05-photography-and-ai-pipeline.md`](./product-specs/05-photography-and-ai-pipeline.md)       | **Photography & Storage**           | 90-day RAW lifecycle rule, WebP renditions, audience privacy tiers (public/family/private), Phase 2 AI face search. |
+| [`06-hospitality-and-roadmap.md`](./product-specs/06-hospitality-and-roadmap.md)               | **Hospitality & Expansion**         | Destination room and cab allocations, emergency contact cards, future mobile app roadmap.                           |
+| [`adr/`](./adr/)                                                                               | **Architecture Decision Records**   | Accepted architectural decisions (monolith economics, dual token namespaces).                                       |
+| [`archive/`](./archive/)                                                                       | **Archived SQL Reference**          | Raw SQL drafts (`shadify-schema-mvp0.sql`, `rls-policies.optional.sql`).                                            |
 
 ---
 

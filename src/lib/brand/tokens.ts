@@ -7,29 +7,29 @@
 export const brandTokens = {
   name: "Shadify",
   palette: {
-    primary: "#D6246E",    // Rani Pink: Primary actions, links, logo mark
+    primary: "#D6246E", // Rani Pink: Primary actions, links, logo mark
     secondary: {
       marigold: "#F5A524", // Festive highlights, badges (use with midnight text)
-      teal: "#0E9F8E",     // Peacock Teal: Supporting accents, charts
-      indigo: "#3D3BC4",   // Royal Indigo: Technical info states, gradients
+      teal: "#0E9F8E", // Peacock Teal: Supporting accents, charts
+      indigo: "#3D3BC4", // Royal Indigo: Technical info states, gradients
     },
     neutral: {
-      ground: "#FFFBF5",   // Ivory Ground: Marketing & admin surface backgrounds
-      ink: "#1F1A2E",      // Midnight Ink: High-contrast typography & sidebar
-      surface: "#FFFFFF",  // Card and panel backgrounds
-      border: "#EADDCF",   // Subtle borders and dividers
-      tint: "#FFF1F6",     // Lotus Tint: Hover states & active selection highlights
+      ground: "#FFFBF5", // Ivory Ground: Marketing & admin surface backgrounds
+      ink: "#1F1A2E", // Midnight Ink: High-contrast typography & sidebar
+      surface: "#FFFFFF", // Card and panel backgrounds
+      border: "#EADDCF", // Subtle borders and dividers
+      tint: "#FFF1F6", // Lotus Tint: Hover states & active selection highlights
     },
     status: {
-      success: "#15803D",  // Forest Green (Distinct from brand teal)
-      warning: "#B45309",  // Deep Amber
-      error: "#B91C1C",    // Crimson Red
-      info: "#1D4ED8",     // Cobalt Blue
+      success: "#15803D", // Forest Green (Distinct from brand teal)
+      warning: "#B45309", // Deep Amber
+      error: "#B91C1C", // Crimson Red
+      info: "#1D4ED8", // Cobalt Blue
     },
   },
   typography: {
     sans: 'var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    serif: 'Playfair Display, Georgia, serif',
+    serif: "Playfair Display, Georgia, serif",
   },
 } as const;
 

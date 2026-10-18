@@ -10,7 +10,8 @@ export default function NotFound() {
         Wedding Celebration Not Found
       </h1>
       <p className="mt-3 max-w-md text-sm text-[#1F1A2E]/70">
-        This link may be private, expired, or mistyped. If you were invited to a wedding, please check the link sent by the couple.
+        This link may be private, expired, or mistyped. If you were invited to a wedding, please
+        check the link sent by the couple.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Link

@@ -11,7 +11,22 @@
     "test:contrast": "node scripts/test-contrast.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "db:validate": "prisma validate"
+    "db:validate": "prisma validate",
+    "type-check": "tsc --noEmit",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
@@ -20,6 +35,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.59.0",
     "next": "14.2.35",
+    "pino": "^10.4.0",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^3.7.0",
@@ -31,7 +47,11 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "postcss": "^8",
+    "prettier": "^3.9.10",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"

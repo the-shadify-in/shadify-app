@@ -77,15 +77,15 @@ shadify-app/
 └── tailwind.config.ts
 ```
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Framework** | Next.js 14 (App Router) | Unified monolith serving guest sites, concierge admin, and route handlers |
-| **Language** | TypeScript 5 | Strict end-to-end type safety |
-| **Styling** | Tailwind CSS | Luxury Indian wedding design palette (Royal Crimson & Rajasthani Gold) |
-| **Database** | PostgreSQL 16 (Neon / Supabase) | Relational multi-tenant schema with UUID PKs and paise accounting |
-| **ORM** | Prisma ORM 5.22 | Declarative datamodel + migration runner |
-| **Storage** | Cloudflare R2 | S3-compatible media storage with zero egress fees |
-| **Edge CDN** | Cloudflare / Vercel Edge | Global HTML and asset caching with tag-based on-demand revalidation |
+| Layer         | Technology                      | Purpose                                                                   |
+| ------------- | ------------------------------- | ------------------------------------------------------------------------- |
+| **Framework** | Next.js 14 (App Router)         | Unified monolith serving guest sites, concierge admin, and route handlers |
+| **Language**  | TypeScript 5                    | Strict end-to-end type safety                                             |
+| **Styling**   | Tailwind CSS                    | Luxury Indian wedding design palette (Royal Crimson & Rajasthani Gold)    |
+| **Database**  | PostgreSQL 16 (Neon / Supabase) | Relational multi-tenant schema with UUID PKs and paise accounting         |
+| **ORM**       | Prisma ORM 5.22                 | Declarative datamodel + migration runner                                  |
+| **Storage**   | Cloudflare R2                   | S3-compatible media storage with zero egress fees                         |
+| **Edge CDN**  | Cloudflare / Vercel Edge        | Global HTML and asset caching with tag-based on-demand revalidation       |
 
 ---
 
@@ -114,6 +114,7 @@ cp .env.example .env.local
 ```
 
 Required variables:
+
 ```ini
 DATABASE_URL="postgresql://user:password@ep-sample-pooler.aws.neon.tech/shadify?sslmode=require&pgbouncer=true"
 DIRECT_URL="postgresql://user:password@ep-sample.aws.neon.tech/shadify?sslmode=require"
@@ -141,6 +142,7 @@ npm run dev
 ```
 
 Visit:
+
 - **Guest Site Demo**: [http://localhost:3000/w/priya-rahul](http://localhost:3000/w/priya-rahul)
 - **Concierge Admin**: [http://localhost:3000/admin](http://localhost:3000/admin) (Login: [http://localhost:3000/admin/login](http://localhost:3000/admin/login))
 
@@ -149,6 +151,7 @@ Visit:
 ## 🗄️ Database & Migrations
 
 The database setup uses a two-step migration architecture:
+
 1. **`0_init/migration.sql`**: Generates all core tables, custom PostgreSQL enums, foreign keys, and standard indexes.
 2. **`1_db_protections/migration.sql`**: Applies custom database protections:
    - `block_reserved_slug()` function and trigger preventing weddings from claiming reserved routes (`admin`, `api`, `w`, etc.).
