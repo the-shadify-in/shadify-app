@@ -13,7 +13,9 @@ const config: Config = {
         foreground: "var(--foreground)",
         theme: {
           primary: "var(--theme-primary)",
+          onPrimary: "var(--theme-on-primary)",
           accent: "var(--theme-accent)",
+          onAccent: "var(--theme-on-accent)",
           bg: "var(--theme-bg)",
           surface: "var(--theme-surface)",
           text: {

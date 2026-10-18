@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:brand": "node scripts/check-brand-isolation.mjs",
+    "test:contrast": "node scripts/test-contrast.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:validate": "prisma validate"

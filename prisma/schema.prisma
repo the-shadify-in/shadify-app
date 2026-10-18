@@ -157,6 +157,8 @@ model Wedding {
   timezone           String          @default("Asia/Kolkata")
   phaseOverride      PhaseOverride?  @map("phase_override")
   themeId            String          @default("royal-crimson") @map("theme_id")
+  themeConfig        Json?           @map("theme_config")
+  themeVersion       Int             @default(1) @map("theme_version")
   primaryColor       String?         @default("#8B0000") @map("primary_color")
   accentColor        String?         @default("#C9933A") @map("accent_color")
   monogramText       String?         @map("monogram_text")

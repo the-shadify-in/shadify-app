@@ -1,4 +1,16 @@
 import { z } from "zod";
+import { PRESET_COLORS } from "./presets";
+import { 
+  validateContrast, 
+  contrast, 
+  blend, 
+  type ThemeColors, 
+  type ContrastReport,
+  FOOTER_OPACITY 
+} from "./contrast";
+
+export { validateContrast, contrast, blend, FOOTER_OPACITY };
+export type { ThemeColors, ContrastReport };
 
 /**
  * HEX Color validator (e.g. #FFFFFF or #FFF)
@@ -26,21 +38,34 @@ export const ALLOWED_BODY_FONTS = [
   "Noto Sans",      // Multilingual Indic fallback
 ] as const;
 
+export const ALLOWED_PRESETS = [
+  "royal-crimson",
+  "emerald-gold",
+  "ivory-minimal",
+  "sunset-day",
+  "sunset-dusk",
+  "sunset-pastel", // alias of sunset-dusk for backward compatibility
+] as const;
+
+export type PresetId = typeof ALLOWED_PRESETS[number];
+
 /**
  * Zod Schema for Wedding Theme Configuration (Stored in DB as validated JSON)
  */
 export const ThemeConfigSchema = z.object({
-  version: z.number().int().default(1),
-  presetId: z.enum(["royal-crimson", "emerald-gold", "ivory-minimal", "sunset-pastel"]),
+  version: z.number().int().min(1).default(1),
+  presetId: z.enum(ALLOWED_PRESETS),
   palette: z.object({
-    primary: hexColorSchema,        // Core theme color (e.g. Crimson / Emerald)
-    accent: hexColorSchema,         // Gold / Champagne accent for borders, monograms
-    background: hexColorSchema,     // Main canvas background
-    surface: hexColorSchema,        // Card / Container background
-    textPrimary: hexColorSchema,    // High contrast heading & reading text
-    textMuted: hexColorSchema,      // Secondary labels, timestamps
-    envelopeBg: hexColorSchema,     // Envelope paper texture color
-    waxSeal: hexColorSchema,        // Wax seal color
+    canvas: hexColorSchema,        // Page canvas background
+    surface: hexColorSchema,       // Card / Container background
+    text: hexColorSchema,          // High contrast heading & reading text
+    textMuted: hexColorSchema,     // Secondary labels, timestamps
+    primary: hexColorSchema,       // Key button / action fill
+    onPrimary: hexColorSchema,     // Label on primary fill
+    accent: hexColorSchema,        // Ornament, badge fill, borders (text only if it passes)
+    onAccent: hexColorSchema,      // Label on accent fill
+    envelopeBg: hexColorSchema,    // Envelope paper color
+    waxSeal: hexColorSchema,       // Wax seal color
   }),
   typography: z.object({
     displayFont: z.enum(ALLOWED_DISPLAY_FONTS),
@@ -65,21 +90,16 @@ export const ThemeConfigSchema = z.object({
 export type ThemeConfig = z.infer<typeof ThemeConfigSchema>;
 
 /**
- * Curated Preset Themes (Quality Floor: Tested for contrast, aesthetics, and mobile legibility)
+ * Complete Theme Presets built on the vetted PRESET_COLORS
  */
 export const THEME_PRESETS: Record<string, ThemeConfig> = {
   "royal-crimson": {
     version: 1,
     presetId: "royal-crimson",
     palette: {
-      primary: "#941C2F",        // Royal Crimson
-      accent: "#C9933A",         // Rajasthani Gold
-      background: "#0E0709",     // Deep Night Wine
-      surface: "#1A0D12",        // Dark Velvet Card
-      textPrimary: "#FFF9F2",    // Warm Pearl
-      textMuted: "#E2D5C7",      // Soft Sand
-      envelopeBg: "#1C0D12",     // Deep Crimson Envelope
-      waxSeal: "#801426",        // Ruby Wax
+      ...PRESET_COLORS["royal-crimson"],
+      envelopeBg: "#1C0D12",
+      waxSeal: "#801426",
     },
     typography: {
       displayFont: "Playfair Display",
@@ -105,14 +125,9 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
     version: 1,
     presetId: "emerald-gold",
     palette: {
-      primary: "#0D4D33",        // Imperial Emerald
-      accent: "#D4AF37",         // Metallic Gold
-      background: "#051811",     // Midnight Forest
-      surface: "#0B261B",        // Emerald Surface
-      textPrimary: "#FBF9F5",    // Ivory Pearl
-      textMuted: "#CBD5CE",      // Sage Dust
-      envelopeBg: "#0B2B1E",     // Dark Emerald Envelope
-      waxSeal: "#073A25",        // Deep Forest Wax
+      ...PRESET_COLORS["emerald-gold"],
+      envelopeBg: "#0B2B1E",
+      waxSeal: "#073A25",
     },
     typography: {
       displayFont: "Cinzel",
@@ -138,14 +153,9 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
     version: 1,
     presetId: "ivory-minimal",
     palette: {
-      primary: "#B8977E",        // Warm Sand
-      accent: "#DFB15B",         // Champagne Gold
-      background: "#FAF7F2",     // Soft Alabaster
-      surface: "#FFFFFF",        // Pure White Panel
-      textPrimary: "#262120",    // Charcoal Ink
-      textMuted: "#7A736E",      // Muted Umber
-      envelopeBg: "#F0EBE1",     // Textured Parchment Envelope
-      waxSeal: "#C29B38",        // Gold Wax
+      ...PRESET_COLORS["ivory-minimal"],
+      envelopeBg: "#F0EBE1",
+      waxSeal: "#8F6418",
     },
     typography: {
       displayFont: "Cormorant Garamond",
@@ -167,18 +177,41 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
     },
   },
 
-  "sunset-pastel": {
+  "sunset-day": {
     version: 1,
-    presetId: "sunset-pastel",
+    presetId: "sunset-day",
     palette: {
-      primary: "#D46A7E",        // Gulabi Blush
-      accent: "#E29578",         // Warm Peach
-      background: "#12080D",     // Twilight Plum
-      surface: "#1E0E17",        // Mauve Panel
-      textPrimary: "#FFF5F7",    // Rose Quartz
-      textMuted: "#D9C2CB",      // Dusty Lavender
-      envelopeBg: "#1F0E18",     // Mulberry Envelope
-      waxSeal: "#BA4B63",        // Berry Wax
+      ...PRESET_COLORS["sunset-day"],
+      envelopeBg: "#FFF1EC",
+      waxSeal: "#B8435A",
+    },
+    typography: {
+      displayFont: "Playfair Display",
+      bodyFont: "Inter",
+    },
+    monogram: {
+      text: "V & T",
+      style: "clean" as "classic-initials" | "ornate-crest" | "minimal",
+    },
+    ornaments: {
+      motif: "lotus",
+      borderStyle: "clean",
+    },
+    sections: {
+      showLoveStory: true,
+      showVips: true,
+      showShagun: true,
+      showGallery: true,
+    },
+  },
+
+  "sunset-dusk": {
+    version: 1,
+    presetId: "sunset-dusk",
+    palette: {
+      ...PRESET_COLORS["sunset-dusk"],
+      envelopeBg: "#1F0E18",
+      waxSeal: "#BA4B63",
     },
     typography: {
       displayFont: "Playfair Display",
@@ -201,55 +234,94 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
   },
 };
 
-/**
- * Calculates relative luminance of a hex color
- */
-function getLuminance(hex: string): number {
-  const cleanHex = hex.replace("#", "");
-  const r = parseInt(cleanHex.length === 3 ? cleanHex[0] + cleanHex[0] : cleanHex.substring(0, 2), 16) / 255;
-  const g = parseInt(cleanHex.length === 3 ? cleanHex[1] + cleanHex[1] : cleanHex.substring(2, 4), 16) / 255;
-  const b = parseInt(cleanHex.length === 3 ? cleanHex[2] + cleanHex[2] : cleanHex.substring(4, 6), 16) / 255;
-
-  const a = [r, g, b].map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
-  return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-}
-
-/**
- * Calculates WCAG Contrast Ratio between two hex colors
- */
-export function calculateContrastRatio(foregroundHex: string, backgroundHex: string): number {
-  const lum1 = getLuminance(foregroundHex);
-  const lum2 = getLuminance(backgroundHex);
-  const brightest = Math.max(lum1, lum2);
-  const darkest = Math.min(lum1, lum2);
-  return (brightest + 0.05) / (darkest + 0.05);
-}
-
-/**
- * Checks if a theme passes WCAG AA contrast (at least 4.5:1 for normal text)
- */
-export function validateContrast(theme: ThemeConfig): { valid: boolean; ratio: number } {
-  const ratio = calculateContrastRatio(theme.palette.textPrimary, theme.palette.background);
-  return {
-    valid: ratio >= 4.5,
-    ratio: Math.round(ratio * 10) / 10,
-  };
-}
+// Aliases
+THEME_PRESETS["sunset-pastel"] = {
+  ...THEME_PRESETS["sunset-dusk"],
+  presetId: "sunset-pastel",
+};
 
 /**
  * Injects theme tokens as CSS variables under the isolated `--theme-*` namespace
  */
 export function getThemeCssVariables(theme: ThemeConfig): string {
+  const c = theme.palette;
+  const report = validateContrast({
+    canvas: c.canvas,
+    surface: c.surface,
+    text: c.text,
+    textMuted: c.textMuted,
+    primary: c.primary,
+    onPrimary: c.onPrimary,
+    accent: c.accent,
+    onAccent: c.onAccent,
+  });
+
   return `
-    --theme-primary: ${theme.palette.primary};
-    --theme-accent: ${theme.palette.accent};
-    --theme-bg: ${theme.palette.background};
-    --theme-surface: ${theme.palette.surface};
-    --theme-text-primary: ${theme.palette.textPrimary};
-    --theme-text-muted: ${theme.palette.textMuted};
-    --theme-envelope-bg: ${theme.palette.envelopeBg};
-    --theme-wax-seal: ${theme.palette.waxSeal};
+    --theme-primary: ${c.primary};
+    --theme-on-primary: ${c.onPrimary};
+    --theme-accent: ${c.accent};
+    --theme-on-accent: ${c.onAccent};
+    --theme-bg: ${c.canvas};
+    --theme-surface: ${c.surface};
+    --theme-text-primary: ${c.text};
+    --theme-text-muted: ${c.textMuted};
+    --theme-envelope-bg: ${c.envelopeBg};
+    --theme-wax-seal: ${c.waxSeal};
+    --theme-primary-needs-border: ${report.primaryNeedsBorder ? "1" : "0"};
+    --theme-accent-text-allowed: ${report.accentTextAllowed ? "1" : "0"};
     --theme-font-display: "${theme.typography.displayFont}", serif;
     --theme-font-body: "${theme.typography.bodyFont}", sans-serif;
   `;
+}
+
+/**
+ * Validates and merges database theme_config with preset on read
+ */
+export function resolveTheme(
+  themeId: string,
+  rawConfig: unknown,
+  themeVersion = 1
+): { theme: ThemeConfig; report: ContrastReport } {
+  const basePreset = THEME_PRESETS[themeId] || THEME_PRESETS["royal-crimson"];
+
+  if (!rawConfig || typeof rawConfig !== "object" || Array.isArray(rawConfig)) {
+    const report = validateContrast(basePreset.palette);
+    return { theme: basePreset, report };
+  }
+
+  // Parse partial overrides safely
+  const parsed = ThemeConfigSchema.partial().safeParse(rawConfig);
+  if (!parsed.success) {
+    console.warn("Invalid theme_config in database, falling back to preset:", parsed.error);
+    const report = validateContrast(basePreset.palette);
+    return { theme: basePreset, report };
+  }
+
+  const merged: ThemeConfig = {
+    version: themeVersion || basePreset.version,
+    presetId: basePreset.presetId,
+    palette: {
+      ...basePreset.palette,
+      ...(parsed.data.palette || {}),
+    },
+    typography: {
+      ...basePreset.typography,
+      ...(parsed.data.typography || {}),
+    },
+    monogram: {
+      ...basePreset.monogram,
+      ...(parsed.data.monogram || {}),
+    },
+    ornaments: {
+      ...basePreset.ornaments,
+      ...(parsed.data.ornaments || {}),
+    },
+    sections: {
+      ...basePreset.sections,
+      ...(parsed.data.sections || {}),
+    },
+  };
+
+  const report = validateContrast(merged.palette);
+  return { theme: merged, report };
 }

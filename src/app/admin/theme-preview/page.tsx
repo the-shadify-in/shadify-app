@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, ShieldCheck, Sparkles, AlertCircle, AlertTriangle } from "lucide-react";
 import { THEME_PRESETS, validateContrast } from "@/lib/themes/tokens";
 
 export default function ThemePreviewAndSwatchPage() {
   const [selectedPresetKey, setSelectedPresetKey] = useState<string>("royal-crimson");
   const selectedTheme = THEME_PRESETS[selectedPresetKey] || THEME_PRESETS["royal-crimson"];
-  const contrastResult = validateContrast(selectedTheme);
+  const contrastReport = validateContrast(selectedTheme.palette);
 
   return (
     <div className="min-h-screen bg-[#FFFBF5] text-[#1F1A2E] font-sans">
@@ -101,19 +101,19 @@ export default function ThemePreviewAndSwatchPage() {
         </section>
 
         {/* ------------------------------------------------------------- */}
-        {/* 2. THEME PRESETS INSPECTOR */}
+        {/* 2. THEME CONTRAST & ACCESSIBILITY AUDIT */}
         {/* ------------------------------------------------------------- */}
         <section className="space-y-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <span className="text-xs font-semibold tracking-wider text-[#941C2F] uppercase">Namespace: --theme-*</span>
-              <h2 className="text-xl font-serif font-medium text-[#1F1A2E]">Couples Theme Presets</h2>
-              <p className="text-xs text-[#1F1A2E]/60">Curated cultural presets with validated WCAG AA color contrast.</p>
+              <span className="text-xs font-semibold tracking-wider text-purple-700 uppercase">Namespace: --theme-*</span>
+              <h2 className="text-xl font-serif font-medium text-[#1F1A2E]">Client Wedding Theme Presets</h2>
+              <p className="text-xs text-[#1F1A2E]/60">Every preset is audited across the 8-point contrast matrix for mobile legibility.</p>
             </div>
 
             {/* Preset Selector */}
-            <div className="flex flex-wrap gap-2">
-              {Object.keys(THEME_PRESETS).map((key) => (
+            <div className="flex flex-wrap items-center gap-2">
+              {Object.keys(THEME_PRESETS).filter(k => k !== "sunset-pastel").map((key) => (
                 <button
                   key={key}
                   onClick={() => setSelectedPresetKey(key)}
@@ -131,7 +131,7 @@ export default function ThemePreviewAndSwatchPage() {
 
           {/* Active Preset Inspector Grid */}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {/* Left: Token Details & Accessibility Audit */}
+            {/* Left: Token Details & Contrast Matrix */}
             <div className="rounded-2xl border border-[#EADDCF] bg-white p-6 space-y-6">
               <div>
                 <h3 className="text-sm font-semibold capitalize text-[#1F1A2E]">{selectedTheme.presetId.replace("-", " ")}</h3>
@@ -140,17 +140,31 @@ export default function ThemePreviewAndSwatchPage() {
 
               {/* Contrast Checker Card */}
               <div className={`rounded-xl border p-4 text-xs ${
-                contrastResult.valid ? "bg-green-50 border-green-200 text-green-900" : "bg-red-50 border-red-200 text-red-900"
+                contrastReport.ok ? "bg-green-50 border-green-200 text-green-900" : "bg-red-50 border-red-200 text-red-900"
               }`}>
                 <div className="flex items-center gap-2 font-semibold">
-                  {contrastResult.valid ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-red-600" />}
-                  <span>WCAG AA Contrast: {contrastResult.ratio}:1</span>
+                  {contrastReport.ok ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <AlertCircle className="h-4 w-4 text-red-600" />}
+                  <span>Full Contrast Matrix: {contrastReport.ok ? "PASSED" : "FAILED"}</span>
                 </div>
-                <p className="mt-1 text-[11px] opacity-80">
-                  {contrastResult.valid 
-                    ? "Passes 4.5:1 ratio. High legibility in harsh Indian outdoor sunlight."
-                    : "Fails 4.5:1 ratio. Adjust textPrimary or background to prevent eye strain."}
-                </p>
+                <div className="mt-2 space-y-1 text-[11px]">
+                  <p>• Text on Canvas: <strong>{contrastReport.ratios["text-canvas"]}:1</strong> (min 4.5)</p>
+                  <p>• Muted on Canvas: <strong>{contrastReport.ratios["muted-canvas"]}:1</strong> (min 4.5)</p>
+                  <p>• onPrimary on Primary: <strong>{contrastReport.ratios["onprimary-primary"]}:1</strong> (min 4.5)</p>
+                  <p>• onAccent on Accent: <strong>{contrastReport.ratios["onaccent-accent"]}:1</strong> (min 4.5)</p>
+                  <p>• Accent on Canvas: <strong>{contrastReport.ratios["accent-canvas"]}:1</strong> {contrastReport.accentTextAllowed ? "(text allowed)" : "(border/fill only)"}</p>
+                  <p>• Effective Footer: <strong>{contrastReport.ratios["footer-effective"]}:1</strong> (at 70% opacity)</p>
+                </div>
+
+                {contrastReport.warnings.length > 0 && (
+                  <div className="mt-3 pt-2 border-t border-amber-200 text-[10px] text-amber-800 space-y-1">
+                    {contrastReport.warnings.map((w, idx) => (
+                      <p key={idx} className="flex items-start gap-1">
+                        <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+                        <span>{w}</span>
+                      </p>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Palette Details */}
@@ -166,8 +180,8 @@ export default function ThemePreviewAndSwatchPage() {
                     <span>Accent: {selectedTheme.palette.accent}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-4 rounded border" style={{ backgroundColor: selectedTheme.palette.background }} />
-                    <span>Background: {selectedTheme.palette.background}</span>
+                    <div className="h-4 w-4 rounded border" style={{ backgroundColor: selectedTheme.palette.canvas }} />
+                    <span>Canvas: {selectedTheme.palette.canvas}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-4 rounded border" style={{ backgroundColor: selectedTheme.palette.surface }} />
@@ -190,8 +204,8 @@ export default function ThemePreviewAndSwatchPage() {
               <div 
                 className="w-full max-w-sm rounded-[32px] border-4 border-[#2B2327] p-6 shadow-2xl transition-all"
                 style={{ 
-                  backgroundColor: selectedTheme.palette.background,
-                  color: selectedTheme.palette.textPrimary,
+                  backgroundColor: selectedTheme.palette.canvas,
+                  color: selectedTheme.palette.text,
                   fontFamily: `"${selectedTheme.typography.bodyFont}", sans-serif`
                 }}
               >
@@ -199,7 +213,7 @@ export default function ThemePreviewAndSwatchPage() {
                 <div 
                   className="rounded-2xl border p-6 text-center shadow-lg mb-6"
                   style={{
-                    backgroundColor: selectedTheme.palette.surface,
+                    backgroundColor: selectedTheme.palette.envelopeBg,
                     borderColor: `${selectedTheme.palette.accent}40`,
                   }}
                 >
@@ -213,7 +227,7 @@ export default function ThemePreviewAndSwatchPage() {
                   >
                     {selectedTheme.monogram.text}
                   </div>
-                  <p className="text-[10px] tracking-widest uppercase" style={{ color: selectedTheme.palette.accent }}>
+                  <p className="text-[10px] tracking-widest uppercase font-medium" style={{ color: selectedTheme.palette.accent }}>
                     Royal Wedding Invitation
                   </p>
                   <h4 
@@ -222,9 +236,22 @@ export default function ThemePreviewAndSwatchPage() {
                   >
                     Priya &amp; Rahul
                   </h4>
-                  <p className="mt-1 text-xs opacity-70" style={{ color: selectedTheme.palette.textMuted }}>
+                  <p className="mt-1 text-xs opacity-75" style={{ color: selectedTheme.palette.textMuted }}>
                     December 14, 2026 • Udaipur
                   </p>
+
+                  <div className="mt-4">
+                    <button
+                      className="px-4 py-1.5 rounded-full text-xs font-semibold shadow"
+                      style={{
+                        backgroundColor: selectedTheme.palette.primary,
+                        color: selectedTheme.palette.onPrimary,
+                        border: contrastReport.primaryNeedsBorder ? `2px solid ${selectedTheme.palette.accent}` : "none",
+                      }}
+                    >
+                      Open Invitation
+                    </button>
+                  </div>
                 </div>
 
                 {/* Ceremony Schedule Card */}
@@ -237,20 +264,20 @@ export default function ThemePreviewAndSwatchPage() {
                 >
                   <span 
                     className="inline-block rounded px-2 py-0.5 text-[10px] font-semibold"
-                    style={{ backgroundColor: `${selectedTheme.palette.primary}30`, color: selectedTheme.palette.accent }}
+                    style={{ backgroundColor: selectedTheme.palette.primary, color: selectedTheme.palette.onPrimary }}
                   >
                     The Sacred Pheras
                   </span>
                   <p className="text-xs font-medium">Royal Lakeside Mandap</p>
-                  <p className="text-[11px] opacity-70" style={{ color: selectedTheme.palette.textMuted }}>6:00 PM onwards</p>
+                  <p className="text-[11px]" style={{ color: selectedTheme.palette.textMuted }}>6:00 PM onwards</p>
                 </div>
 
                 {/* Neutral Low-Opacity Brand Footer Mark (Never clashes!) */}
-                <div className="mt-10 pt-4 border-t text-center text-[10px]" style={{ borderColor: `${selectedTheme.palette.textMuted}20` }}>
-                  <p style={{ color: selectedTheme.palette.textMuted, opacity: 0.4 }}>
+                <div className="mt-10 pt-4 border-t text-center text-[10px]" style={{ borderColor: `${selectedTheme.palette.accent}20` }}>
+                  <p style={{ color: selectedTheme.palette.textMuted, opacity: 0.7 }}>
                     Made with love on <span className="font-semibold underline">Shadify</span>
                   </p>
-                  <span className="block mt-0.5 text-[9px] opacity-30">
+                  <span className="block mt-0.5 text-[9px] opacity-40">
                     (Neutral monochrome footer mark adapts to couple palette)
                   </span>
                 </div>
