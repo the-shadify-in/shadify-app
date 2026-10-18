@@ -5,6 +5,28 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Neutral UI Design Tokens (Zone-agnostic shared components) */
+  --ui-canvas: #FAFAFA;
+  --ui-surface: #FFFFFF;
+  --ui-border: #E5E7EB;
+  --ui-primary: #1F1A2E;
+  --ui-on-primary: #FFFFFF;
+  --ui-accent: #D6246E;
+  --ui-on-accent: #FFFFFF;
+  --ui-text-primary: #111827;
+  --ui-text-muted: #6B7280;
+
+  /* Platform Brand Tokens (Strictly for Marketing & Admin shells) */
+  --brand-primary: #8B1E3F;
+  --brand-marigold: #FF9F1C;
+  --brand-teal: #2EC4B6;
+  --brand-indigo: #1F1A2E;
+  --brand-ground: #FDFBF7;
+  --brand-ink: #1F1A2E;
+  --brand-surface: #FFFFFF;
+  --brand-border: #EADDCF;
+  --brand-tint: rgba(139, 30, 63, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {

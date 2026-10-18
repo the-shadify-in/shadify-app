@@ -11,6 +11,19 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        ui: {
+          canvas: "var(--ui-canvas)",
+          surface: "var(--ui-surface)",
+          border: "var(--ui-border)",
+          primary: "var(--ui-primary)",
+          onPrimary: "var(--ui-on-primary)",
+          accent: "var(--ui-accent)",
+          onAccent: "var(--ui-on-accent)",
+          text: {
+            primary: "var(--ui-text-primary)",
+            muted: "var(--ui-text-muted)",
+          },
+        },
         theme: {
           primary: "var(--theme-primary)",
           onPrimary: "var(--theme-on-primary)",

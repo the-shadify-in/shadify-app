@@ -104,10 +104,22 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-[#E2D5C7]/60">Create, preview, and update wedding websites</p>
           </div>
 
-          <button className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#C9933A] to-[#DFB15B] px-5 py-2.5 text-xs font-semibold text-black hover:scale-105 transition-transform">
-            <Plus className="h-4 w-4" />
-            Onboard New Wedding
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/theme-preview"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#C9933A]/30 bg-[#14080C] px-4 py-2.5 text-xs font-medium text-[#FFF9F2] hover:border-[#C9933A]"
+            >
+              <Eye className="h-4 w-4 text-[#C9933A]" />
+              Theme Inspector
+            </Link>
+            <Link
+              href="/admin/weddings/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#C9933A] to-[#DFB15B] px-5 py-2.5 text-xs font-semibold text-black hover:scale-105 transition-transform shadow-md"
+            >
+              <Plus className="h-4 w-4" />
+              Onboard New Wedding
+            </Link>
+          </div>
         </div>
 
         {/* Weddings Table */}
