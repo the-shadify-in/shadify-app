@@ -143,7 +143,7 @@ npm run dev
 
 Visit:
 
-- **Guest Site Demo**: [http://localhost:3000/w/priya-rahul](http://localhost:3000/w/priya-rahul)
+- **Guest Site Demo**: [http://localhost:3000/priya-rahul](http://localhost:3000/priya-rahul)
 - **Concierge Admin**: [http://localhost:3000/admin](http://localhost:3000/admin) (Login: [http://localhost:3000/admin/login](http://localhost:3000/admin/login))
 
 ---

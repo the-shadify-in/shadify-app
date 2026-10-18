@@ -10,7 +10,7 @@
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        CLIENTS & GUEST ACCESS                          │
-│   Guest Web App (`/w/[slug]`)    |    Concierge Admin (`/admin`)       │
+│   Guest Web App (`/[slug]`)      |    Concierge Admin (`/admin`)       │
 └──────────────────────────┬─────────────────────────────────────────────┘
                            │
                            ▼
@@ -27,7 +27,7 @@
 │                   NEXT.JS 14 MONOLITH (APP ROUTER)                     │
 │                                                                        │
 │   apps/web/src/app                                                     │
-│   ├── /w/[slug]               (Dynamic multi-tenant wedding guest view)│
+│   ├── /[slug]                 (Dynamic multi-tenant wedding guest view)│
 │   ├── /admin                  (Concierge admin: onboard & manage)      │
 │   └── /api                                                             │
 │       ├── /rsvp               (Per-event RSVP submissions)             │

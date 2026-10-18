@@ -96,11 +96,11 @@ Every animation must be wrapped in `prefers-reduced-motion` media queries:
 
 ### Three-Zone Component Matrix
 
-| Component Area                   | Implementation                                                             | Permitted Tokens                                             | Isolation Rule                      |
-| -------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------- |
-| **Guest Wedding Site (`/w/*`)**  | Custom luxury templates + accessible headless primitives (Dialog, Stepper) | `--theme-*` (couple palette) + `--ui-*` (neutral primitives) | **STRICTLY NO `--brand-*`**         |
-| **Concierge Admin (`/admin/*`)** | shadcn/ui component suite (Radix + Tailwind)                               | `--ui-*` (neutral) + `--brand-*` (platform)                  | Speed & high-density desktop tables |
-| **Marketing Site (`/`)**         | shadcn/ui primitives + bespoke hero/preset showcases                       | `--brand-*` + `--ui-*`                                       | High conversion, luxury branding    |
+| Component Area                     | Implementation                                                             | Permitted Tokens                                             | Isolation Rule                      |
+| ---------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------- |
+| **Guest Wedding Site (`/[slug]`)** | Custom luxury templates + accessible headless primitives (Dialog, Stepper) | `--theme-*` (couple palette) + `--ui-*` (neutral primitives) | **STRICTLY NO `--brand-*`**         |
+| **Concierge Admin (`/admin/*`)**   | shadcn/ui component suite (Radix + Tailwind)                               | `--ui-*` (neutral) + `--brand-*` (platform)                  | Speed & high-density desktop tables |
+| **Marketing Site (`/`)**           | shadcn/ui primitives + bespoke hero/preset showcases                       | `--brand-*` + `--ui-*`                                       | High conversion, luxury branding    |
 
 ### shadcn/ui `--ui-*` Token Bridge
 

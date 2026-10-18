@@ -11,7 +11,7 @@
 ## Decisions
 
 1. **Architecture: Single Next.js 14 Monolith**:
-   - Single codebase housing guest website routes (`/w/[slug]`), concierge admin (`/admin`), and API route handlers (`/api/rsvp`, `/api/shagun`, `/api/media/presign`).
+   - Single codebase housing guest website routes (`/[slug]`), concierge admin (`/admin`), and API route handlers (`/api/rsvp`, `/api/shagun`, `/api/media/presign`).
    - Managed PostgreSQL 16 (Neon / Supabase) with built-in connection pooling.
    - Cloudflare Edge CDN with tag-based on-demand revalidation (`revalidateTag`).
 

@@ -6,9 +6,9 @@
 
 ## 1. Core Principles
 
-1. **Multi-Tenancy (ONE App Serves All)**: A single Next.js 14 deployment handles all 1,000+ weddings via path routing (`shadify.in/w/[slug]`) and wildcard subdomains (`[slug].shadify.in`).
+1. **Multi-Tenancy (ONE App Serves All)**: A single Next.js 14 deployment handles all 1,000+ weddings via path routing (`shadify.in/[slug]`) and wildcard subdomains (`[slug].shadify.in`).
 2. **Zero-Friction WhatsApp Invite Studio**: No contact harvesting or pre-storing phonebooks. Couples share directly from their personal WhatsApp with 1 tap (₹0 Meta API fees).
-3. **Lean Next.js Monolith for MVP-0**: A single Next.js 14 app (App Router) serves both guest websites (`/w/[slug]`), concierge admin (`/admin`), and route handlers (`/api/*`), eliminating separate microservices and devops overhead on Day 1.
+3. **Lean Next.js Monolith for MVP-0**: A single Next.js 14 app (App Router) serves both guest websites (`/[slug]`), concierge admin (`/admin`), and route handlers (`/api/*`), eliminating separate microservices and devops overhead on Day 1.
 4. **Realistic ~82%–85% Contribution Margins**: Factoring in 18% GST, 2.36% payment gateway fees, and concierge labor (₹300/hr) with Cloudflare R2 90-day RAW lifecycle, achieving operating break-even at just 2 to 4 weddings per month.
 
 ---
@@ -33,6 +33,6 @@ The root `docs/` folder is organized into **7 authoritative master documents**:
 
 As we scaffold the codebase, each app/package maintains its own specialized `docs/`:
 
-- **`apps/web/docs/`**: Next.js 14 App Router layout, guest routes (`/w/[slug]`), concierge admin (`/admin`), and API route handlers.
+- **`apps/web/docs/`**: Next.js 14 App Router layout, guest routes (`/[slug]`), concierge admin (`/admin`), and API route handlers.
 - **`packages/database/docs/`**: PostgreSQL 16 schema, Drizzle/Prisma migrations, and seed scripts.
 - **`packages/ui/docs/`**: Shared design tokens, Indian wedding themes, and CSS envelope animations.

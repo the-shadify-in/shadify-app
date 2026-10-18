@@ -19,7 +19,7 @@ To ship quickly as a solo developer and achieve profitability without over-engin
 │                        ✅ INCLUDED IN MVP-0                            │
 ├────────────────────────────────────────────────────────────────────────┤
 │ 1. Single Next.js 14 Monolith (App Router + Route Handlers)            │
-│    • Path-based routing: `shadify.in/w/[slug]`                         │
+│    • Path-based routing: `shadify.in/[slug]`                           │
 │    • PostgreSQL 16 on Neon / Supabase with clean relational schema     │
 │ 2. Luxury Guest Experience                                             │
 │    • Smooth CSS/Lottie Royal Envelope Reveal (Fast, light, mobile-first)│
@@ -154,8 +154,8 @@ _Note: Setting paid marketing to ₹0 drops break-even to **2 weddings per month
 ## 4. Delivery Channels for Couple Websites
 
 ```
-shadify.in/w/priya-rahul          ← Path-based (MVP default, zero domain overhead)
+shadify.in/priya-rahul            ← Path-based (MVP default, zero domain overhead)
 priya-rahul.shadify.in             ← Subdomain (Phase 2 wildcard DNS)
 www.priyarahulwedding.com          ← Custom Domain (Platinum CNAME add-on)
-shadify.in/w/priya-rahul#invite    ← Direct WhatsApp Link & QR Code Poster
+shadify.in/priya-rahul#invite      ← Direct WhatsApp Link & QR Code Poster
 ```

@@ -16,7 +16,13 @@ export const SITE_CONFIG = {
 /**
  * Builds the direct WhatsApp inquiry URL to the Shadify Concierge with pre-filled message.
  */
-export function getConciergeWhatsAppUrl(context?: { plan?: string; theme?: string }): string {
+export function getConciergeWhatsAppUrl(
+  context?: { plan?: string; theme?: string } | string,
+): string {
+  if (typeof context === "string") {
+    return `https://wa.me/${SITE_CONFIG.whatsappNumber}?text=${encodeURIComponent(context)}`;
+  }
+
   const planNote = context?.plan ? ` (${context.plan.toUpperCase()} Plan)` : "";
   const themeNote = context?.theme ? `\nPreferred Theme: ${context.theme}` : "";
 

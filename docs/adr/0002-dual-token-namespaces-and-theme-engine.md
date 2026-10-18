@@ -15,7 +15,7 @@
      - Primary: Rani Pink (`#D6246E`)
      - Accents: Marigold (`#F5A524`), Peacock Teal (`#0E9F8E`), Royal Indigo (`#3D3BC4`)
      - Ground & Ink: Ivory Ground (`#FFFBF5`), Midnight Ink (`#1F1A2E`)
-   - **`--theme-*`**: Dynamically injected into guest pages (`/w/[slug]`) via server-rendered CSS variables in `<head>`, consumed by Tailwind.
+   - **`--theme-*`**: Dynamically injected into guest pages (`/[slug]`) via server-rendered CSS variables in `<head>`, consumed by Tailwind.
      - Never references brand colors.
 
 2. **Theme as Data (Not Code)**:
