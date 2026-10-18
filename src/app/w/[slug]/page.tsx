@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { 
   Heart, 
   MapPin, 
@@ -13,6 +14,7 @@ import {
   X,
   ChevronDown
 } from "lucide-react";
+import { THEME_PRESETS, ThemeConfig } from "@/lib/themes/tokens";
 
 interface WeddingEvent {
   id: string;
@@ -27,7 +29,19 @@ interface WeddingEvent {
 }
 
 export default function WeddingGuestPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-[#0E0709]" />}>
+      <WeddingGuestContent slug={params.slug} />
+    </React.Suspense>
+  );
+}
+
+function WeddingGuestContent({ slug }: { slug: string }) {
+  const searchParams = useSearchParams();
+
+  // Determine active theme (query override e.g. ?theme=emerald-gold or default preset)
+  const themeParam = searchParams.get("theme") || "royal-crimson";
+  const activeTheme: ThemeConfig = THEME_PRESETS[themeParam] || THEME_PRESETS["royal-crimson"];
 
   // Envelope state (true = sealed, false = opened)
   const [isEnvelopeOpened, setIsEnvelopeOpened] = useState(false);
@@ -151,7 +165,22 @@ export default function WeddingGuestPage({ params }: { params: { slug: string } 
   };
 
   return (
-    <main className="min-h-screen bg-[#0E0709] text-[#FFF9F2] selection:bg-[#C9933A] selection:text-black">
+    <main
+      id="wedding-guest-root"
+      style={
+        {
+          "--theme-primary": activeTheme.palette.primary,
+          "--theme-accent": activeTheme.palette.accent,
+          "--theme-bg": activeTheme.palette.background,
+          "--theme-surface": activeTheme.palette.surface,
+          "--theme-text-primary": activeTheme.palette.textPrimary,
+          "--theme-text-muted": activeTheme.palette.textMuted,
+          "--theme-envelope-bg": activeTheme.palette.envelopeBg,
+          "--theme-wax-seal": activeTheme.palette.waxSeal,
+        } as React.CSSProperties
+      }
+      className="min-h-screen bg-theme-bg text-theme-text-primary selection:bg-theme-accent selection:text-black font-sans transition-colors duration-500"
+    >
       {/* ----------------------------------------------------------- */}
       {/* 1. ROYAL ENVELOPE OVERLAY (CSS REVEAL) */}
       {/* ----------------------------------------------------------- */}
@@ -531,14 +560,17 @@ export default function WeddingGuestPage({ params }: { params: { slug: string } 
       )}
 
       {/* ----------------------------------------------------------- */}
-      {/* 7. FOOTER */}
+      {/* 7. NEUTRAL MONOCHROME BRAND FOOTER (ZERO BRAND CLASH) */}
       {/* ----------------------------------------------------------- */}
-      <footer className="border-t border-[#C9933A]/10 py-10 text-center text-xs text-[#E2D5C7]/40">
-        <p className="font-serif tracking-widest uppercase">
+      <footer className="border-t border-theme-accent/15 py-10 text-center text-xs text-theme-text-muted/50">
+        <p className="font-serif tracking-widest uppercase text-theme-text-primary/70">
           {wedding.bride} &amp; {wedding.groom} • {wedding.venueCity}
         </p>
-        <p className="mt-2 text-[10px]">
-          Created with love on <span className="text-[#C9933A]">Shadify</span>
+        <p className="mt-2 text-[10px] tracking-wider text-theme-text-muted/60">
+          Created with love on{" "}
+          <span className="font-serif tracking-normal text-theme-text-muted opacity-80 hover:opacity-100 transition-opacity">
+            Shadify
+          </span>
         </p>
       </footer>
     </main>
