@@ -30,8 +30,8 @@
   - **Done When**: Database models (`promo_codes`, `promo_redemptions`, `referrals`) deployed via Prisma migration `3_promos_and_referrals`; promo validation API (`POST /api/promos/validate`) recalculates discounts strictly server-side with rate limiting.
 - [x] **[BEFORE-LAUNCH]** **Pilot Promo Codes Seeded** | `@growth`
   - **Done When**: `NAMASTE299` (₹299 consumer discount for wedding guests) and `STUDIOPARTNER` (₹299 discount + ₹1,000 partner commission on Premium/Platinum) seeded and tested via unit tests.
-- [ ] **[BEFORE-LAUNCH]** **Manual Referral Tracking Runbook** | `@ops`
-  - **Done When**: Standard operating procedure (SOP) established to log `referred_by` partner details during concierge WhatsApp intake and execute manual UPI payouts post-wedding cooling-off window.
+- [x] **[BEFORE-LAUNCH]** **Manual Referral Tracking Runbook** | `@ops`
+  - **Done When**: Standard operating procedure (SOP) established in `docs/RUNBOOKS.md` (Runbook 2) detailing referral logging, 7-day cooling-off verification, Section 194H checks, and manual UPI payouts.
 - [x] **[BEFORE-LAUNCH]** **Direct WhatsApp Concierge Intake Flow** | `@product`
   - **Done When**: Marketing CTAs trigger verified WhatsApp links via `getConciergeWhatsAppUrl()` with pre-filled plan selection messages without contact book harvesting.
 
@@ -77,8 +77,8 @@
   - **Done When**: An automated database snapshot is restored into a scratch instance and verified against row counts and constraint integrity.
 - [x] **[BEFORE-LAUNCH]** **Health Check & Uptime Monitoring** | `@devops` / `@lead-eng`
   - **Done When**: `/api/health` executes PostgreSQL heartbeat query `SELECT 1`, returning 200 with roundtrip latency or 503 on database disruption. Documented in `docs/OBSERVABILITY.md` with P0/P1 alert matrix.
-- [ ] **[BEFORE-LAUNCH]** **Wedding-Day Concierge Emergency Runbook** | `@ops`
-  - **Done When**: 1-page runbook detailing CDN cache invalidation, slug transfer SOP, and emergency RSVP spreadsheet export is prepared.
+- [x] **[BEFORE-LAUNCH]** **Wedding-Day Concierge Emergency Runbook** | `@ops`
+  - **Done When**: Operational SOP published in `docs/RUNBOOKS.md` (Runbook 1) detailing edge cache pre-warming, emergency 30s misprinted slug alias, caterer RSVP CSV export, and 60-second rollback protocol.
 
 ---
 
