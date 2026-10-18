@@ -141,8 +141,16 @@ R2_BUCKET_NAME="shadify-media"
 # Generate the Prisma Client
 npm run db:generate
 
-# Apply migrations to your database
-npm run db:migrate
+# Apply migrations to your database (Neon unpooled/direct)
+npm run db:migrate:deploy
+
+# Seed initial celebration and partner promo codes
+npm run db:seed
+
+# Run automated test suites
+npm run test          # 65 Vitest unit & integration tests
+npm run test:e2e      # Playwright headless browser E2E smoke suite
+npm run check         # Prettier, ESLint, Brand isolation, TypeScript & Vitest
 ```
 
 ### 4. Run Development Server
@@ -153,8 +161,10 @@ npm run dev
 
 Visit:
 
+- **Marketing Landing Page**: [http://localhost:3000](http://localhost:3000)
 - **Guest Site Demo**: [http://localhost:3000/priya-rahul](http://localhost:3000/priya-rahul)
 - **Concierge Admin**: [http://localhost:3000/admin](http://localhost:3000/admin) (Login: [http://localhost:3000/admin/login](http://localhost:3000/admin/login))
+- **System Health Heartbeat**: [http://localhost:3000/api/health](http://localhost:3000/api/health)
 
 ---
 

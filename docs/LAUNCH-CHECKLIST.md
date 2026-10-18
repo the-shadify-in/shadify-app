@@ -71,8 +71,8 @@
 
 - [ ] **[BEFORE-LAUNCH]** **Environment Isolation (Staging vs Production)** | `@devops`
   - **Done When**: Production and staging have isolated Cloudflare R2 buckets, Neon PostgreSQL instances, and distinct HMAC session secrets.
-- [ ] **[BEFORE-LAUNCH]** **Prisma Migration Discipline** | `@devops`
-  - **Done When**: Production CI/CD executes `prisma migrate deploy` exclusively; `prisma db push` is blocked.
+- [x] **[BEFORE-LAUNCH]** **Prisma Migration Discipline** | `@devops`
+  - **Done When**: Production CI/CD executes `prisma migrate deploy` exclusively against direct unpooled URL; `prisma db push` is blocked. All 5 migrations verified on live Neon PostgreSQL.
 - [ ] **[BEFORE-LAUNCH]** **Disaster Recovery Backup Drill** | `@devops`
   - **Done When**: An automated database snapshot is restored into a scratch instance and verified against row counts and constraint integrity.
 - [x] **[BEFORE-LAUNCH]** **Health Check & Uptime Monitoring** | `@devops` / `@lead-eng`
@@ -90,7 +90,7 @@
   - **Done When**: Append-only credit ledger table computes balances dynamically, and RazorpayX automates partner payouts after the 7-day cooling-off period.
 - [ ] **[LATER]** **Partner Dashboard Portal** | `@product`
   - **Done When**: Dedicated portal for registered photographers and wedding planners to view referral link clicks, qualified weddings, and commission payouts.
-- [ ] **[LATER]** **Playwright End-to-End Test Suite** | `@qa`
-  - **Done When**: Headless browser test suite simulates full journey: wedding creation in admin -> guest envelope opening -> RSVP submission -> promo code checkout.
+- [x] **[BEFORE-LAUNCH]** **Playwright End-to-End Test Suite** | `@qa` / `@lead-eng`
+  - **Done When**: Headless browser test suite (`tests/e2e/smoke.test.ts`) verifies full public & guest flows: marketing landing page, legal policy pages, seeded guest envelope opening, admin login redirect, middleware probe blocking, health check, and live Neon promo code validation.
 - [ ] **[LATER]** **Indic Multi-Language Guest Interface** | `@product`
   - **Done When**: Guest UI strings localized into Hindi, Telugu, Tamil, and Gujarati with in-place language toggle.
