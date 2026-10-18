@@ -1,99 +1,96 @@
 # Shadify — Production SaaS Launch Checklist
 
-> Comprehensive operational, security, and quality gate checklist for taking Shadify from initial scaffold to real pilot weddings and production scale.
-> Each item specifies an owner and an objective **Done When** testable completion criterion.
+> Comprehensive operational, legal, financial, security, and engineering gate checklist for taking Shadify from initial scaffold through pilot weddings to production scale.
+> Every item is assigned an explicit priority tag (`[BLOCKER]`, `[BEFORE-LAUNCH]`, `[LATER]`), an owner, and a testable **Done When** completion criterion.
 
 ---
 
-## Phase 1: Now (Scaffold, Quality Gates & Foundation)
+## 1. Business, Legal & Tax Foundations
 
-### Code Quality & Pipeline
-
-- [x] **Pinned Runtime** | `@lead-eng`
-  - **Done When**: `.nvmrc` is pinned to `20.18.0`, `package.json` specifies `"engines": { "node": ">=20.0.0" }`, and lockfile is committed.
-- [x] **Pre-Commit Quality Gate** | `@lead-eng`
-  - **Done When**: Husky + `lint-staged` runs ESLint `--fix` and Prettier on staged files; commits fail if lint errors exist.
-- [x] **Brand Isolation CI Check** | `@lead-eng`
-  - **Done When**: `scripts/check-brand-isolation.mjs` runs in pre-commit and CI, failing with code `1` if `--brand-*` or `@/lib/brand` appears in `src/app/w` or `src/components/guest`.
-- [x] **Environment Variable Validation** | `@lead-eng`
-  - **Done When**: `src/lib/env.ts` parses `process.env` with Zod at startup, refusing to run if `DATABASE_URL` or `ADMIN_SESSION_SECRET` is missing. `.env.example` is fully in sync.
-- [x] **Structured PII-Safe Logging** | `@lead-eng`
-  - **Done When**: `src/lib/log.ts` uses `pino` with JSON output; guest phone numbers, names, RSVP payloads, tokens, and UPI VPAs are censored as `[REDACTED]`.
-- [x] **GitHub Actions Quality Gate** | `@lead-eng`
-  - **Done When**: `.github/workflows/ci.yml` runs on every push and PR to `main` executing format, lint, type-check, contrast tests, brand check, and `next build`.
-- [x] **Automated Dependency Updates** | `@lead-eng`
-  - **Done When**: `.github/dependabot.yml` is active for weekly npm and GitHub Actions updates with non-blocking `npm audit`.
-- [x] **Architecture Decision Records (ADRs)** | `@lead-eng`
-  - **Done When**: `docs/adr/` contains ADR 0001 (Monolith), ADR 0002 (Theme Engine), ADR 0003 (Prisma with Raw Migrations), and ADR 0004 (5-Year Hosting & 90-Day Retention).
-
-### Core Security & Multi-Tenancy
-
-- [x] **Unguessable IDs in Public Links** | `@security`
-  - **Done When**: Public links use UUIDs and random invitation tokens; no sequential integer IDs or predictable enumeration paths exist.
-- [ ] **Cross-Tenant Object-Level Authorization Tests** | `@security`
-  - **Done When**: An automated integration test creates two distinct weddings and confirms Wedding A's session or token can never read or mutate Wedding B's RSVPs, guestbook, photos, or Shagun entries.
-- [x] **Protected Admin Route & Session Hygiene** | `@security`
-  - **Done When**: `/admin/login` sits outside auth middleware; sessions use HMAC-SHA256 with `crypto.timingSafeEqual` and `httpOnly`, `Secure`, `SameSite=Lax` cookies.
-
-### Theme & Design Engine
-
-- [x] **8-Point WCAG AA Contrast Matrix** | `@design-eng`
-  - **Done When**: `npm run test:contrast` verifies all 5 curated presets (`royal-crimson`, `emerald-gold`, `ivory-minimal`, `sunset-day`, `sunset-dusk`) and flags low-contrast custom overrides.
-- [x] **Cache Preservation on Guest Routes** | `@lead-eng`
-  - **Done When**: `/w/[slug]/page.tsx` accesses zero `searchParams`, allowing Cloudflare edge CDN and Next.js ISR caching to function cleanly. Dynamic previews live on `/w/[slug]/preview`.
+- [ ] **[BLOCKER]** **Legal Entity & Dedicated Bank Account** | `@founder`
+  - **Done When**: Entity structure (Proprietorship / LLP / Pvt Ltd) is formally registered, a dedicated business current bank account is operational, and UPI QR / VPA is mapped to the business account.
+- [ ] **[BLOCKER]** **GST Determination & Invoicing Protocol** | `@founder` / `@ca`
+  - **Done When**: Written confirmation received from Chartered Accountant (CA) on GST registration threshold applicability, treatment of discounts/promos on invoices, and statutory tax-inclusive line-item structure.
+- [ ] **[BLOCKER]** **Partner TDS & Commission Payout Rules** | `@founder` / `@ca`
+  - **Done When**: CA confirms whether Section 194H TDS applies to vendor/photographer referral commissions (e.g. ₹1,000 per Premium wedding) and provides the payout invoicing template.
+- [ ] **[BLOCKER]** **Customer Service Agreement & Refund Policy** | `@legal` / `@founder`
+  - **Done When**: Standard agreement is published detailing the 5-year hosting window, 90-day master archive retention, event postponement terms, and non-refundable cooling-off terms.
+- [ ] **[BEFORE-LAUNCH]** **Photographer & Media Release Terms** | `@legal`
+  - **Done When**: Short vendor terms drafted covering copyright ownership, client display rights, and DMCA/takedown mechanisms for user-uploaded photography.
+- [ ] **[BEFORE-LAUNCH]** **Trademark & Domain Clearance** | `@founder`
+  - **Done When**: Trademark search for "Shadify" in Class 42 and Class 45 completed on IP India portal; primary domain (`shadify.in`) and social handles secured.
 
 ---
 
-## Phase 2: Before the First Real Wedding (Pilot Hardening)
+## 2. GTM, Economics & Referral Engine
 
-### Reliability & Infrastructure
-
-- [ ] **Isolated Environments (Local, Staging, Production)** | `@devops`
-  - **Done When**: Staging and Production have separate Cloudflare R2 buckets and dedicated Neon/Supabase PostgreSQL databases. Production credentials are never used in local development.
-- [ ] **Database Migration Discipline** | `@devops`
-  - **Done When**: Production deploys execute `prisma migrate deploy` exclusively; `prisma db push` is disabled.
-- [ ] **Backup Restoration Drill** | `@devops`
-  - **Done When**: An automated database backup is restored into a scratch database and verified against row counts and constraints to prove disaster recovery works.
-- [ ] **Uptime & Health Check** | `@devops`
-  - **Done When**: `/api/health` queries `SELECT 1` against Postgres and returns `200 OK`; external uptime pinger (e.g. BetterStack) alerts on downtime.
-- [ ] **Spend Caps & Cost Alerts** | `@lead-eng`
-  - **Done When**: Billing alerts and spending caps are configured on Vercel, Neon, and Cloudflare to prevent surprise runaway scraping bills.
-
-### Security & Bot Defense
-
-- [ ] **Cloudflare Turnstile on Public Forms** | `@security`
-  - **Done When**: RSVP and Guestbook submissions verify Turnstile tokens server-side before persisting records to database.
-- [ ] **Rate Limiting on Sensitive Endpoints** | `@security`
-  - **Done When**: In-memory / Postgres-backed sliding window limiter caps `/admin/login` (5 req/min) and `/api/rsvp` (10 req/min per IP).
-- [ ] **Upload Hardening & EXIF Sanitization** | `@security`
-  - **Done When**: Media upload pipeline inspects magic bytes (content-type verification), enforces file size limits, and strips EXIF GPS location data using Sharp before public storage.
-- [ ] **Cloudflare R2 CORS & Lifecycle Retention** | `@devops`
-  - **Done When**: R2 CORS is restricted to `shadify.in` and preview domains; R2 bucket lifecycle rule deletes master original files under `originals/` after 90 days.
-- [ ] **Security Headers & CSP Verification** | `@security`
-  - **Done When**: `next.config.js` sets HSTS, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`. CSP tested with theme `<style>` tag nonce.
-
-### Privacy & Operations (DPDP Alignment)
-
-- [ ] **Legal Review of Terms & Privacy Notice** | `@legal`
-  - **Done When**: Draft privacy notice, terms of service, and refund policy are reviewed by legal counsel; code and UI reference reviewed versions without premature "compliant" claims.
-- [ ] **Data Inventory & Retention Schedule** | `@compliance`
-  - **Done When**: Written schedule documents all stored personal data (names, phones, dietary preferences) linked to the 5-year hosting window and 90-day master archive deletion.
-- [ ] **Couple & Guest Deletion Runbook** | `@compliance`
-  - **Done When**: Written step-by-step SOP documents how to process an erasure request across PostgreSQL tables, R2 buckets, and backups.
-- [ ] **Wedding-Day Support Runbook** | `@ops`
-  - **Done When**: 1-page emergency checklist prepared for wedding morning (cache pre-warming, direct concierge WhatsApp hotline, rollback protocol).
+- [x] **[BLOCKER]** **Authoritative Tier Pricing & Margin Protection** | `@lead-eng`
+  - **Done When**: Plans strictly locked in `src/lib/config/pricing.ts` to ₹2,999 (Lite), ₹7,999 (Premium), and ₹19,999 (Platinum) in integer paise (`pricePaise`), with unit contribution margins verified >70%.
+- [x] **[BLOCKER]** **Server-Side Promo Code & Referral Engine** | `@lead-eng`
+  - **Done When**: Database models (`promo_codes`, `promo_redemptions`, `referrals`) deployed via Prisma migration `3_promos_and_referrals`; promo validation API (`POST /api/promos/validate`) recalculates discounts strictly server-side with rate limiting.
+- [x] **[BEFORE-LAUNCH]** **Pilot Promo Codes Seeded** | `@growth`
+  - **Done When**: `NAMASTE299` (₹299 consumer discount for wedding guests) and `STUDIOPARTNER` (₹299 discount + ₹1,000 partner commission on Premium/Platinum) seeded and tested via unit tests.
+- [ ] **[BEFORE-LAUNCH]** **Manual Referral Tracking Runbook** | `@ops`
+  - **Done When**: Standard operating procedure (SOP) established to log `referred_by` partner details during concierge WhatsApp intake and execute manual UPI payouts post-wedding cooling-off window.
+- [ ] **[BEFORE-LAUNCH]** **Direct WhatsApp Concierge Intake Flow** | `@product`
+  - **Done When**: Marketing CTAs trigger verified WhatsApp links via `getConciergeWhatsAppUrl()` with pre-filled plan selection messages without contact book harvesting.
 
 ---
 
-## Phase 3: Later (After Pilots / Multi-Contributor Scaling)
+## 3. Core Security, Privacy & Multi-Tenancy
 
-- [ ] **Automated Payment Webhooks** | `@lead-eng`
-  - **Done When**: Razorpay / Cashfree webhook signatures are verified, processed idempotently with distributed lock, and credit `entitlements` row.
-- [ ] **End-to-End Playwright Smoke Tests** | `@qa`
-  - **Done When**: Headless browser test creates a wedding in `/admin/weddings/new`, opens the guest site, opens the envelope, and submits an RSVP.
-- [ ] **Visual Regression Screenshot Testing** | `@design-eng`
-  - **Done When**: Playwright screenshot comparison tests catch unintentional CSS shifts across all 5 theme presets.
-- [ ] **Cookieless Marketing Analytics** | `@product`
-  - **Done When**: Plausible or Umami is configured on marketing routes (`/`) with 0 trackers embedded in guest pages (`/w/*`).
-- [ ] **Multi-Language Localization (Hindi, Telugu, Tamil, Gujarati)** | `@product`
-  - **Done When**: Guest invitation strings are extracted into translation dictionaries with verified font rendering for Indic scripts.
+- [x] **[BLOCKER]** **Direct Clean Routing (`/[slug]`)** | `@lead-eng`
+  - **Done When**: Guest wedding route served directly at `/[slug]` (never `/w/[slug]`), with reserved namespace collisions (`admin`, `api`, etc.) blocked in `reserved-slugs.ts`.
+- [x] **[BLOCKER]** **Multi-Tenant Object Isolation Tests** | `@security`
+  - **Done When**: Automated test suite (`src/features/weddings/__tests__/isolation.test.ts`) verifies Wedding A's payload can never leak into Wedding B's DTO, events, or VIPs.
+- [x] **[BLOCKER]** **Admin Route Protection & Session Hygiene** | `@security`
+  - **Done When**: Middleware enforces session verification on `/admin/*` and `/api/admin/*`; HMAC-SHA256 sessions use constant-time `crypto.timingSafeEqual`, 7-day expiration, and `httpOnly`, `Secure`, `SameSite=Lax` cookies.
+- [x] **[BLOCKER]** **Sliding-Window Rate Limiting** | `@security`
+  - **Done When**: In-memory rate limiting active on `/api/admin/auth/login` (5 attempts / 15 min) and `/api/promos/validate` (10 attempts / min) returning `429 Too Many Requests`.
+- [x] **[BLOCKER]** **Brand Token Isolation CI Gate** | `@lead-eng`
+  - **Done When**: `scripts/check-brand-isolation.mjs` runs on pre-commit and CI, blocking any `--brand-*` tokens or marketing imports in guest wedding code (`src/app/[slug]`).
+- [ ] **[BEFORE-LAUNCH]** **Cloudflare Turnstile on Public Guest Forms** | `@security`
+  - **Done When**: RSVP and guestbook endpoints require and verify Turnstile CAPTCHA tokens server-side before persisting records.
+- [ ] **[BEFORE-LAUNCH]** **Upload Hardening & EXIF Stripping** | `@security`
+  - **Done When**: Media presign endpoint verifies MIME magic bytes, enforces plan photo limits, and Sharp pipeline strips GPS EXIF data before public R2 storage.
+
+---
+
+## 4. Theme Engine & Performance
+
+- [x] **[BLOCKER]** **Cache-Decoupled Real-Time Lifecycle Engine** | `@design-eng` / `@lead-eng`
+  - **Done When**: `WeddingGuestClient` executes client-side real-time checks on ISO timestamps (`hostingUntil`, ceremony times), allowing edge CDN caching without freezing countdowns or expiration gates.
+- [x] **[BLOCKER]** **WCAG AA Contrast Matrix Automation** | `@design-eng`
+  - **Done When**: Automated contrast tests (`src/lib/themes/__tests__/contrast.test.ts` and `scripts/test-contrast.mjs`) verify all 5 presets (`royal-crimson`, `emerald-gold`, `ivory-minimal`, `sunset-day`, `sunset-dusk`) meet 4.5:1 text and 3:1 UI ratios.
+- [ ] **[BEFORE-LAUNCH]** **Dynamic Typography Script Verification** | `@design-eng`
+  - **Done When**: Indic font fallbacks (Noto Serif Devanagari, Rozha One, Suranna, Arima Madurai) tested for Devanagari, Telugu, Tamil, and Gujarati wedding names without FOIT/layout shifts.
+
+---
+
+## 5. Reliability, Operations & Disaster Recovery
+
+- [ ] **[BEFORE-LAUNCH]** **Environment Isolation (Staging vs Production)** | `@devops`
+  - **Done When**: Production and staging have isolated Cloudflare R2 buckets, Neon PostgreSQL instances, and distinct HMAC session secrets.
+- [ ] **[BEFORE-LAUNCH]** **Prisma Migration Discipline** | `@devops`
+  - **Done When**: Production CI/CD executes `prisma migrate deploy` exclusively; `prisma db push` is blocked.
+- [ ] **[BEFORE-LAUNCH]** **Disaster Recovery Backup Drill** | `@devops`
+  - **Done When**: An automated database snapshot is restored into a scratch instance and verified against row counts and constraint integrity.
+- [ ] **[BEFORE-LAUNCH]** **Health Check & Uptime Monitoring** | `@devops`
+  - **Done When**: An external pinger monitors `/api/health` with automated SMS/email alerts on downtime.
+- [ ] **[BEFORE-LAUNCH]** **Wedding-Day Concierge Emergency Runbook** | `@ops`
+  - **Done When**: 1-page runbook detailing CDN cache invalidation, slug transfer SOP, and emergency RSVP spreadsheet export is prepared.
+
+---
+
+## 6. Scaling & Automation (Post-Pilot / Phase 3)
+
+- [ ] **[LATER]** **Razorpay Automated Checkout & Webhooks** | `@lead-eng`
+  - **Done When**: Server generates Razorpay orders with server-calculated paise, frontend invokes Checkout modal, and webhook signatures verify payment idempotently.
+- [ ] **[LATER]** **Automated Credit & Partner Payout Ledger** | `@lead-eng`
+  - **Done When**: Append-only credit ledger table computes balances dynamically, and RazorpayX automates partner payouts after the 7-day cooling-off period.
+- [ ] **[LATER]** **Partner Dashboard Portal** | `@product`
+  - **Done When**: Dedicated portal for registered photographers and wedding planners to view referral link clicks, qualified weddings, and commission payouts.
+- [ ] **[LATER]** **Playwright End-to-End Test Suite** | `@qa`
+  - **Done When**: Headless browser test suite simulates full journey: wedding creation in admin -> guest envelope opening -> RSVP submission -> promo code checkout.
+- [ ] **[LATER]** **Indic Multi-Language Guest Interface** | `@product`
+  - **Done When**: Guest UI strings localized into Hindi, Telugu, Tamil, and Gujarati with in-place language toggle.

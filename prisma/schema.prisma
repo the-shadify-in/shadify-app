@@ -116,6 +116,19 @@ enum ConsentPurpose {
   face_search
 }
 
+enum PromoType {
+  partner
+  guest_referral
+  campaign
+}
+
+enum ReferralStatus {
+  pending
+  qualified
+  paid
+  void
+}
+
 // ---------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------
@@ -190,6 +203,8 @@ model Wedding {
   consents           Consent[]
   erasureRequests    ErasureRequest[]
   auditLogs          AuditLog[]
+  promoRedemptions   PromoRedemption[]
+  referrals          Referral[]
 
   @@index([weddingDate], map: "idx_weddings_date")
   @@map("weddings")
@@ -432,6 +447,8 @@ model Order {
   paidAt           DateTime?   @map("paid_at") @db.Timestamptz(6)
 
   wedding          Wedding?    @relation(fields: [weddingId], references: [id], onDelete: SetNull)
+  redemption       PromoRedemption?
+  referral         Referral?
 
   @@map("orders")
 }
@@ -490,4 +507,62 @@ model AuditLog {
 
   @@index([weddingId, createdAt(sort: Desc)], map: "idx_audit_wedding")
   @@map("audit_log")
+}
+
+model PromoCode {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code            String      @unique
+  promoType       PromoType   @default(campaign) @map("promo_type")
+  discountPaise   BigInt      @default(29900) @map("discount_paise") // e.g. ₹299
+  commissionPaise BigInt      @default(0) @map("commission_paise") // for B2B partners
+  partnerName     String?     @map("partner_name")
+  partnerPhone    String?     @map("partner_phone")
+  partnerUpi      String?     @map("partner_upi")
+  maxUses         Int?        @map("max_uses")
+  usedCount       Int         @default(0) @map("used_count")
+  minOrderPaise   BigInt      @default(299900) @map("min_order_paise")
+  isActive        Boolean     @default(true) @map("is_active")
+  expiresAt       DateTime?   @map("expires_at") @db.Timestamptz(6)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  redemptions     PromoRedemption[]
+  referrals       Referral[]
+
+  @@map("promo_codes")
+}
+
+model PromoRedemption {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  promoCodeId   String    @map("promo_code_id") @db.Uuid
+  orderId       String    @unique @map("order_id") @db.Uuid
+  weddingId     String?   @map("wedding_id") @db.Uuid
+  discountPaise BigInt    @map("discount_paise")
+  redeemedAt    DateTime  @default(now()) @map("redeemed_at") @db.Timestamptz(6)
+
+  promoCode     PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Restrict)
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  wedding       Wedding?  @relation(fields: [weddingId], references: [id], onDelete: SetNull)
+
+  @@map("promo_redemptions")
+}
+
+model Referral {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  promoCodeId     String         @map("promo_code_id") @db.Uuid
+  weddingId       String         @map("wedding_id") @db.Uuid
+  orderId         String?        @unique @map("order_id") @db.Uuid
+  commissionPaise BigInt         @map("commission_paise")
+  payoutUpi       String?        @map("payout_upi")
+  status          ReferralStatus @default(pending)
+  payoutTxnRef    String?        @map("payout_txn_ref")
+  paidAt          DateTime?      @map("paid_at") @db.Timestamptz(6)
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  promoCode       PromoCode      @relation(fields: [promoCodeId], references: [id], onDelete: Restrict)
+  wedding         Wedding        @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  order           Order?         @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([status], map: "idx_referrals_status")
+  @@index([weddingId], map: "idx_referrals_wedding")
+  @@map("referrals")
 }

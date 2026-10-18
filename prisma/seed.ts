@@ -51,6 +51,40 @@ async function main() {
   });
 
   console.log(`✅ Seeded wedding: ${wedding.brideName} & ${wedding.groomName} (/${wedding.slug})`);
+
+  // 3. Seed Hybrid Promo Codes
+  const guestPromo = await prisma.promoCode.upsert({
+    where: { code: "NAMASTE299" },
+    update: {},
+    create: {
+      code: "NAMASTE299",
+      promoType: "guest_referral",
+      discountPaise: BigInt(29900), // ₹299 discount
+      commissionPaise: BigInt(0),
+      minOrderPaise: BigInt(299900),
+      isActive: true,
+    },
+  });
+
+  const partnerPromo = await prisma.promoCode.upsert({
+    where: { code: "STUDIOPARTNER" },
+    update: {},
+    create: {
+      code: "STUDIOPARTNER",
+      promoType: "partner",
+      discountPaise: BigInt(29900), // ₹299 discount for couple
+      commissionPaise: BigInt(100000), // ₹1,000 commission for studio partner
+      partnerName: "Royal Heritage Photography Studio",
+      partnerPhone: "+919876500001",
+      partnerUpi: "royalstudio@upi",
+      minOrderPaise: BigInt(299900),
+      isActive: true,
+    },
+  });
+
+  console.log(
+    `✅ Seeded promo codes: ${guestPromo.code} (Guest) and ${partnerPromo.code} (Partner)`,
+  );
 }
 
 main()
