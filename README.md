@@ -162,14 +162,15 @@ The database setup uses a two-step migration architecture:
 
 For in-depth product, architectural, and financial specifications, refer to [`docs/`](./docs/):
 
-- **[00-MASTER-PLAN.md](./docs/00-MASTER-PLAN.md)**: Architectural principles and development standards.
-- **[01-PRODUCT-VISION-AND-MVP.md](./docs/01-PRODUCT-VISION-AND-MVP.md)**: Product scope, unit economics table, and break-even targets.
-- **[02-SYSTEM-ARCHITECTURE.md](./docs/02-SYSTEM-ARCHITECTURE.md)**: Caching tiers, monolith layout, and R2 presigned upload mechanics.
-- **[03-DATA-MODELS-AND-SECURITY.md](./docs/03-DATA-MODELS-AND-SECURITY.md)**: PostgreSQL schema, paise accounting, and DPDP record-keeping.
-- **[04-GUEST-EXPERIENCE-AND-LIFECYCLE.md](./docs/04-GUEST-EXPERIENCE-AND-LIFECYCLE.md)**: Pre/Live/Post lifecycle views, CSS envelope reveal, and UPI Shagun.
-- **[05-PHOTOGRAPHY-AND-AI-PIPELINE.md](./docs/05-PHOTOGRAPHY-AND-AI-PIPELINE.md)**: 90-day retention rules, audience visibility tiers, and Phase 2 face search roadmap.
-- **[06-HOSPITALITY-AND-ROADMAP.md](./docs/06-HOSPITALITY-AND-ROADMAP.md)**: Resort room allocator, driver cards, and React Native mobile app roadmap.
+- **[00-master-plan.md](./docs/product-specs/00-master-plan.md)**: Architectural principles and development standards.
+- **[01-product-vision-and-mvp.md](./docs/product-specs/01-product-vision-and-mvp.md)**: Product scope, unit economics table, and break-even targets.
+- **[02-system-architecture.md](./docs/product-specs/02-system-architecture.md)**: Caching tiers, monolith layout, and R2 presigned upload mechanics.
+- **[03-data-models-and-security.md](./docs/product-specs/03-data-models-and-security.md)**: PostgreSQL schema, paise accounting, and DPDP record-keeping.
+- **[04-guest-experience-and-lifecycle.md](./docs/product-specs/04-guest-experience-and-lifecycle.md)**: Pre/Live/Post lifecycle views, CSS envelope reveal, and UPI Shagun.
+- **[05-photography-and-ai-pipeline.md](./docs/product-specs/05-photography-and-ai-pipeline.md)**: 90-day retention rules, audience visibility tiers, and Phase 2 face search roadmap.
+- **[06-hospitality-and-roadmap.md](./docs/product-specs/06-hospitality-and-roadmap.md)**: Resort room allocator, driver cards, and React Native mobile app roadmap.
 - **[ADR 0001](./docs/adr/0001-lean-mvp0-monolith-and-economics.md)**: Lean Next.js Monolith, Direct UPI Shagun & 90-Day R2 Retention.
+- **[ADR 0002](./docs/adr/0002-dual-token-namespaces-and-theme-engine.md)**: Dual Token Namespaces (`--brand-*` vs `--theme-*`) & Theme as Data.
 
 ---
 
