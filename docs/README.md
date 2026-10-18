@@ -10,44 +10,59 @@
 
 The `docs/` directory contains the authoritative specifications for the platform:
 
-| Document                                                                                       | Title                               | Scope & Purpose                                                                                                     |
-| ---------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| [`00-master-plan.md`](./product-specs/00-master-plan.md)                                       | **Master Plan & Architecture**      | High-level system principles, monorepo-to-monolith evolution, and coding standards.                                 |
-| [`01-product-vision-and-mvp.md`](./product-specs/01-product-vision-and-mvp.md)                 | **Product Vision & Unit Economics** | Lean MVP-0 scope, pricing tiers (Lite/Premium/Platinum), GST & gateway margins, break-even matrix.                  |
-| [`02-system-architecture.md`](./product-specs/02-system-architecture.md)                       | **System Architecture & Caching**   | Monolith topology, Cloudflare edge CDN, ISR caching, R2 presigned upload mechanics.                                 |
-| [`03-data-models-and-security.md`](./product-specs/03-data-models-and-security.md)             | **Data Models & Security**          | PostgreSQL 16 schema, paise accounting, DPDP compliance audit tables, slug reservation triggers.                    |
-| [`04-guest-experience-and-lifecycle.md`](./product-specs/04-guest-experience-and-lifecycle.md) | **Guest Experience & Lifecycle**    | CSS/Lottie envelope reveal, video bite invites, per-event itinerary, UPI Shagun deep link, VIP cards.               |
-| [`05-photography-and-ai-pipeline.md`](./product-specs/05-photography-and-ai-pipeline.md)       | **Photography & Storage**           | 90-day RAW lifecycle rule, WebP renditions, audience privacy tiers (public/family/private), Phase 2 AI face search. |
-| [`06-hospitality-and-roadmap.md`](./product-specs/06-hospitality-and-roadmap.md)               | **Hospitality & Expansion**         | Destination room and cab allocations, emergency contact cards, future mobile app roadmap.                           |
-| [`adr/`](./adr/)                                                                               | **Architecture Decision Records**   | Accepted architectural decisions (monolith economics, dual token namespaces).                                       |
-| [`archive/`](./archive/)                                                                       | **Archived SQL Reference**          | Raw SQL drafts (`shadify-schema-mvp0.sql`, `rls-policies.optional.sql`).                                            |
+| Document                                                                                       | Title                               | Scope & Purpose                                                                                      |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [`ENGINEERING-GUIDELINES.md`](./ENGINEERING-GUIDELINES.md)                                     | **Engineering & Architecture**      | Four component layers, domain boundaries, brand token isolation gate.                                |
+| [`UI-UX-GUIDELINES.md`](./UI-UX-GUIDELINES.md)                                                 | **UI/UX & Design System**           | Luxury Indian wedding design tokens, 5 curated presets, envelope reveal and mobile ergonomics.       |
+| [`LAUNCH-CHECKLIST.md`](./LAUNCH-CHECKLIST.md)                                                 | **Production Launch Checklist**     | Quality gates, blocker tracking, test coverage, and pre-launch hardening status.                     |
+| [`RUNBOOKS.md`](./RUNBOOKS.md)                                                                 | **Concierge Operations Runbooks**   | Wedding-day emergency triage SOP, B2B referral commission payouts, and DPDP statutory erasure.       |
+| [`OBSERVABILITY.md`](./OBSERVABILITY.md)                                                       | **Observability & Health Checks**   | Pino structured JSON logging, `/api/health` heartbeat, `/admin/health` gate, and P0/P1 alert matrix. |
+| [`00-master-plan.md`](./product-specs/00-master-plan.md)                                       | **Master Plan & Architecture**      | High-level system principles, monorepo-to-monolith evolution, and coding standards.                  |
+| [`01-product-vision-and-mvp.md`](./product-specs/01-product-vision-and-mvp.md)                 | **Product Vision & Unit Economics** | Lean MVP-0 scope, pricing tiers (Lite/Premium/Platinum), GST & gateway margins, break-even matrix.   |
+| [`02-system-architecture.md`](./product-specs/02-system-architecture.md)                       | **System Architecture & Caching**   | Monolith topology, Cloudflare edge CDN, ISR caching, R2 presigned upload mechanics.                  |
+| [`03-data-models-and-security.md`](./product-specs/03-data-models-and-security.md)             | **Data Models & Security**          | PostgreSQL 16 schema, paise accounting, DPDP compliance audit tables, slug reservation triggers.     |
+| [`04-guest-experience-and-lifecycle.md`](./product-specs/04-guest-experience-and-lifecycle.md) | **Guest Experience & Lifecycle**    | CSS envelope reveal, video bite invites, per-event itinerary, UPI Shagun deep link, VIP cards.       |
+| [`05-photography-and-ai-pipeline.md`](./product-specs/05-photography-and-ai-pipeline.md)       | **Photography & Storage**           | 90-day RAW lifecycle rule, Sharp EXIF stripping, audience privacy tiers, Phase 2 AI face search.     |
+| [`06-hospitality-and-roadmap.md`](./product-specs/06-hospitality-and-roadmap.md)               | **Hospitality & Expansion**         | Destination room and cab allocations, emergency contact cards, future mobile app roadmap.            |
+| [`adr/`](./adr/)                                                                               | **Architecture Decision Records**   | Accepted architectural decisions (monolith economics, dual token namespaces).                        |
+| [`archive/`](./archive/)                                                                       | **Archived SQL Reference**          | Raw SQL drafts (`shadify-schema-mvp0.sql`, `rls-policies.optional.sql`).                             |
 
 ---
 
 ## 2. Project Directory Structure
 
 ```
-shadify/
+shadify-app/
 ├── prisma/
 │   ├── schema.prisma              ← Official datamodel (models, enums, relations)
 │   └── migrations/
 │       ├── 0_init/                ← Base tables, enums, standard indexes, FKs
-│       └── 1_db_protections/      ← Reserved slug triggers, check constraints, partial indexes
+│       ├── 1_db_protections/      ← Reserved slug triggers, check constraints, partial indexes
+│       ├── 2_shagun_indices/      ← Descending indexes for guest shagun feeds
+│       ├── 3_promos_and_referrals/← B2B partner and guest referral credit tables
+│       └── 4_reserved_slugs_expand/← Expanded reserved slugs list trigger
 │
-├── docs/                          ← Authoritative architecture and product documentation
+├── docs/                          ← Authoritative architecture, engineering, and operations specs
 │
 ├── src/
 │   ├── app/
-│   │   ├── w/[slug]/              ← Guest wedding website (envelope reveal, schedule, RSVP, Shagun)
-│   │   ├── admin/                 ← Concierge staff admin (wedding creation, R2 photo upload, RSVP export)
+│   │   ├── page.tsx               ← Luxury public marketing landing page
+│   │   ├── terms/page.tsx         ← Customer agreement & 5-year hosting terms
+│   │   ├── privacy/page.tsx       ← DPDP Act 2023 zero-harvesting privacy notice
+│   │   ├── refunds/page.tsx       ← Cancellation, postponement & refund policy
+│   │   ├── [slug]/                ← Direct guest wedding website (envelope reveal, RSVP, Shagun)
+│   │   ├── admin/                 ← Concierge staff admin (onboarding, metrics, /admin/health)
 │   │   └── api/
-│   │       ├── rsvp/              ← Rate-limited per-event RSVP submission handler
-│   │       ├── shagun/            ← Self-declared UPI cash blessing recorder
+│   │       ├── rsvp/              ← Rate-limited RSVP with Turnstile bot protection
+│   │       ├── guestbook/         ← Moderated guestbook blessing submissions
+│   │       ├── health/            ← PostgreSQL heartbeat endpoint with roundtrip latency
+│   │       ├── promos/validate/   ← Server-side promo code validation in integer paise
 │   │       └── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
 │   │
-│   ├── components/                ← Modular UI components (Envelope, Timeline, Lightbox, WhatsAppStudio)
-│   ├── lib/                       ← Core singletons: db.ts (Prisma), r2.ts (S3), ratelimit.ts, auth.ts
-│   └── middleware.ts              ← Top-level slug routing, reserved slug guard, admin session check
+│   ├── components/                ← Primitives (Button, Dialog, Turnstile) & Patterns
+│   ├── features/                  ← Modular domain logic (weddings, promos, guest)
+│   ├── lib/                       ← Core singletons: db.ts, r2.ts, ratelimit.ts, auth.ts, turnstile.ts
+│   └── middleware.ts              ← Reserved slug guard, scanner bot filter, admin session protection
 │
 ├── .env.example                   ← Environment variables template
 ├── package.json

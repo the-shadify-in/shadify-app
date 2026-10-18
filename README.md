@@ -57,20 +57,30 @@ shadify-app/
 │
 ├── src/
 │   ├── app/
-│   │   ├── w/[slug]/page.tsx      ← Guest wedding site (Envelope, itinerary, RSVP, Shagun)
+│   │   ├── page.tsx               ← Luxury public marketing landing page
+│   │   ├── terms/page.tsx         ← Customer agreement & 5-year hosting terms
+│   │   ├── privacy/page.tsx       ← DPDP Act 2023 zero-harvesting privacy notice
+│   │   ├── refunds/page.tsx       ← Cancellation, postponement & refund policy
+│   │   ├── [slug]/page.tsx        ← Direct guest wedding site (Envelope, itinerary, RSVP, Shagun)
 │   │   ├── admin/
 │   │   │   ├── login/page.tsx     ← Staff concierge authentication
+│   │   │   ├── health/page.tsx    ← 14-day pre-wedding readiness gate
 │   │   │   └── page.tsx           ← Managed weddings overview & metrics
 │   │   └── api/
-│   │       ├── rsvp/route.ts      ← Rate-limited RSVP submission handler
-│   │       └── media/presign/     ← Direct R2 S3 presigned PUT generator
+│   │       ├── rsvp/route.ts      ← Rate-limited RSVP submission with Turnstile
+│   │       ├── guestbook/route.ts ← Moderated guest blessing submissions
+│   │       ├── health/route.ts    ← Heartbeat database probe
+│   │       ├── promos/validate/   ← Integer paise promo validation
+│   │       └── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
 │   │
 │   ├── lib/
 │   │   ├── db.ts                  ← PrismaClient singleton with serverless pooling
 │   │   ├── r2.ts                  ← Cloudflare R2 S3 client & signed URL helpers
 │   │   ├── auth.ts                ← HMAC session security helpers
-│   │   └── ratelimit.ts           ← In-memory sliding window rate limiter
-│   └── middleware.ts              ← Reserved slug guard and admin route protection
+│   │   ├── ratelimit.ts           ← In-memory sliding window rate limiter
+│   │   ├── turnstile.ts           ← Cloudflare Turnstile token verifier
+│   │   └── media/image-processor.ts← Sharp EXIF GPS stripping pipeline
+│   └── middleware.ts              ← Reserved slug guard, scanner bot filter, admin protection
 │
 ├── .env.example
 ├── package.json
@@ -83,7 +93,7 @@ shadify-app/
 | **Language**  | TypeScript 5                    | Strict end-to-end type safety                                             |
 | **Styling**   | Tailwind CSS                    | Luxury Indian wedding design palette (Royal Crimson & Rajasthani Gold)    |
 | **Database**  | PostgreSQL 16 (Neon / Supabase) | Relational multi-tenant schema with UUID PKs and paise accounting         |
-| **ORM**       | Prisma ORM 5.22                 | Declarative datamodel + migration runner                                  |
+| **ORM**       | Prisma ORM 7.10                 | Declarative datamodel + migration runner                                  |
 | **Storage**   | Cloudflare R2                   | S3-compatible media storage with zero egress fees                         |
 | **Edge CDN**  | Cloudflare / Vercel Edge        | Global HTML and asset caching with tag-based on-demand revalidation       |
 
@@ -163,8 +173,13 @@ The database setup uses a two-step migration architecture:
 
 ## 📚 Documentation Hub
 
-For in-depth product, architectural, and financial specifications, refer to [`docs/`](./docs/):
+For in-depth product, architectural, operational, and financial specifications, refer to [`docs/`](./docs/):
 
+- **[ENGINEERING-GUIDELINES.md](./docs/ENGINEERING-GUIDELINES.md)**: 4 component layers, domain boundaries, brand token isolation CI gate.
+- **[UI-UX-GUIDELINES.md](./docs/UI-UX-GUIDELINES.md)**: Luxury Indian wedding design tokens, 5 curated presets, envelope reveal, and mobile ergonomics.
+- **[LAUNCH-CHECKLIST.md](./docs/LAUNCH-CHECKLIST.md)**: Pre-launch verification matrix, blocker tracking, and quality gates.
+- **[RUNBOOKS.md](./docs/RUNBOOKS.md)**: Concierge operations runbooks (Emergency triage, B2B partner payouts, DPDP erasure).
+- **[OBSERVABILITY.md](./docs/OBSERVABILITY.md)**: Structured JSON logging, `/api/health` heartbeat, `/admin/health` gate, and P0/P1 alert matrix.
 - **[00-master-plan.md](./docs/product-specs/00-master-plan.md)**: Architectural principles and development standards.
 - **[01-product-vision-and-mvp.md](./docs/product-specs/01-product-vision-and-mvp.md)**: Product scope, unit economics table, and break-even targets.
 - **[02-system-architecture.md](./docs/product-specs/02-system-architecture.md)**: Caching tiers, monolith layout, and R2 presigned upload mechanics.
