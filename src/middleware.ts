@@ -25,11 +25,16 @@ const RESERVED_SLUGS = new Set([
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Guard /w/[slug] against reserved slugs
+  // 1. Redirect legacy /w/:slug to clean direct /:slug
   if (pathname.startsWith("/w/")) {
-    const slug = pathname.split("/")[2]?.toLowerCase();
-    if (slug && RESERVED_SLUGS.has(slug)) {
-      return NextResponse.redirect(new URL("/404", request.url));
+    const parts = pathname.replace(/^\/w\//, "").split("/");
+    const slug = parts[0]?.toLowerCase();
+    const rest = parts.slice(1).join("/");
+    if (slug) {
+      if (RESERVED_SLUGS.has(slug)) {
+        return NextResponse.redirect(new URL("/404", request.url));
+      }
+      return NextResponse.redirect(new URL(`/${slug}${rest ? `/${rest}` : ""}`, request.url), 301);
     }
   }
 

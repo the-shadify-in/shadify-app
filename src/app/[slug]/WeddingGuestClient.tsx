@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Heart,
   MapPin,
@@ -64,6 +64,25 @@ export default function WeddingGuestClient({
   const [shagunAmount, setShagunAmount] = useState<number>(2101);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Check localStorage for seen state on mount
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem(`shadify_envelope_opened_${wedding.slug}`);
+      if (seen === "true") {
+        setIsEnvelopeOpened(true);
+      }
+    } catch {
+      // Safe fallback if localStorage is disabled
+    }
+  }, [wedding.slug]);
+
+  const handleOpenEnvelope = () => {
+    try {
+      localStorage.setItem(`shadify_envelope_opened_${wedding.slug}`, "true");
+    } catch {}
+    setIsEnvelopeOpened(true);
+  };
+
   // Form state
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
@@ -108,7 +127,7 @@ export default function WeddingGuestClient({
       `🌸 *Wedding Invitation: ${wedding.bride} & ${wedding.groom}* 🌸\n\n` +
         `We would be honored by your presence as we celebrate our wedding in ${wedding.venueCity} on ${wedding.date}.\n\n` +
         `Tap here to view the royal invitation, event itinerary, and RSVP:\n` +
-        `${typeof window !== "undefined" ? window.location.href : `https://shadify.in/w/${wedding.slug}`}`
+        `${typeof window !== "undefined" ? window.location.href : `https://shadify.in/${wedding.slug}`}`
     );
     return `https://api.whatsapp.com/send?text=${text}`;
   };
@@ -132,7 +151,7 @@ export default function WeddingGuestClient({
           "--theme-wax-seal": c.waxSeal,
         } as React.CSSProperties
       }
-      className="min-h-screen bg-theme-bg text-theme-text-primary selection:bg-theme-accent selection:text-theme-on-accent font-sans transition-colors duration-500"
+      className="min-h-screen bg-theme-bg text-theme-text-primary selection:bg-theme-accent selection:text-theme-on-accent font-sans transition-colors duration-500 pb-24 md:pb-0"
     >
       {/* ----------------------------------------------------------- */}
       {/* 1. ROYAL ENVELOPE OVERLAY (CSS REVEAL) */}
@@ -163,13 +182,20 @@ export default function WeddingGuestClient({
             {/* Wax Seal Action Button */}
             <div className="mt-8">
               <button
-                onClick={() => setIsEnvelopeOpened(true)}
+                onClick={handleOpenEnvelope}
                 className={`group relative inline-flex items-center gap-2 rounded-full px-8 py-3 font-serif text-sm tracking-widest text-theme-on-primary bg-theme-primary shadow-lg transition-all hover:scale-105 active:scale-95 ${
                   contrastReport.primaryNeedsBorder ? "border-2 border-theme-accent" : ""
                 }`}
               >
                 <Sparkles className="h-4 w-4 text-theme-on-primary transition-transform group-hover:rotate-45" />
                 TAP TO OPEN INVITATION
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenEnvelope}
+                className="mt-4 block mx-auto text-xs text-theme-text-muted hover:text-theme-accent transition underline tracking-wider opacity-80"
+              >
+                Skip Reveal (View Details)
               </button>
             </div>
           </div>
@@ -551,6 +577,63 @@ export default function WeddingGuestClient({
           </p>
         </footer>
       )}
+      {/* ----------------------------------------------------------- */}
+      {/* 8. MOBILE-FIRST STICKY ACTION BAR */}
+      {/* ----------------------------------------------------------- */}
+      <nav
+        aria-label="Mobile Quick Actions"
+        className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-theme-surface/95 backdrop-blur-md border-t border-theme-accent/20 px-4 py-2 pb-safe shadow-2xl"
+      >
+        <div className="flex items-center justify-around gap-2 text-center">
+          <a
+            href={wedding.events[0]?.mapUrl || "#itinerary"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 py-1.5 flex flex-col items-center justify-center text-xs font-medium text-theme-text-primary hover:text-theme-accent transition"
+          >
+            <MapPin className="h-4 w-4 mb-0.5 text-theme-accent" />
+            <span>Map</span>
+          </a>
+          <button
+            type="button"
+            onClick={() => setActiveRsvpEvent(wedding.events[0] || null)}
+            className="flex-1 py-2 rounded-full bg-theme-primary text-theme-on-primary text-xs font-semibold shadow-md active:scale-95 transition"
+          >
+            RSVP
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsShagunModalOpen(true)}
+            className="flex-1 py-1.5 flex flex-col items-center justify-center text-xs font-medium text-theme-text-primary hover:text-theme-accent transition"
+          >
+            <Gift className="h-4 w-4 mb-0.5 text-theme-accent" />
+            <span>Shagun</span>
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              if (typeof navigator !== "undefined" && navigator.share) {
+                try {
+                  await navigator.share({
+                    title: `${wedding.bride} & ${wedding.groom}'s Wedding`,
+                    text: `Join us in celebrating the wedding of ${wedding.bride} & ${wedding.groom}!`,
+                    url: window.location.href,
+                  });
+                } catch {
+                  // User cancelled share
+                }
+              } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("Wedding celebration link copied to clipboard!");
+              }
+            }}
+            className="flex-1 py-1.5 flex flex-col items-center justify-center text-xs font-medium text-theme-text-primary hover:text-theme-accent transition"
+          >
+            <Share2 className="h-4 w-4 mb-0.5 text-theme-accent" />
+            <span>Share</span>
+          </button>
+        </div>
+      </nav>
     </main>
   );
 }

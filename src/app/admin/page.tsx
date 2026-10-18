@@ -162,7 +162,7 @@ export default function AdminDashboardPage() {
                   <td className="px-5 py-4 text-green-400 font-medium">{w.shagunTotal}</td>
                   <td className="px-5 py-4 text-right">
                     <Link
-                      href={`/w/${w.slug}`}
+                      href={`/${w.slug}`}
                       target="_blank"
                       className="inline-flex items-center gap-1 rounded border border-[#C9933A]/30 px-3 py-1 text-[11px] text-[#C9933A] hover:bg-[#C9933A]/10"
                     >

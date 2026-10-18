@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
       success: true,
       weddingId: result.id,
       slug: result.slug,
-      url: `/w/${result.slug}`,
+      url: `/${result.slug}`,
     });
   } catch (err: unknown) {
     const errorObj = err as Record<string, unknown> | undefined;

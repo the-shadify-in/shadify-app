@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
 
-const ROOTS = ["src/app/w", "src/components/guest"]; // guest-facing code
+const ROOTS = ["src/app/[slug]", "src/components/guest"]; // guest-facing code
 const EXTS = new Set([".ts", ".tsx", ".js", ".jsx", ".css", ".mdx"]);
 const PATTERNS = [
   { re: /--brand-/, why: "CSS variable from the platform brand namespace" },

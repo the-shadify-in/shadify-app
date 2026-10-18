@@ -277,7 +277,7 @@ export default function NewWeddingOnboardingPage() {
               </label>
               <div className="mt-1 flex rounded-lg border border-[#EADDCF] focus-within:border-[#D6246E] bg-white overflow-hidden">
                 <span className="inline-flex items-center px-3 text-xs text-[#1F1A2E]/50 bg-gray-50 border-r border-[#EADDCF]">
-                  shadify.in/w/
+                  shadify.in/
                 </span>
                 <input
                   type="text"
