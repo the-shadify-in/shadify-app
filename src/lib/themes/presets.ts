@@ -1,7 +1,28 @@
 // src/lib/themes/presets.ts
 import type { ThemeColors } from "./contrast";
 
-export const PRESET_COLORS: Record<string, ThemeColors> = {
+const sunsetDusk: ThemeColors = {
+  canvas: "#12080D",
+  surface: "#1E0F16",
+  text: "#FBEAEA",
+  textMuted: "#C9A8B0",
+  primary: "#D46A7E",
+  onPrimary: "#12080D",
+  accent: "#E29578",
+  onAccent: "#12080D",
+};
+
+export interface PresetColorsRecord {
+  "royal-crimson": ThemeColors;
+  "emerald-gold": ThemeColors;
+  "ivory-minimal": ThemeColors;
+  "sunset-day": ThemeColors;
+  "sunset-dusk": ThemeColors;
+  "sunset-pastel": ThemeColors;
+  [key: string]: ThemeColors | undefined;
+}
+
+export const PRESET_COLORS: PresetColorsRecord = {
   "royal-crimson": {
     canvas: "#0E0709",
     surface: "#1A0E11",
@@ -42,17 +63,6 @@ export const PRESET_COLORS: Record<string, ThemeColors> = {
     accent: "#A8502F",
     onAccent: "#FFFFFF",
   },
-  "sunset-dusk": {
-    canvas: "#12080D",
-    surface: "#1E0F16",
-    text: "#FBEAEA",
-    textMuted: "#C9A8B0",
-    primary: "#D46A7E",
-    onPrimary: "#12080D",
-    accent: "#E29578",
-    onAccent: "#12080D",
-  },
+  "sunset-dusk": sunsetDusk,
+  "sunset-pastel": sunsetDusk,
 };
-
-// Backward-compatibility alias for previous iterations
-PRESET_COLORS["sunset-pastel"] = PRESET_COLORS["sunset-dusk"];

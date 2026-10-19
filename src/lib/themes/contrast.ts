@@ -15,28 +15,38 @@ const HEX = /^#[0-9a-fA-F]{6}$/;
 function toRgb(hex: string): [number, number, number] {
   if (!HEX.test(hex)) throw new Error(`Invalid hex color: ${hex}`);
   const h = hex.slice(1);
-  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as [number, number, number];
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+function toLinear(v: number): number {
+  const c = v / 255;
+  return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
 }
 
 export function luminance(hex: string): number {
-  const [r, g, b] = toRgb(hex).map((v) => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  });
+  const rgb = toRgb(hex);
+  const r = toLinear(rgb[0]);
+  const g = toLinear(rgb[1]);
+  const b = toLinear(rgb[2]);
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
 export function contrast(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  const lumA = luminance(a);
+  const lumB = luminance(b);
+  const hi = Math.max(lumA, lumB);
+  const lo = Math.min(lumA, lumB);
   return (hi + 0.05) / (lo + 0.05);
 }
 
 // Colour of `fg` drawn at `opacity` over `bg`, as an opaque hex.
 export function blend(fg: string, bg: string, opacity: number): string {
-  const f = toRgb(fg),
-    g = toRgb(bg);
-  const mix = f.map((v, i) => Math.round(v * opacity + g[i] * (1 - opacity)));
-  return "#" + mix.map((v) => v.toString(16).padStart(2, "0")).join("");
+  const f = toRgb(fg);
+  const g = toRgb(bg);
+  const r = Math.round(f[0] * opacity + g[0] * (1 - opacity));
+  const gr = Math.round(f[1] * opacity + g[1] * (1 - opacity));
+  const b = Math.round(f[2] * opacity + g[2] * (1 - opacity));
+  return "#" + [r, gr, b].map((v) => v.toString(16).padStart(2, "0")).join("");
 }
 
 type Rule = {
@@ -110,9 +120,10 @@ export function validateContrast(c: ThemeColors): ContrastReport {
 
   for (const r of ERROR_RULES) {
     const ratio = contrast(c[r.fg], c[r.bg]);
-    ratios[r.id] = Math.round(ratio * 100) / 100;
+    const roundedRatio = Math.round(ratio * 100) / 100;
+    ratios[r.id] = roundedRatio;
     if (ratio < r.min)
-      errors.push({ id: r.id, ratio: ratios[r.id], min: r.min, message: r.message });
+      errors.push({ id: r.id, ratio: roundedRatio, min: r.min, message: r.message });
   }
 
   const accentCanvas = contrast(c.accent, c.canvas);

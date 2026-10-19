@@ -8,7 +8,7 @@ import WeddingGuestClient from "./WeddingGuestClient";
 // Revalidate every hour, or via on-demand tag revalidation when wedding content changes
 export const revalidate = 3600;
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return [{ slug: "priya-rahul" }];
 }
 

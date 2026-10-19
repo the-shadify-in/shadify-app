@@ -52,7 +52,7 @@ export default function WeddingGuestClient({
 
   const handleCopyUpi = () => {
     if (!wedding.upiVpa) return;
-    navigator.clipboard.writeText(wedding.upiVpa);
+    void navigator.clipboard.writeText(wedding.upiVpa);
     setCopiedUpi(true);
     setTimeout(() => setCopiedUpi(false), 2500);
   };
@@ -306,7 +306,7 @@ export default function WeddingGuestClient({
           {/* Quick Actions */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <button
-              onClick={() => setActiveRsvpEvent(wedding.events[0])}
+              onClick={() => setActiveRsvpEvent(wedding.events[0] ?? null)}
               className={`text-theme-on-primary rounded-full bg-theme-primary px-8 py-3 text-sm font-semibold tracking-wide shadow-lg transition-transform hover:scale-105 ${
                 contrastReport.primaryNeedsBorder ? "border-2 border-theme-accent" : ""
               }`}

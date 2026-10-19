@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { THEME_PRESETS, validateContrast, type PresetId } from "@/lib/themes/tokens";
+import { THEME_PRESETS, validateContrast } from "@/lib/themes/tokens";
 import { PRICING_PLANS } from "@/lib/config/pricing";
 import type { CreateWeddingInput } from "./schemas";
 import { normalizePhoneNumber } from "@/lib/phone";
@@ -83,7 +83,7 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
   // 2. Prepare overrides & dates
   const themeConfig = {
     version: 1,
-    presetId: data.themeId as PresetId,
+    presetId: data.themeId,
     palette: resolvedPalette,
     typography: basePreset.typography,
     monogram: {

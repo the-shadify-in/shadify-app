@@ -108,7 +108,12 @@ describe("DPDP Act 2023 Wedding Data Erasure Engine", () => {
     const userUpdateCalls = vi.mocked(prisma.user.update).mock.calls;
     expect(userUpdateCalls.length).toBe(2);
 
-    const [firstUserCall, secondUserCall] = userUpdateCalls;
+    const firstUserCall = userUpdateCalls[0];
+    const secondUserCall = userUpdateCalls[1];
+    expect(firstUserCall).toBeDefined();
+    expect(secondUserCall).toBeDefined();
+    if (!firstUserCall || !secondUserCall) throw new Error("Expected 2 user calls");
+
     expect(firstUserCall[0].data.email).toMatch(/^erased-[a-f0-9-]+@invalid\.example$/);
     expect(secondUserCall[0].data.email).toMatch(/^erased-[a-f0-9-]+@invalid\.example$/);
     expect(firstUserCall[0].data.email).not.toBe(secondUserCall[0].data.email);

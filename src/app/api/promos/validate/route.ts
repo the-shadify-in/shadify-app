@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json().catch(() => null);
+    const body: unknown = await request.json().catch(() => null);
     if (!body) {
       return NextResponse.json({ error: "Invalid request payload." }, { status: 400 });
     }

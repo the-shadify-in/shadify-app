@@ -92,7 +92,17 @@ export type ThemeConfig = z.infer<typeof ThemeConfigSchema>;
 /**
  * Complete Theme Presets built on the vetted PRESET_COLORS
  */
-export const THEME_PRESETS: Record<string, ThemeConfig> = {
+export interface ThemePresetsRecord {
+  "royal-crimson": ThemeConfig;
+  "emerald-gold": ThemeConfig;
+  "ivory-minimal": ThemeConfig;
+  "sunset-day": ThemeConfig;
+  "sunset-dusk": ThemeConfig;
+  "sunset-pastel": ThemeConfig;
+  [key: string]: ThemeConfig | undefined;
+}
+
+export const THEME_PRESETS: ThemePresetsRecord = {
   "royal-crimson": {
     version: 1,
     presetId: "royal-crimson",
@@ -232,12 +242,34 @@ export const THEME_PRESETS: Record<string, ThemeConfig> = {
       showGallery: true,
     },
   },
-};
 
-// Aliases
-THEME_PRESETS["sunset-pastel"] = {
-  ...THEME_PRESETS["sunset-dusk"],
-  presetId: "sunset-pastel",
+  "sunset-pastel": {
+    version: 1,
+    presetId: "sunset-pastel",
+    palette: {
+      ...PRESET_COLORS["sunset-dusk"],
+      envelopeBg: "#1F0E18",
+      waxSeal: "#BA4B63",
+    },
+    typography: {
+      displayFont: "Playfair Display",
+      bodyFont: "Inter",
+    },
+    monogram: {
+      text: "V & T",
+      style: "ornate-crest",
+    },
+    ornaments: {
+      motif: "lotus",
+      borderStyle: "clean",
+    },
+    sections: {
+      showLoveStory: true,
+      showVips: true,
+      showShagun: true,
+      showGallery: true,
+    },
+  },
 };
 
 export const INDIC_DISPLAY_FALLBACK =
@@ -288,7 +320,8 @@ export function resolveTheme(
   rawConfig: unknown,
   themeVersion = 1,
 ): { theme: ThemeConfig; report: ContrastReport } {
-  const basePreset = THEME_PRESETS[themeId] || THEME_PRESETS["royal-crimson"];
+  const fallbackPreset = THEME_PRESETS["royal-crimson"];
+  const basePreset = THEME_PRESETS[themeId] ?? fallbackPreset;
 
   if (!rawConfig || typeof rawConfig !== "object" || Array.isArray(rawConfig)) {
     const report = validateContrast(basePreset.palette);

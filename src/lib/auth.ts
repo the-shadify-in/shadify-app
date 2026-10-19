@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import { z } from "zod";
 
 export const SESSION_COOKIE_NAME = "shadify_admin_session";
 const SESSION_SECRET =
@@ -36,6 +37,13 @@ export function signSessionToken(
   return `${encodedPayload}.${signature}`;
 }
 
+const SessionPayloadSchema = z.object({
+  userId: z.string(),
+  role: z.string(),
+  v: z.string().optional(),
+  exp: z.number().optional(),
+});
+
 /**
  * Verifies an HMAC-SHA256 signed session token and checks expiration and session version.
  */
@@ -55,7 +63,13 @@ export function verifySessionToken(token: string): AdminSession | null {
       return null;
     }
 
-    const payload = JSON.parse(Buffer.from(encodedPayload, "base64url").toString("utf-8"));
+    const rawPayload: unknown = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString("utf-8"),
+    );
+    const parsed = SessionPayloadSchema.safeParse(rawPayload);
+    if (!parsed.success) return null;
+    const payload = parsed.data;
+
     if (payload.exp && Date.now() > payload.exp) {
       return null;
     }
@@ -65,7 +79,12 @@ export function verifySessionToken(token: string): AdminSession | null {
       return null;
     }
 
-    return { userId: payload.userId, role: payload.role, version: payload.v, exp: payload.exp };
+    return {
+      userId: payload.userId,
+      role: payload.role,
+      version: payload.v,
+      exp: payload.exp ?? Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
+    };
   } catch {
     return null;
   }
@@ -107,6 +126,11 @@ export function signPreviewToken(slug: string, ttlMs = 24 * 60 * 60 * 1000): str
   return `${payload}.${signature}`;
 }
 
+const PreviewPayloadSchema = z.object({
+  slug: z.string(),
+  exp: z.number(),
+});
+
 /**
  * Verifies a temporary preview token for a wedding slug
  */
@@ -124,7 +148,11 @@ export function verifyPreviewToken(token?: string | null, slug?: string): boolea
       return false;
     }
 
-    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8"));
+    const rawPayload: unknown = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8"));
+    const parsed = PreviewPayloadSchema.safeParse(rawPayload);
+    if (!parsed.success) return false;
+    const payload = parsed.data;
+
     if (payload.slug !== slug) return false;
     if (Date.now() > payload.exp) return false;
 

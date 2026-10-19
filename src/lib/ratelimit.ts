@@ -88,7 +88,7 @@ export function checkRateLimit(
   record.timestamps = record.timestamps.filter((ts) => now - ts < windowMs);
 
   if (record.timestamps.length >= maxHits) {
-    const oldest = record.timestamps[0];
+    const oldest = record.timestamps[0] ?? now;
     const resetMs = Math.max(0, windowMs - (now - oldest));
     return {
       success: false,

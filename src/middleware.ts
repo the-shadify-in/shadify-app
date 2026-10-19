@@ -76,6 +76,9 @@ export function middleware(request: NextRequest) {
 
   if (segments.length === 1) {
     const candidate = segments[0];
+    if (!candidate) {
+      return new NextResponse(null, { status: 404 });
+    }
 
     // Single-segment dotted file check (e.g. /backup.zip, /test.html)
     if (candidate.includes(".")) {

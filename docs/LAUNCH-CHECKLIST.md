@@ -78,9 +78,9 @@
       `generateMetadata` in `src/app/[slug]/page.tsx` dynamically extracts couple names with `React.cache` deduplication and Open Graph tags.
       **Done when:** page title and OG tags render "Bride & Groom's Wedding Celebration | Shadify" with `robots: noindex`.
 
-- [x] **A19 `[BLOCKER]` `@lead-eng` — Zero `any` and zero `@ts-ignore` in codebase.**
-      Enforced in `tsconfig.json` (`strict: true`, `noImplicitOverride`, `noFallthroughCasesInSwitch`) and `.eslintrc.json` (`@typescript-eslint/no-explicit-any: error`, `@typescript-eslint/ban-ts-comment: error`).
-      **Done when:** `grep` for `:\s*any`, `as any`, `<any>`, `any[]`, `Record<string, any>`, `@ts-ignore`, and `@ts-nocheck` returns zero occurrences in `src/`, and `npm run check` passes with 0 warnings.
+- [x] **A19 `[BLOCKER]` `@lead-eng` — Zero `any`, zero `@ts-ignore`, and strict type-aware enforcement across codebase.**
+      Enforced in `tsconfig.json` (`strict: true`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `noUncheckedIndexedAccess: true`), `tsconfig.eslint.json`, and `.eslintrc.json` (extending `plugin:@typescript-eslint/recommended-type-checked` with `parserOptions.project: true`, `@typescript-eslint/no-explicit-any: error`, `@typescript-eslint/ban-ts-comment: error`, and type-aware unsafe checks). All untyped ingress boundaries (`req.json()`, `JSON.parse()`) are typed as `unknown` and validated through Zod schemas.
+      **Done when:** `npm run typecheck` (`tsc --noEmit` with `noUncheckedIndexedAccess`) and repo-wide `npm run lint` (`eslint . --ext .ts,.tsx` covering `src`, `tests`, `prisma`, `scripts`) pass with 0 errors.
 
 ---
 

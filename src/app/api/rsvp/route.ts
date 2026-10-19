@@ -1,13 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import { normalizePhoneNumber } from "@/lib/phone";
 
+const RsvpSubmissionSchema = z.object({
+  weddingId: z.string().optional(),
+  weddingSlug: z.string().optional(),
+  eventId: z.string().optional(),
+  guestId: z.string().optional(),
+  respondentName: z.string().optional(),
+  guestName: z.string().optional(),
+  respondentPhone: z.string().optional(),
+  guestPhone: z.string().optional(),
+  attending: z.boolean().optional(),
+  partySize: z.union([z.number(), z.string()]).optional(),
+  mealPreference: z.enum(["pure_veg", "jain", "non_veg", "no_preference"]).nullish(),
+  needsStay: z.boolean().optional(),
+  needsAccommodation: z.boolean().optional(),
+  arrivalNotes: z.string().optional(),
+  blessingMessage: z.string().optional(),
+  notes: z.string().optional(),
+  turnstileToken: z.string().optional(),
+});
+
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
-    const body = await request.json();
+    const rawBody: unknown = await request.json();
+    const parseResult = RsvpSubmissionSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: parseResult.error.format() },
+        { status: 400 },
+      );
+    }
+
     const {
       weddingId: rawWeddingId,
       weddingSlug,
@@ -26,7 +55,7 @@ export async function POST(request: NextRequest) {
       blessingMessage,
       notes,
       turnstileToken,
-    } = body;
+    } = parseResult.data;
 
     // 1. Rate Limiting: Keyed by wedding AND client IP with generous allowance (60/min) for shared venue Wi-Fi
     // Primary bot defense is Cloudflare Turnstile token verification

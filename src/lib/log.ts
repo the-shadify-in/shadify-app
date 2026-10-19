@@ -81,7 +81,12 @@ export function logRequest({
 
   if (error) {
     logData.errorClass = error instanceof Error ? error.constructor.name : "UnknownError";
-    logData.errorMessage = error instanceof Error ? error.message : String(error);
+    logData.errorMessage =
+      error instanceof Error
+        ? error.message
+        : typeof error === "string"
+          ? error
+          : JSON.stringify(error);
     if (status >= 500) {
       logger.error(logData, `API Request Failed: ${method} ${route} (${status})`);
       return;

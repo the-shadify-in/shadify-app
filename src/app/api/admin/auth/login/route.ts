@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json();
+    const body: unknown = await req.json();
     const { email, password } = LoginSchema.parse(body);
 
     // Verify staff credentials against configured password

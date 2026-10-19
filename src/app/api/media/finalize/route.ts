@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Validate input payload
-    const body = await req.json();
+    const body: unknown = await req.json();
     const parse = FinalizeSchema.safeParse(body);
     if (!parse.success) {
       return NextResponse.json(

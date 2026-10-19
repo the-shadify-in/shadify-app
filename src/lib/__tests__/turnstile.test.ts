@@ -46,7 +46,7 @@ describe("Cloudflare Turnstile Verification Module", () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({ success: true }),
+      json: () => Promise.resolve({ success: true }),
     });
     vi.stubGlobal("fetch", mockFetch);
 
@@ -66,10 +66,11 @@ describe("Cloudflare Turnstile Verification Module", () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      json: async () => ({
-        success: false,
-        "error-codes": ["invalid-input-response"],
-      }),
+      json: () =>
+        Promise.resolve({
+          success: false,
+          "error-codes": ["invalid-input-response"],
+        }),
     });
     vi.stubGlobal("fetch", mockFetch);
 

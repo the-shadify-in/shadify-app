@@ -5,13 +5,14 @@ import { validateContrast } from "../contrast";
 describe("WCAG Theme Contrast Matrix", () => {
   it("all defined preset color palettes pass WCAG AA contrast rules", () => {
     for (const [id, colors] of Object.entries(PRESET_COLORS)) {
+      if (!colors) continue;
       const report = validateContrast(colors);
       expect(
         report.ok,
         `Preset "${id}" failed contrast validation: ${JSON.stringify(report.errors)}`,
       ).toBe(true);
-      expect(report.ratios["text-canvas"]).toBeGreaterThanOrEqual(4.5);
-      expect(report.ratios["muted-canvas"]).toBeGreaterThanOrEqual(3.0);
+      expect(report.ratios["text-canvas"] ?? 0).toBeGreaterThanOrEqual(4.5);
+      expect(report.ratios["muted-canvas"] ?? 0).toBeGreaterThanOrEqual(3.0);
     }
   });
 

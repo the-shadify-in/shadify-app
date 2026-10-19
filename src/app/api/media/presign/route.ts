@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Validate input schema
-    const body = await request.json();
+    const body: unknown = await request.json();
     const parseResult = PresignRequestSchema.safeParse(body);
     if (!parseResult.success) {
       return NextResponse.json(
