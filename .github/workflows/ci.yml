@@ -128,6 +128,8 @@ jobs:
       DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/shadify_ci?sslmode=disable"
       ADMIN_SESSION_SECRET: "test-admin-session-secret-min-32-chars-long-for-ci"
       ERASURE_HMAC_SECRET: "test-erasure-hmac-secret-min-32-chars-ci"
+      TEST_STAFF_EMAIL: "concierge@shadify.in"
+      TEST_STAFF_PASSWORD: "TestStaffPass!2026"
 
     steps:
       - name: Checkout Code
@@ -143,7 +145,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium webkit
 
       - name: Generate Prisma Client
         run: npm run db:generate

@@ -229,6 +229,234 @@ describe("Real PostgreSQL Database Protections, Isolation & Erasure Suite", () =
         }),
       ).rejects.toThrow();
     });
+
+    it("T2 & T3: blocks newly reserved slug 'pricing' and prevents mutation of reserved_slugs table", async () => {
+      if (!isDbAvailable) return;
+
+      // T2: 'pricing' must FAIL
+      await expect(
+        prisma.wedding.create({
+          data: {
+            slug: "pricing",
+            brideName: "Test Bride",
+            groomName: "Test Groom",
+            weddingDate: new Date("2026-12-01"),
+          },
+        }),
+      ).rejects.toThrow(/reserved/i);
+
+      // T3: mutations on reserved_slugs table must FAIL via trigger
+      await expect(
+        prisma.$executeRaw`INSERT INTO reserved_slugs VALUES ('hello')`,
+      ).rejects.toThrow();
+
+      await expect(
+        prisma.$executeRaw`UPDATE reserved_slugs SET slug='x' WHERE slug='admin'`,
+      ).rejects.toThrow();
+
+      await expect(
+        prisma.$executeRaw`DELETE FROM reserved_slugs WHERE slug='admin'`,
+      ).rejects.toThrow();
+
+      await expect(prisma.$executeRaw`TRUNCATE reserved_slugs`).rejects.toThrow();
+    });
+
+    it("T6: tombstone users succeed with unique emails, but static '[Redacted]' collides and null/null fails", async () => {
+      if (!isDbAvailable) return;
+
+      const suffix = crypto.randomUUID().slice(0, 8);
+
+      // 1. Two tombstone users with unique tombstones SUCCEED
+      const u1 = await prisma.user.create({
+        data: {
+          email: `erased-${suffix}-1@invalid.example`,
+          phone: `erased:${suffix}:1`,
+          fullName: "[Redacted]",
+          role: "couple",
+        },
+      });
+      createdUserIds.push(u1.id);
+
+      const u2 = await prisma.user.create({
+        data: {
+          email: `erased-${suffix}-2@invalid.example`,
+          phone: `erased:${suffix}:2`,
+          fullName: "[Redacted]",
+          role: "couple",
+        },
+      });
+      createdUserIds.push(u2.id);
+
+      // 2. Inserting first user with '[Redacted]' email succeeds
+      const r1 = await prisma.user.create({
+        data: {
+          email: `[Redacted]-email-${suffix}`,
+          phone: `[Redacted]-phone-${suffix}`,
+          fullName: "Static Redacted 1",
+          role: "couple",
+        },
+      });
+      createdUserIds.push(r1.id);
+
+      // 3. Second user with identical '[Redacted]' email FAILS on unique constraint
+      await expect(
+        prisma.user.create({
+          data: {
+            email: `[Redacted]-email-${suffix}`,
+            phone: `other-phone-${suffix}`,
+            fullName: "Static Redacted 2",
+            role: "couple",
+          },
+        }),
+      ).rejects.toThrow();
+
+      // 4. Updating user to email = null, phone = null FAILS chk_user_contact
+      await expect(
+        prisma.user.update({
+          where: { id: u1.id },
+          data: { email: null, phone: null },
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("T7: enforces case and whitespace normalization on RSVP unique constraint ('Ravi' vs '  ravi  ')", async () => {
+      if (!isDbAvailable) return;
+
+      const randomSuffix = crypto.randomUUID().slice(0, 8);
+      const wedding = await prisma.wedding.create({
+        data: {
+          slug: `rsvp-case-${randomSuffix}`,
+          brideName: "Bride",
+          groomName: "Groom",
+          weddingDate: new Date("2026-12-01"),
+          events: {
+            create: {
+              eventType: "reception",
+              title: "Reception",
+              startsAt: new Date("2026-12-01T19:00:00Z"),
+              venueName: "Hall",
+            },
+          },
+        },
+        include: { events: true },
+      });
+      createdWeddingIds.push(wedding.id);
+
+      const event = wedding.events[0];
+      expect(event).toBeDefined();
+      if (!event) return;
+
+      const phone = "+919876543210";
+
+      // 1. Initial RSVP with 'Ravi'
+      await prisma.eventRsvp.create({
+        data: {
+          weddingId: wedding.id,
+          eventId: event.id,
+          respondentName: "Ravi",
+          respondentPhone: phone,
+          attending: true,
+          partySize: 1,
+        },
+      });
+
+      // 2. Sibling with same phone but different name 'Sita' SUCCEEDS
+      const sitaRsvp = await prisma.eventRsvp.create({
+        data: {
+          weddingId: wedding.id,
+          eventId: event.id,
+          respondentName: "Sita",
+          respondentPhone: phone,
+          attending: true,
+          partySize: 1,
+        },
+      });
+      expect(sitaRsvp.id).toBeDefined();
+
+      // 3. Duplicate with leading/trailing whitespace and different case '  ravi  ' FAILS
+      await expect(
+        prisma.eventRsvp.create({
+          data: {
+            weddingId: wedding.id,
+            eventId: event.id,
+            respondentName: "  ravi  ",
+            respondentPhone: phone,
+            attending: true,
+            partySize: 1,
+          },
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("T8: enforces database check constraints (party_size <= 20, theme_version >= 1, theme_config type)", async () => {
+      if (!isDbAvailable) return;
+
+      const randomSuffix = crypto.randomUUID().slice(0, 8);
+      const wedding = await prisma.wedding.create({
+        data: {
+          slug: `checks-test-${randomSuffix}`,
+          brideName: "Bride",
+          groomName: "Groom",
+          weddingDate: new Date("2026-12-01"),
+          events: {
+            create: {
+              eventType: "sangeet",
+              title: "Sangeet",
+              startsAt: new Date("2026-12-01T19:00:00Z"),
+              venueName: "Hall",
+            },
+          },
+        },
+        include: { events: true },
+      });
+      createdWeddingIds.push(wedding.id);
+
+      const event = wedding.events[0];
+      expect(event).toBeDefined();
+      if (!event) return;
+
+      // 1. Party size 99 (> 20) FAILS chk_rsvp_party_size
+      await expect(
+        prisma.eventRsvp.create({
+          data: {
+            weddingId: wedding.id,
+            eventId: event.id,
+            respondentName: "Party Giant",
+            respondentPhone: "9876500000",
+            attending: true,
+            partySize: 99,
+          },
+        }),
+      ).rejects.toThrow();
+
+      // 2. theme_config as JSON array ('[]') FAILS chk_wedding_theme_config
+      await expect(
+        prisma.$executeRaw`UPDATE weddings SET theme_config='[]'::jsonb WHERE id = ${wedding.id}::uuid`,
+      ).rejects.toThrow();
+
+      // 3. theme_version = 0 (< 1) FAILS chk_wedding_theme_version
+      await expect(
+        prisma.$executeRaw`UPDATE weddings SET theme_version=0 WHERE id = ${wedding.id}::uuid`,
+      ).rejects.toThrow();
+    });
+
+    it("T9: enforces chk_order_amounts: gst_paise must not exceed amount_paise", async () => {
+      if (!isDbAvailable) return;
+
+      // gst_paise 500000 > amount_paise 299900 FAILS
+      await expect(
+        prisma.order.create({
+          data: {
+            weddingSlugCopy: "sample-slug",
+            billingName: "Customer",
+            billingPhone: "9876543210",
+            item: "plan_lite",
+            amountPaise: 299900,
+            gstPaise: 500000,
+          },
+        }),
+      ).rejects.toThrow();
+    });
   });
 
   // -------------------------------------------------------------------------

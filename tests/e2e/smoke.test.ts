@@ -86,9 +86,12 @@ test.describe("Shadify Security, Middleware & API Smoke Tests", () => {
   });
 
   test("staff concierge login works end-to-end and grants access to /admin", async ({ page }) => {
+    const staffEmail = process.env.TEST_STAFF_EMAIL || "concierge@shadify.in";
+    const staffPassword = process.env.TEST_STAFF_PASSWORD || "TestStaffPass!2026";
+
     await page.goto("/admin/login", { waitUntil: "networkidle" });
-    await page.fill('input[type="email"]', "concierge@shadify.in");
-    await page.fill('input[type="password"]', "shadify2026");
+    await page.fill('input[type="email"]', staffEmail);
+    await page.fill('input[type="password"]', staffPassword);
     await page.click('button[type="submit"]');
 
     // Should redirect to /admin dashboard
