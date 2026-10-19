@@ -8,7 +8,7 @@ test.describe("Shadify Public Marketing & Policy Pages", () => {
     // Verify Brand Hero Heading
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
-    await expect(heading).toContainText(/Stop answering.*what time is the mehendi/i);
+    await expect(heading).toContainText(/Celebrate with Shadify/i);
 
     // Verify 3 Pricing Plans are present with INR pricing
     await expect(page.getByText("Lite", { exact: true }).first()).toBeVisible();
