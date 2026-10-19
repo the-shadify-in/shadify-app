@@ -15,16 +15,19 @@ import {
   ChevronDown,
   Camera,
   Users,
+  MapPin,
+  Clock,
+  Gift,
 } from "lucide-react";
 
 export const metadata = {
-  title: "Shadify — Luxury Digital Wedding Invitations & RSVPs",
+  title: "Celebrate with Shadify — The Luxury Indian Wedding Celebration Suite",
   description:
-    "Stop answering 'what time is the mehendi?' Send one beautiful link with schedule, maps directions, RSVPs, and direct UPI shagun gifts. We set it up from WhatsApp.",
+    "Celebrate with Shadify. Every ceremony, Google Maps venue gate routing, 1-tap family RSVP with diet preferences, and direct 0%-fee UPI shagun in one royal link. Handcrafted by our WhatsApp concierge.",
   openGraph: {
-    title: "Shadify — Luxury Digital Wedding Invitations",
+    title: "Celebrate with Shadify — Luxury Digital Wedding Invitations & RSVPs",
     description:
-      "Your whole wedding in one link your family can open. Instant WhatsApp concierge setup, zero app downloads, 5-year hosting.",
+      "Celebrate with Shadify. Every ceremony, direction, family RSVP, and direct UPI shagun in one royal link. No app download, 5-year hosting.",
     url: "https://shadify.in",
     siteName: "Shadify",
     locale: "en_IN",
@@ -36,70 +39,79 @@ const SAMPLE_WEDDINGS = [
   {
     id: "classic-red-gold",
     feeling: "Classic Red & Gold",
-    description: "A North Indian celebration with a grand Sangeet and palatial Vivah.",
+    description: "A grand North Indian celebration with palatial Vivah and regal Sangeet.",
     slug: "priya-rahul",
     accentColor: "#941C2F",
     tagline: "Grand Royal Heritage",
+    monogram: "P & R",
   },
   {
     id: "heritage-green",
     feeling: "Heritage Green",
     description:
-      "A serene destination weekend surrounded by nature, candlelight, and royal peacocks.",
+      "A serene Udaipur destination weekend with candlelit courtyards and royal peacocks.",
     slug: "ananya-kabir",
     accentColor: "#0D4D33",
     tagline: "Palatial & Serene",
+    monogram: "A & K",
   },
   {
     id: "soft-modern",
-    feeling: "Soft & Modern",
+    feeling: "Soft Ivory & Gold",
     description:
-      "A small, elegant ivory ceremony with minimalist typography and contemporary warmth.",
+      "An intimate ceremony with understated warmth, delicate florals, and timeless gold.",
     slug: "diya-arjun",
     accentColor: "#7A5A40",
     tagline: "Minimalist Elegance",
+    monogram: "D & A",
   },
   {
     id: "sunset-sangeet",
     feeling: "Sunset Sangeet",
     description:
-      "A vibrant beach-side celebration with festive terracotta, marigold, and dusk tones.",
+      "A vibrant coastal celebration with terracotta dusk hues, marigolds, and celebration.",
     slug: "zoya-farhan",
     accentColor: "#D46A7E",
     tagline: "Festive Beachside Warmth",
+    monogram: "Z & F",
   },
 ];
 
 const FAQS = [
   {
-    question: "Do my elders need to install anything?",
+    question: "Do our elders need to install an app or create an account?",
     answer:
-      "No. Anyone who taps your link opens your wedding page immediately in their phone browser. There is no app to install, no account to create, and no password for grandparents to remember.",
+      "No. Anyone who taps your link opens your wedding suite instantly in their phone browser. There is zero app download, zero signup, and no password for grandparents to remember. It runs smoothly on every phone and spotty banquet hall Wi-Fi.",
   },
   {
-    question: "Why not just send a PDF?",
+    question: "Why choose Shadify over a traditional WhatsApp PDF invitation?",
     answer:
-      "A PDF is static. It cannot count RSVPs, cannot launch 1-tap Google Maps navigation to the exact hall or gate, cannot accept direct UPI shagun, and cannot update if a muhurat timing or venue changes. Shadify gives your family an interactive luxury experience that stays current.",
+      "A PDF is a flat, static picture. It cannot tally RSVPs, cannot launch 1-tap Google Maps navigation to the exact banquet gate, cannot accept direct UPI shagun into your bank account, and cannot be updated if a ceremony muhurat changes. Shadify replaces the chaos of 12 forwarded PDFs with a single royal celebration link that stays always up to date.",
   },
   {
-    question: "Is our wedding information private?",
+    question: "How do wedding gifts and shagun work?",
     answer:
-      "Yes. Your wedding page is unindexed by search engines like Google and Bing. Only guests with your private link can view it. We never ask for, harvest, or sell your family contact lists.",
+      "Your wedding page displays your verified UPI VPA and an interactive QR code. When guests send blessings, 100% of the gift transfers directly from their bank account to yours. Shadify charges a 0% platform fee and never holds, touches, or delays your shagun.",
   },
   {
-    question: "What if the date or venue changes?",
+    question: "What if a ceremony timing or hall changes last minute?",
     answer:
-      "Simply message our WhatsApp concierge. We update your schedule immediately, so all your guests see the latest details without you needing to re-send or reprint anything.",
+      "Simply message our WhatsApp concierge. We update your schedule immediately, so every relative and guest sees the correct time without needing you to print corrections or re-forward messages in family groups.",
+  },
+  {
+    question: "Is our family's wedding information private?",
+    answer:
+      "Completely. Your wedding page is unindexed by search engines like Google and Bing. Only guests with your private link can view it. We never sell, harvest, or spam your family contacts or phone numbers.",
   },
   {
     question: "How long does setup take?",
     answer:
-      "Once you send us your ceremony details, couple photos, and schedule on WhatsApp, our concierge team delivers your completed, polished page preview within 24 to 48 hours.",
+      "Just forward your wedding card, photos, and schedule to our WhatsApp concierge. Our team designs, customizes, and polishes your royal preview within 24 to 48 hours. You approve every detail before sharing.",
   },
   {
-    question: "How do gifts work?",
+    question: "How long does our wedding page stay active online?",
     answer:
-      "Your page displays a direct UPI link, an interactive QR code, and your verified VPA. When guests send blessings, 100% of the funds go directly from their bank to yours. Shadify never touches, deducts, or holds your money.",
+      "Every plan includes guaranteed 5-year cloud hosting. Your wedding photos, ceremony timeline, and memories remain live and easily accessible for years after your celebrations.",
   },
 ];
 
@@ -107,15 +119,16 @@ export default function HomePage() {
   const defaultWhatsAppUrl = getConciergeWhatsAppUrl();
 
   return (
-    <div className="min-h-screen bg-[#FFFBF5] font-sans text-[#1F1A2E] selection:bg-[#D6246E]/20 selection:text-[#1F1A2E]">
+    <div className="min-h-screen bg-[#FFFBF5] font-sans text-[#1F1A2E] antialiased selection:bg-[#D6246E]/15 selection:text-[#1F1A2E]">
       {/* Top Banner */}
-      <div className="border-b border-[#EADDCF] bg-[#FFF1F6] px-4 py-2 text-center text-xs font-medium tracking-wide text-[#1F1A2E]">
-        <span>✨ Now onboarding for the upcoming wedding season.</span>{" "}
+      <div className="border-b border-[#EADDCF] bg-[#FFF1F6] px-4 py-2.5 text-center text-xs font-medium tracking-wide text-[#1F1A2E]">
+        <span className="font-semibold text-[#D6246E]">✨ Wedding Season Onboarding:</span>{" "}
+        <span>Reserve your concierge design slot for upcoming dates.</span>{" "}
         <a
           href={defaultWhatsAppUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-2 font-semibold text-[#D6246E] underline decoration-[#D6246E]/40 underline-offset-2 hover:decoration-[#D6246E]"
+          className="ml-2 font-bold text-[#D6246E] underline decoration-[#D6246E]/40 underline-offset-2 transition hover:text-[#B81D5B] hover:decoration-[#B81D5B]"
         >
           Message Concierge on WhatsApp &rarr;
         </a>
@@ -123,36 +136,39 @@ export default function HomePage() {
 
       {/* Main Navigation */}
       <header className="sticky top-0 z-40 border-b border-[#EADDCF]/80 bg-[#FFFBF5]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#D6246E] font-serif text-lg font-bold text-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#D6246E] to-[#A81755] font-serif text-xl font-bold text-white shadow-sm ring-1 ring-[#D6246E]/30">
               S
             </div>
             <div>
-              <span className="font-serif text-xl font-bold tracking-tight text-[#1F1A2E]">
+              <span className="font-serif text-2xl font-bold tracking-tight text-[#1F1A2E]">
                 Shadify
               </span>
-              <span className="ml-1 text-[10px] font-semibold uppercase tracking-widest text-[#D6246E]">
+              <span className="ml-1.5 font-cinzel text-[10px] font-bold uppercase tracking-[0.2em] text-[#D6246E]">
                 Luxury
               </span>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-7 text-sm font-medium text-[#1F1A2E]/80 md:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-[#1F1A2E]/80 md:flex">
+            <a href="#experience" className="transition hover:text-[#D6246E]">
+              The Experience
+            </a>
             <a href="#how-it-works" className="transition hover:text-[#D6246E]">
               How it works
             </a>
             <a href="#samples" className="transition hover:text-[#D6246E]">
-              Real weddings
+              Real Celebrations
             </a>
             <a href="#benefits" className="transition hover:text-[#D6246E]">
-              What you get
-            </a>
-            <a href="#questions" className="transition hover:text-[#D6246E]">
-              Questions
+              Host Benefits
             </a>
             <a href="#pricing" className="transition hover:text-[#D6246E]">
               Pricing
+            </a>
+            <a href="#questions" className="transition hover:text-[#D6246E]">
+              FAQ
             </a>
           </nav>
 
@@ -161,13 +177,13 @@ export default function HomePage() {
               href="/priya-rahul"
               className="hidden rounded-full border border-[#EADDCF] bg-white px-4 py-2 text-xs font-semibold text-[#1F1A2E] shadow-sm transition hover:border-[#D6246E] hover:text-[#D6246E] sm:inline-flex"
             >
-              See Sample Wedding
+              Live Demo
             </Link>
             <a
               href={defaultWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-[#D6246E] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-[#B81D5B]"
+              className="inline-flex items-center gap-2 rounded-full bg-[#D6246E] px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#B81D5B]"
             >
               <MessageCircle className="h-3.5 w-3.5" />
               <span>Start on WhatsApp</span>
@@ -177,26 +193,32 @@ export default function HomePage() {
       </header>
 
       {/* SECTION 1: HERO */}
-      <section className="relative overflow-hidden border-b border-[#EADDCF] py-16 sm:py-24">
+      <section className="relative overflow-hidden border-b border-[#EADDCF] bg-gradient-to-b from-[#FFF5F8]/60 via-[#FFFBF5] to-[#FFFBF5] py-20 sm:py-28 lg:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-12">
             <div className="lg:col-span-7">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#F5A524]/40 bg-[#FFF7E8] px-3.5 py-1 text-xs font-medium text-[#1F1A2E] shadow-sm">
-                <Sparkles className="h-3.5 w-3.5 text-[#F5A524]" />
-                <span>Luxury Digital Wedding Invitations</span>
+              {/* Luxury Eyebrow Badge */}
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-[#D6246E]/20 bg-white px-4 py-1.5 shadow-sm">
+                <Sparkles className="h-3.5 w-3.5 text-[#D6246E]" />
+                <span className="font-cinzel text-xs font-semibold uppercase tracking-[0.18em] text-[#A81755]">
+                  Royal Wedding Celebration Suite
+                </span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-3.5xl lg:text-5.5xl mt-5 font-serif font-extrabold leading-[1.15] tracking-tight text-[#1F1A2E] sm:text-5xl">
-                Stop answering &ldquo;what time is the mehendi?&rdquo;{" "}
-                <span className="block text-[#D6246E]">Send one link instead.</span>
+              <h1 className="mt-6 font-serif text-4xl font-bold tracking-tight text-[#1F1A2E] sm:text-6xl lg:text-[4.25rem] lg:leading-[1.08]">
+                Celebrate with Shadify.
+                <span className="mt-3 block bg-gradient-to-r from-[#D6246E] via-[#A81755] to-[#D6246E] bg-clip-text text-transparent">
+                  Every Ceremony, Direction &amp; Blessing in One Royal Link.
+                </span>
               </h1>
 
-              {/* Subline */}
-              <p className="mt-6 text-base leading-relaxed text-[#1F1A2E]/80 sm:text-lg">
-                Schedule, directions, RSVPs and gifts in one beautiful page. We set it up from your
-                WhatsApp message. Your family opens it in one tap, with no app and no login.
+              {/* Subheadline */}
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F1A2E]/80 sm:text-lg sm:leading-8">
+                Replace frantic calls, scattered WhatsApp PDFs, and lost caterer counts with a regal
+                digital celebration. Animated wax-seal reveal, 1-tap Google Maps venue navigation,
+                sub-event family RSVPs, and 0%-fee direct bank UPI shagun — handcrafted for you by
+                our WhatsApp concierge.
               </p>
 
               {/* CTAs */}
@@ -205,84 +227,84 @@ export default function HomePage() {
                   href={defaultWhatsAppUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2.5 rounded-full bg-[#D6246E] px-7 py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#B81D5B]"
+                  className="inline-flex items-center justify-center gap-2.5 rounded-full bg-[#D6246E] px-8 py-4 text-sm font-semibold text-white shadow-lg transition hover:bg-[#B81D5B]"
                 >
                   <MessageCircle className="h-4 w-4" />
-                  <span>Start on WhatsApp</span>
+                  <span>Start Your Wedding on WhatsApp</span>
                 </a>
                 <Link
                   href="/priya-rahul"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#EADDCF] bg-white px-6 py-3.5 text-sm font-semibold text-[#1F1A2E] shadow-sm transition hover:border-[#D6246E] hover:text-[#D6246E]"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-[#EADDCF] bg-white px-7 py-4 text-sm font-semibold text-[#1F1A2E] shadow-sm transition hover:border-[#D6246E] hover:text-[#D6246E]"
                 >
-                  <span>See a sample wedding</span>
+                  <span>Experience Priya &amp; Rahul&apos;s Demo</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
 
               {/* Reassurance Chips */}
-              <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[#1F1A2E]/70">
+              <div className="mt-10 grid grid-cols-2 gap-3 text-xs font-medium text-[#1F1A2E]/75 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-2">
                 <span className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-[#0E9F8E]" /> No app required
+                  <Check className="h-4 w-4 text-[#0E9F8E]" /> Zero app downloads
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-[#0E9F8E]" /> Opens in 1 tap on any phone
+                  <Check className="h-4 w-4 text-[#0E9F8E]" /> 1-tap Google Maps directions
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-[#0E9F8E]" /> Direct UPI gifts (0% fee)
+                  <Check className="h-4 w-4 text-[#0E9F8E]" /> Direct UPI gifts (0% fee)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-[#0E9F8E]" /> Zero contact harvesting
+                  <Check className="h-4 w-4 text-[#0E9F8E]" /> 5-year cloud preservation
                 </span>
               </div>
             </div>
 
-            {/* Visual: Real Phone Mockup Preview */}
+            {/* Visual: Premium Royal Phone Mockup Preview */}
             <div className="flex justify-center lg:col-span-5">
-              <div className="relative w-full max-w-[340px] rounded-[2.5rem] border-[8px] border-[#1F1A2E] bg-white p-3 shadow-2xl">
+              <div className="relative w-full max-w-[350px] rounded-[2.8rem] border-[10px] border-[#1F1A2E] bg-white p-3.5 shadow-2xl ring-1 ring-black/10">
                 {/* Speaker pill */}
-                <div className="mx-auto mb-3 h-4 w-28 rounded-full bg-[#1F1A2E]" />
+                <div className="mx-auto mb-3.5 h-4 w-28 rounded-full bg-[#1F1A2E]" />
 
                 {/* Simulated Screen */}
-                <div className="overflow-hidden rounded-[1.8rem] border border-[#EADDCF] bg-[#0E0709] p-5 text-center text-[#F6EBDD]">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-[#C9933A]/40 bg-[#C9933A]/10 font-serif text-xs text-[#C9933A]">
+                <div className="overflow-hidden rounded-[2rem] border border-[#C9933A]/40 bg-[#0E0709] p-5 text-center text-[#F6EBDD]">
+                  <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-[#C9933A]/50 bg-[#C9933A]/10 font-cinzel text-xs font-bold text-[#E6B865]">
                     PR
                   </div>
-                  <p className="mt-3 text-[10px] uppercase tracking-widest text-[#C9933A]">
-                    Royal Invitation
+                  <p className="mt-3 font-cinzel text-[10px] uppercase tracking-[0.25em] text-[#C9933A]">
+                    Royal Wedding Suite
                   </p>
-                  <h2 className="mt-1 font-serif text-xl font-bold tracking-tight text-[#FAF7F2]">
+                  <h2 className="mt-1.5 font-serif text-2xl font-bold tracking-tight text-[#FAF7F2]">
                     Priya &amp; Rahul
                   </h2>
-                  <p className="mt-1 text-[11px] text-[#F6EBDD]/70">
-                    Nov 28 &ndash; 30, 2026 &bull; Udaipur
+                  <p className="mt-1 text-xs text-[#F6EBDD]/70">
+                    Nov 28 &ndash; 30, 2026 &bull; Udaipur Palace
                   </p>
 
-                  {/* Envelope Seal Hook */}
-                  <div className="mt-4 rounded-xl border border-[#C9933A]/30 bg-[#1A0A0F] p-4 text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#E6B865] via-[#C9933A] to-[#996515] font-serif font-bold text-[#1F0A0E] shadow-md">
-                      P&amp;R
+                  {/* Wax Seal Envelope Reveal Box */}
+                  <div className="mt-5 rounded-2xl border border-[#C9933A]/30 bg-[#1A0A0F] p-4 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#E6B865] via-[#C9933A] to-[#996515] font-cinzel text-sm font-bold text-[#1F0A0E] shadow-md ring-2 ring-[#E6B865]/40">
+                      P &amp; R
                     </div>
-                    <p className="mt-2 font-serif text-xs text-[#FAF7F2]">
+                    <p className="mt-2.5 font-serif text-sm font-semibold text-[#FAF7F2]">
                       Wax-Seal Envelope Reveal
                     </p>
-                    <p className="text-[10px] text-[#F6EBDD]/60">
-                      Tap below to experience the live guest journey
+                    <p className="mt-1 text-[11px] leading-relaxed text-[#F6EBDD]/70">
+                      Interactive 3-ceremony schedule, 1-tap navigation &amp; family RSVP
                     </p>
                   </div>
 
                   {/* Live Demo Button inside mockup */}
                   <Link
                     href="/priya-rahul"
-                    className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#C9933A] py-2.5 text-xs font-semibold text-[#1A0A0F] transition hover:bg-[#DBA84E]"
+                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#C9933A] to-[#DBA84E] py-3 text-xs font-bold text-[#1A0A0F] shadow-md transition hover:brightness-105"
                   >
-                    <span>Open Live Wedding Demo</span>
+                    <span>Open Live Demo</span>
                     <ExternalLink className="h-3.5 w-3.5" />
                   </Link>
 
-                  <div className="mt-3 flex items-center justify-between text-[10px] text-[#F6EBDD]/50">
+                  <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 font-cinzel text-[10px] uppercase tracking-wider text-[#F6EBDD]/60">
                     <span>3 Ceremonies</span>
                     <span>Direct UPI</span>
-                    <span>1-Tap Maps</span>
+                    <span>Hall Maps</span>
                   </div>
                 </div>
               </div>
@@ -291,153 +313,212 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTION 2: SOUND FAMILIAR? */}
-      <section className="border-b border-[#EADDCF] bg-white py-16 sm:py-20">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+      {/* SECTION 2: THE CONTRAST (PDF CHAOS VS CELEBRATE WITH SHADIFY) */}
+      <section id="experience" className="border-b border-[#EADDCF] bg-white py-20 sm:py-28">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D6246E]">
-              The Reality of Indian Wedding Planning
+            <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+              Why Families Celebrate with Shadify
             </span>
-            <h2 className="text-2.5xl sm:text-3.5xl mt-2 font-serif font-bold tracking-tight text-[#1F1A2E]">
-              Wedding planning is hard enough. Chasing information shouldn&apos;t be.
+            <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
+              Turn wedding chaos into effortless royal celebration.
             </h2>
-          </div>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 text-left shadow-sm">
-              <span className="font-serif text-2xl text-[#D6246E]">&ldquo;</span>
-              <p className="text-sm font-medium leading-relaxed text-[#1F1A2E]">
-                Twelve forwards and three PDFs, and nobody knows the venue address.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 text-left shadow-sm">
-              <span className="font-serif text-2xl text-[#D6246E]">&ldquo;</span>
-              <p className="text-sm font-medium leading-relaxed text-[#1F1A2E]">
-                Chasing 300 replies on WhatsApp for the caterer&apos;s headcount.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 text-left shadow-sm">
-              <span className="font-serif text-2xl text-[#D6246E]">&ldquo;</span>
-              <p className="text-sm font-medium leading-relaxed text-[#1F1A2E]">
-                An uncle calling at 7 AM because he can&apos;t find the muhurat time.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-10 text-center">
-            <p className="font-serif text-xl font-bold text-[#D6246E] sm:text-2xl">
-              One link replaces all of it.
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
+              Indian weddings are grand, multi-day celebrations. Managing them through scattered
+              WhatsApp forwards and static PDFs shouldn&apos;t be your headache.
             </p>
+          </div>
+
+          <div className="mt-14 grid gap-8 md:grid-cols-2">
+            {/* The Old Way */}
+            <div className="rounded-3xl border border-red-200 bg-red-50/40 p-8">
+              <div className="inline-flex items-center gap-2 rounded-full bg-red-100 px-3.5 py-1 text-xs font-bold text-red-700">
+                <span>The Outdated Way</span>
+              </div>
+              <h3 className="mt-4 font-serif text-xl font-bold text-[#1F1A2E]">
+                Scattered WhatsApp PDFs &amp; 7 AM Calls
+              </h3>
+              <ul className="mt-6 space-y-4 text-sm text-[#1F1A2E]/80">
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 font-bold text-red-600">&times;</span>
+                  <span>12 forwarded PDFs where nobody can find the correct venue address.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 font-bold text-red-600">&times;</span>
+                  <span>
+                    Chasing 300 family members across group chats for the caterer&apos;s diet count.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 font-bold text-red-600">&times;</span>
+                  <span>
+                    Uncles and elders calling on wedding morning because Google Maps lost them.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="mt-0.5 font-bold text-red-600">&times;</span>
+                  <span>
+                    If a ceremony timing shifts, you have to reprint or resend everything.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* The Shadify Way */}
+            <div className="rounded-3xl border-2 border-[#D6246E] bg-white p-8 shadow-lg">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#FFF1F6] px-3.5 py-1 text-xs font-bold text-[#D6246E]">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Celebrate with Shadify</span>
+              </div>
+              <h3 className="mt-4 font-serif text-xl font-bold text-[#1F1A2E]">
+                One Royal Link for Your Entire Family
+              </h3>
+              <ul className="mt-6 space-y-4 text-sm text-[#1F1A2E]/85">
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0E9F8E]" />
+                  <span>
+                    <strong>1-Tap Google Maps:</strong> Leads guests to the exact banquet gate &amp;
+                    valet parking.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0E9F8E]" />
+                  <span>
+                    <strong>Automated RSVP &amp; Diet Counts:</strong> Live tallies for Jain, veg,
+                    and non-veg meals.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0E9F8E]" />
+                  <span>
+                    <strong>Direct Bank UPI Gifting:</strong> 0% platform fee, shagun transfers
+                    instantly to you.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#0E9F8E]" />
+                  <span>
+                    <strong>Instant Concierge Updates:</strong> Muhurat changes reflect instantly
+                    with one WhatsApp message.
+                  </span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
       {/* SECTION 3: HOW IT WORKS */}
-      <section id="how-it-works" className="border-b border-[#EADDCF] py-16 sm:py-24">
+      <section id="how-it-works" className="border-b border-[#EADDCF] py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D6246E]">
-              Simple 3-Step Setup
+            <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+              Concierge Handcrafted
             </span>
-            <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl">
-              You share the details. We do the work.
+            <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
+              You celebrate. We handle the craft.
             </h2>
-            <p className="mt-3 text-base text-[#1F1A2E]/70">
-              No complicated builders or design software. Our dedicated concierge handles everything
-              from formatting to polish.
+            <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
+              No complicated website builders or stressful templates. Our dedicated design team
+              personalizes everything from your WhatsApp message.
             </p>
           </div>
 
-          <div className="mt-14 grid gap-8 md:grid-cols-3">
+          <div className="mt-16 grid gap-8 md:grid-cols-3">
             {/* Step 1 */}
-            <div className="relative rounded-2xl border border-[#EADDCF] bg-white p-7 shadow-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF1F6] text-[#D6246E]">
+            <div className="relative rounded-3xl border border-[#EADDCF] bg-white p-8 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF1F6] text-[#D6246E]">
                 <MessageCircle className="h-6 w-6" />
               </div>
-              <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
-                1. Send details on WhatsApp
+              <h3 className="mt-6 font-serif text-xl font-bold text-[#1F1A2E]">
+                1. Forward Details on WhatsApp
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#1F1A2E]/75">
-                Forward your invitation card, schedule, venue addresses, and couple photo directly
-                to our concierge. Voice notes are welcome.
+              <p className="mt-3 text-sm leading-relaxed text-[#1F1A2E]/75">
+                Send your physical wedding card, couple photos, event timings, and venue locations.
+                Voice notes are warmly welcomed.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="relative rounded-2xl border border-[#EADDCF] bg-white p-7 shadow-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FFF7E8] text-[#F5A524]">
+            <div className="relative rounded-3xl border border-[#EADDCF] bg-white p-8 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF7E8] text-[#F5A524]">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
-                2. We build and polish your page
+              <h3 className="mt-6 font-serif text-xl font-bold text-[#1F1A2E]">
+                2. We Craft Your Royal Suite
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#1F1A2E]/75">
-                We craft your page with your family colours, names in your native script
-                (Devanagari, Gujarati, etc.), and custom monogram within 24 hours.
+              <p className="mt-3 text-sm leading-relaxed text-[#1F1A2E]/75">
+                We craft your bespoke color palette, family names in native scripts (Devanagari,
+                Gurmukhi, etc.), and personalized monogram within 24 hours.
               </p>
             </div>
 
             {/* Step 3 */}
-            <div className="relative rounded-2xl border border-[#EADDCF] bg-white p-7 shadow-sm">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E6F8F5] text-[#0E9F8E]">
+            <div className="relative rounded-3xl border border-[#EADDCF] bg-white p-8 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F8F5] text-[#0E9F8E]">
                 <Smartphone className="h-6 w-6" />
               </div>
-              <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
-                3. Share one link with family
+              <h3 className="mt-6 font-serif text-xl font-bold text-[#1F1A2E]">
+                3. Share One Link with Family
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-[#1F1A2E]/75">
-                Send your private link in WhatsApp family groups. Relatives open it in one tap, view
-                the ceremonies, get directions, and RSVP.
+              <p className="mt-3 text-sm leading-relaxed text-[#1F1A2E]/75">
+                Share your private link in family WhatsApp groups. Guests tap once, open the royal
+                envelope, check timings, navigate, and RSVP.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 4: REAL SAMPLE WEDDINGS (Replaces themes) */}
-      <section id="samples" className="border-b border-[#EADDCF] bg-white py-16 sm:py-24">
+      {/* SECTION 4: REAL SAMPLE WEDDINGS */}
+      <section id="samples" className="border-b border-[#EADDCF] bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D6246E]">
-              Craftsmanship &amp; Aesthetic
+            <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+              Bespoke Craftsmanship
             </span>
-            <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl">
-              See real weddings, not templates.
+            <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
+              Explore real celebrations.
             </h2>
-            <p className="mt-3 text-base text-[#1F1A2E]/70">
-              Every celebration has its own character. Explore finished celebrations as your guests
-              would see them on their phones.
+            <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
+              Every couple has a distinct love story and heritage. Experience each celebration
+              exactly as your guests will on their mobile screens.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {SAMPLE_WEDDINGS.map((sample) => (
               <div
                 key={sample.id}
-                className="group flex flex-col justify-between rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 shadow-sm transition hover:border-[#D6246E] hover:shadow-md"
+                className="group flex flex-col justify-between rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-7 shadow-sm transition hover:border-[#D6246E] hover:shadow-md"
               >
                 <div>
-                  <div
-                    className="mb-4 h-2 w-10 rounded-full"
-                    style={{ backgroundColor: sample.accentColor }}
-                  />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1F1A2E]/60">
+                  <div className="flex items-center justify-between">
+                    <div
+                      className="h-2.5 w-12 rounded-full"
+                      style={{ backgroundColor: sample.accentColor }}
+                    />
+                    <span className="font-cinzel text-xs font-bold text-[#1F1A2E]/40">
+                      {sample.monogram}
+                    </span>
+                  </div>
+                  <span className="mt-4 block font-cinzel text-[11px] font-bold uppercase tracking-wider text-[#1F1A2E]/60">
                     {sample.tagline}
                   </span>
-                  <h3 className="mt-1 font-serif text-xl font-bold text-[#1F1A2E]">
+                  <h3 className="mt-1 font-serif text-2xl font-bold text-[#1F1A2E]">
                     {sample.feeling}
                   </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75">
+                  <p className="mt-3 text-xs leading-relaxed text-[#1F1A2E]/75">
                     {sample.description}
                   </p>
                 </div>
 
-                <div className="mt-6 border-t border-[#EADDCF] pt-4">
+                <div className="mt-8 border-t border-[#EADDCF] pt-4">
                   <Link
                     href={`/${sample.slug}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#D6246E] transition group-hover:translate-x-1"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D6246E] transition group-hover:translate-x-1"
                   >
-                    <span>Open live demo</span>
+                    <span>Open Live Demo</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
@@ -445,134 +526,129 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-10 rounded-xl border border-[#EADDCF] bg-[#FFFBF5] p-5 text-center">
-            <p className="text-sm font-medium text-[#1F1A2E]">
-              &ldquo;Your colours, your names in your own script, and your family monogram. Tell us
-              the feeling and we&apos;ll match it.&rdquo;
+          <div className="mt-12 rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 text-center">
+            <p className="font-serif text-base italic text-[#1F1A2E] sm:text-lg">
+              &ldquo;Your wedding colors, your names in your native script, and your custom family
+              monogram. Tell our concierge your vision and we will bring it to life.&rdquo;
             </p>
           </div>
         </div>
       </section>
 
-      {/* SECTION 5: WHAT YOUR GUESTS GET */}
-      <section id="benefits" className="border-b border-[#EADDCF] py-16 sm:py-24">
+      {/* SECTION 5: GUEST & ELDER EXPERIENCE */}
+      <section id="benefits" className="border-b border-[#EADDCF] py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-6">
-              <span className="text-xs font-semibold uppercase tracking-widest text-[#D6246E]">
-                Guest Experience
+              <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+                Elder-Friendly Design
               </span>
-              <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl">
-                Designed with your elders in mind.
+              <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
+                Built for grandparents, uncles, and every guest.
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75">
-                Technology should bring families together, not create tech support calls on your
-                wedding morning. Every detail is optimized for effortless access.
+              <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
+                Celebration software should unite families, not cause frustration on your wedding
+                morning. Every single touchpoint is engineered for clarity and effortless reading.
               </p>
 
-              <div className="mt-8 space-y-4">
-                <div className="flex items-start gap-3.5">
-                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
+              <div className="mt-8 space-y-5">
+                <div className="flex items-start gap-4">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
                     <Check className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#1F1A2E]">
-                      Open it from WhatsApp. No app, no login.
+                    <h3 className="text-base font-bold text-[#1F1A2E]">
+                      Open directly from WhatsApp with no login
                     </h3>
-                    <p className="text-xs text-[#1F1A2E]/70">
-                      Zero app downloads, zero registrations, and no passwords for anyone to
+                    <p className="text-xs text-[#1F1A2E]/70 sm:text-sm">
+                      Zero app installations, zero user accounts, and zero passwords for anyone to
                       remember.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5">
-                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
-                    <Check className="h-4 w-4" />
+                <div className="flex items-start gap-4">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
+                    <MapPin className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#1F1A2E]">
-                      Every ceremony, time and dress code in one place.
+                    <h3 className="text-base font-bold text-[#1F1A2E]">
+                      1-Tap navigation straight to the venue gate
                     </h3>
-                    <p className="text-xs text-[#1F1A2E]/70">
-                      Sangeet, Mehendi, Haldi, and Reception schedules organized chronologically.
+                    <p className="text-xs text-[#1F1A2E]/70 sm:text-sm">
+                      Launches Google Maps with exact coordinates for banquet gates and parking,
+                      preventing lost guests.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5">
-                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
-                    <Check className="h-4 w-4" />
+                <div className="flex items-start gap-4">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
+                    <Clock className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#1F1A2E]">
-                      Directions in one tap with Google Maps.
+                    <h3 className="text-base font-bold text-[#1F1A2E]">
+                      Chronological ceremony timeline &amp; dress codes
                     </h3>
-                    <p className="text-xs text-[#1F1A2E]/70">
-                      Takes guests directly to the correct venue gate and parking area.
+                    <p className="text-xs text-[#1F1A2E]/70 sm:text-sm">
+                      Haldi, Mehendi, Sangeet, Vivah, and Reception schedules organized with clear
+                      attire guidance.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5">
-                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
-                    <Check className="h-4 w-4" />
+                <div className="flex items-start gap-4">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
+                    <Gift className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#1F1A2E]">
-                      Reply for each event in under a minute.
+                    <h3 className="text-base font-bold text-[#1F1A2E]">
+                      Direct UPI shagun blessings (0% fee)
                     </h3>
-                    <p className="text-xs text-[#1F1A2E]/70">
-                      Guests submit headcounts and dietary preferences without confusion.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3.5">
-                  <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0E9F8E]/10 text-[#0E9F8E]">
-                    <Check className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#1F1A2E]">
-                      Big, clear text that grandparents can read.
-                    </h3>
-                    <p className="text-xs text-[#1F1A2E]/70">
-                      High-contrast typography, large touch targets, and comfortable sizing.
+                    <p className="text-xs text-[#1F1A2E]/70 sm:text-sm">
+                      Guests send shagun straight into your bank account via UPI QR code or VPA.
+                      100% direct to you.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Visual Callout */}
+            {/* Visual Reassurance Card */}
             <div className="lg:col-span-6">
-              <div className="rounded-3xl border border-[#EADDCF] bg-white p-8 shadow-sm">
-                <div className="flex items-center gap-3 border-b border-[#EADDCF] pb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF1F6] text-[#D6246E]">
-                    <HeartHandshake className="h-5 w-5" />
+              <div className="rounded-3xl border border-[#EADDCF] bg-white p-8 shadow-sm sm:p-10">
+                <div className="flex items-center gap-3.5 border-b border-[#EADDCF] pb-5">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF1F6] text-[#D6246E]">
+                    <HeartHandshake className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="font-serif text-lg font-bold text-[#1F1A2E]">
-                      Elders-First Guarantee
+                    <h3 className="font-serif text-xl font-bold text-[#1F1A2E]">
+                      Elders-First Mobile Guarantee
                     </h3>
-                    <p className="text-xs text-[#1F1A2E]/60">Tested across real Indian families</p>
+                    <p className="text-xs text-[#1F1A2E]/60">
+                      Tested on budget Android devices and iOS Safari
+                    </p>
                   </div>
                 </div>
 
-                <p className="mt-4 text-sm leading-relaxed text-[#1F1A2E]/80">
-                  We specifically test our mobile pages on both high-end phones and budget Android
-                  devices commonly used by extended family members, ensuring quick loading even on
-                  spotty wedding banquet Wi-Fi.
+                <p className="mt-6 text-sm leading-relaxed text-[#1F1A2E]/80 sm:text-base">
+                  We verify our wedding suites across both flagship iPhones and budget Android
+                  phones commonly held by elders. The typography has high contrast, buttons have
+                  large touch targets, and pages load quickly even on overloaded banquet Wi-Fi.
                 </p>
 
-                <div className="mt-6 grid grid-cols-2 gap-4 rounded-2xl bg-[#FFFBF5] p-4 text-center">
+                <div className="mt-8 grid grid-cols-2 gap-4 rounded-2xl bg-[#FFFBF5] p-5 text-center">
                   <div>
-                    <div className="font-serif text-2xl font-bold text-[#D6246E]">0</div>
-                    <div className="text-xs text-[#1F1A2E]/70">Apps to install</div>
+                    <div className="font-serif text-3xl font-bold text-[#D6246E]">0</div>
+                    <div className="mt-1 text-xs font-medium text-[#1F1A2E]/70">
+                      Apps to install
+                    </div>
                   </div>
                   <div>
-                    <div className="font-serif text-2xl font-bold text-[#0E9F8E]">1 Tap</div>
-                    <div className="text-xs text-[#1F1A2E]/70">To open from WhatsApp</div>
+                    <div className="font-serif text-3xl font-bold text-[#0E9F8E]">1 Tap</div>
+                    <div className="mt-1 text-xs font-medium text-[#1F1A2E]/70">
+                      To open on WhatsApp
+                    </div>
                   </div>
                 </div>
               </div>
@@ -581,144 +657,115 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTION 6: WHAT YOU GET */}
-      <section className="border-b border-[#EADDCF] bg-white py-16 sm:py-24">
+      {/* SECTION 6: PEACE OF MIND FOR ORGANIZING HOSTS */}
+      <section className="border-b border-[#EADDCF] bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D6246E]">
-              Peace of Mind for Hosts
+            <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+              Host Peace of Mind
             </span>
-            <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl">
+            <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
               What you get as the organizing family.
             </h2>
-            <p className="mt-3 text-base text-[#1F1A2E]/70">
-              Clear counts, caterer exports, and zero stress chasing relatives.
+            <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
+              Accurate headcounts, instant caterer spreadsheets, and zero stress chasing relatives.
             </p>
           </div>
 
-          <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 shadow-sm">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF1F6] text-[#D6246E]">
-                <Users className="h-5 w-5" />
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-7 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF1F6] text-[#D6246E]">
+                <Users className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-serif text-base font-bold text-[#1F1A2E]">
-                RSVPs counted for you
+              <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
+                RSVPs Counted For You
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75">
-                Automatically tallied, split by event (Sangeet, Vivah, Reception) and meal
-                preference.
+              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75 sm:text-sm">
+                Automatically tallied headcounts broken down by event (Mehendi, Sangeet, Vivah) and
+                diet preference.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 shadow-sm">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF7E8] text-[#F5A524]">
-                <FileSpreadsheet className="h-5 w-5" />
+            <div className="rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-7 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF7E8] text-[#F5A524]">
+                <FileSpreadsheet className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-serif text-base font-bold text-[#1F1A2E]">
-                One file for the caterer
+              <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
+                One File for the Caterer
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75">
-                Clean numbers for Jain, vegetarian, and non-veg diets ready for your catering team.
+              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75 sm:text-sm">
+                Clean numbers for Jain, vegetarian, and non-veg diets ready for your catering team
+                with zero manual counting.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 shadow-sm">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F8F5] text-[#0E9F8E]">
-                <MessageCircle className="h-5 w-5" />
+            <div className="rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-7 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F8F5] text-[#0E9F8E]">
+                <MessageCircle className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-serif text-base font-bold text-[#1F1A2E]">
-                Changes via WhatsApp
+              <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
+                Real-Time WhatsApp Updates
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75">
-                Need to shift a ceremony time or hall? Send us a quick message and your page updates
-                immediately.
+              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75 sm:text-sm">
+                Need to adjust a muhurat time or venue hall? Message our concierge and your live
+                suite updates instantly.
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 shadow-sm">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F0EEFB] text-[#3D3BC4]">
-                <QrCode className="h-5 w-5" />
+            <div className="rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-7 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F0EEFB] text-[#3D3BC4]">
+                <QrCode className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-serif text-base font-bold text-[#1F1A2E]">
-                Gifts directly to your UPI
+              <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
+                Gifts Directly to Your UPI
               </h3>
-              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75">
-                Shagun arrives straight in your own bank account via QR code or VPA with 0% platform
-                fee.
+              <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75 sm:text-sm">
+                Blessings arrive straight in your family bank account via verified UPI QR code with
+                0% platform fee.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION 7: QUESTIONS COUPLES ASK */}
-      <section id="questions" className="border-b border-[#EADDCF] py-16 sm:py-24">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D6246E]">
-              Frequently Asked Questions
-            </span>
-            <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl">
-              Questions couples ask before sharing.
-            </h2>
-            <p className="mt-3 text-base text-[#1F1A2E]/70">
-              Clear answers to the most common questions from families.
-            </p>
-          </div>
-
-          <div className="mt-12 space-y-4">
-            {FAQS.map((faq, i) => (
-              <details
-                key={i}
-                className="group rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm transition hover:border-[#D6246E]/40"
-              >
-                <summary className="flex cursor-pointer list-none items-center justify-between font-serif text-base font-bold text-[#1F1A2E] sm:text-lg">
-                  <span>{faq.question}</span>
-                  <ChevronDown className="h-5 w-5 text-[#D6246E] transition-transform duration-200 group-open:rotate-180" />
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-[#1F1A2E]/75">{faq.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 8: PRICING */}
-      <section id="pricing" className="border-b border-[#EADDCF] bg-white py-16 sm:py-24">
+      {/* SECTION 7: PRICING */}
+      <section id="pricing" className="border-b border-[#EADDCF] bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#D6246E]">
-              Transparent Pricing
+            <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+              Transparent Investment
             </span>
-            <h2 className="mt-2 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl">
-              One simple price. No monthly fees.
+            <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
+              One simple price. 5-year hosting included.
             </h2>
-            <p className="mt-3 text-base text-[#1F1A2E]/70">
-              All plans include guaranteed 5-year web hosting so your wedding memories stay live and
-              shareable.
+            <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
+              No monthly subscription fees. Guaranteed 5-year cloud preservation for your wedding
+              memories.
             </p>
           </div>
 
-          <div className="mt-14 grid gap-8 lg:grid-cols-3">
+          <div className="mt-16 grid gap-8 lg:grid-cols-3">
             {/* LITE PLAN */}
-            <div className="flex flex-col justify-between rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-8 shadow-sm">
+            <div className="flex flex-col justify-between rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-8 shadow-sm sm:p-9">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#1F1A2E]/60">
+                <span className="font-cinzel text-xs font-bold uppercase tracking-wider text-[#1F1A2E]/60">
                   {PRICING_PLANS.lite.name}
                 </span>
-                <div className="mt-3 flex items-baseline gap-1">
+                <div className="mt-4 flex items-baseline gap-1.5">
                   <span className="font-serif text-4xl font-extrabold text-[#1F1A2E]">
                     ₹{PRICING_PLANS.lite.priceInr.toLocaleString("en-IN")}
                   </span>
                   <span className="text-xs text-[#1F1A2E]/60">one-time</span>
                 </div>
-                <p className="mt-3 text-xs text-[#1F1A2E]/70">{PRICING_PLANS.lite.tagline}</p>
+                <p className="mt-3 text-xs leading-relaxed text-[#1F1A2E]/70 sm:text-sm">
+                  {PRICING_PLANS.lite.tagline}
+                </p>
 
                 <div className="my-6 border-t border-[#EADDCF]" />
 
-                <ul className="space-y-3 text-xs text-[#1F1A2E]/80">
+                <ul className="space-y-3.5 text-xs text-[#1F1A2E]/80 sm:text-sm">
                   {PRICING_PLANS.lite.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
+                    <li key={idx} className="flex items-start gap-2.5">
                       <Check className="h-4 w-4 shrink-0 text-[#0E9F8E]" />
                       <span>{feat}</span>
                     </li>
@@ -730,36 +777,38 @@ export default function HomePage() {
                 href={getConciergeWhatsAppUrl({ plan: "lite" })}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full border border-[#EADDCF] bg-white py-3 text-xs font-semibold text-[#1F1A2E] transition hover:border-[#D6246E] hover:text-[#D6246E]"
+                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full border border-[#EADDCF] bg-white py-3.5 text-xs font-semibold text-[#1F1A2E] shadow-sm transition hover:border-[#D6246E] hover:text-[#D6246E]"
               >
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="h-4 w-4" />
                 <span>Choose Lite on WhatsApp</span>
               </a>
             </div>
 
             {/* PREMIUM PLAN (Featured) */}
-            <div className="relative flex flex-col justify-between rounded-3xl border-2 border-[#D6246E] bg-white p-8 shadow-xl">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#D6246E] px-4 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
+            <div className="relative flex flex-col justify-between rounded-3xl border-2 border-[#D6246E] bg-white p-8 shadow-xl sm:p-9">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#D6246E] px-4 py-1 font-cinzel text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
                 Most Popular
               </div>
 
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#D6246E]">
+                <span className="font-cinzel text-xs font-bold uppercase tracking-wider text-[#D6246E]">
                   {PRICING_PLANS.premium.name}
                 </span>
-                <div className="mt-3 flex items-baseline gap-1">
+                <div className="mt-4 flex items-baseline gap-1.5">
                   <span className="font-serif text-4xl font-extrabold text-[#1F1A2E]">
                     ₹{PRICING_PLANS.premium.priceInr.toLocaleString("en-IN")}
                   </span>
                   <span className="text-xs text-[#1F1A2E]/60">one-time</span>
                 </div>
-                <p className="mt-3 text-xs text-[#1F1A2E]/70">{PRICING_PLANS.premium.tagline}</p>
+                <p className="mt-3 text-xs leading-relaxed text-[#1F1A2E]/70 sm:text-sm">
+                  {PRICING_PLANS.premium.tagline}
+                </p>
 
                 <div className="my-6 border-t border-[#EADDCF]" />
 
-                <ul className="space-y-3 text-xs text-[#1F1A2E]/80">
+                <ul className="space-y-3.5 text-xs text-[#1F1A2E]/85 sm:text-sm">
                   {PRICING_PLANS.premium.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
+                    <li key={idx} className="flex items-start gap-2.5">
                       <Check className="h-4 w-4 shrink-0 text-[#D6246E]" />
                       <span className="font-medium text-[#1F1A2E]">{feat}</span>
                     </li>
@@ -771,32 +820,34 @@ export default function HomePage() {
                 href={getConciergeWhatsAppUrl({ plan: "premium" })}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#D6246E] py-3.5 text-xs font-semibold text-white shadow-md transition hover:bg-[#B81D5B]"
+                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-[#D6246E] py-4 text-xs font-bold text-white shadow-md transition hover:bg-[#B81D5B]"
               >
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="h-4 w-4" />
                 <span>Choose Premium on WhatsApp</span>
               </a>
             </div>
 
             {/* PLATINUM PLAN */}
-            <div className="flex flex-col justify-between rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-8 shadow-sm">
+            <div className="flex flex-col justify-between rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-8 shadow-sm sm:p-9">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#1F1A2E]/60">
+                <span className="font-cinzel text-xs font-bold uppercase tracking-wider text-[#1F1A2E]/60">
                   {PRICING_PLANS.platinum.name}
                 </span>
-                <div className="mt-3 flex items-baseline gap-1">
+                <div className="mt-4 flex items-baseline gap-1.5">
                   <span className="font-serif text-4xl font-extrabold text-[#1F1A2E]">
                     ₹{PRICING_PLANS.platinum.priceInr.toLocaleString("en-IN")}
                   </span>
                   <span className="text-xs text-[#1F1A2E]/60">one-time</span>
                 </div>
-                <p className="mt-3 text-xs text-[#1F1A2E]/70">{PRICING_PLANS.platinum.tagline}</p>
+                <p className="mt-3 text-xs leading-relaxed text-[#1F1A2E]/70 sm:text-sm">
+                  {PRICING_PLANS.platinum.tagline}
+                </p>
 
                 <div className="my-6 border-t border-[#EADDCF]" />
 
-                <ul className="space-y-3 text-xs text-[#1F1A2E]/80">
+                <ul className="space-y-3.5 text-xs text-[#1F1A2E]/80 sm:text-sm">
                   {PRICING_PLANS.platinum.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
+                    <li key={idx} className="flex items-start gap-2.5">
                       <Check className="h-4 w-4 shrink-0 text-[#0E9F8E]" />
                       <span>{feat}</span>
                     </li>
@@ -808,9 +859,9 @@ export default function HomePage() {
                 href={getConciergeWhatsAppUrl({ plan: "platinum" })}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full border border-[#EADDCF] bg-white py-3 text-xs font-semibold text-[#1F1A2E] transition hover:border-[#D6246E] hover:text-[#D6246E]"
+                className="mt-8 flex w-full items-center justify-center gap-2 rounded-full border border-[#EADDCF] bg-white py-3.5 text-xs font-semibold text-[#1F1A2E] shadow-sm transition hover:border-[#D6246E] hover:text-[#D6246E]"
               >
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="h-4 w-4" />
                 <span>Choose Platinum on WhatsApp</span>
               </a>
             </div>
@@ -818,33 +869,67 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* SECTION 8: FAQS */}
+      <section id="questions" className="border-b border-[#EADDCF] py-20 sm:py-28">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+              Frequently Asked Questions
+            </span>
+            <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
+              Questions families ask before sharing.
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/70 sm:text-lg">
+              Everything you need to know about our privacy, concierge setup, and pricing.
+            </p>
+          </div>
+
+          <div className="mt-14 space-y-4">
+            {FAQS.map((faq, i) => (
+              <details
+                key={i}
+                className="group rounded-3xl border border-[#EADDCF] bg-white p-6 shadow-sm transition hover:border-[#D6246E]/40"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between font-serif text-lg font-bold text-[#1F1A2E] sm:text-xl">
+                  <span>{faq.question}</span>
+                  <ChevronDown className="h-5 w-5 shrink-0 text-[#D6246E] transition-transform duration-200 group-open:rotate-180" />
+                </summary>
+                <p className="mt-4 text-sm leading-relaxed text-[#1F1A2E]/75 sm:text-base">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 9: FOR PHOTOGRAPHERS AND PLANNERS */}
-      <section className="border-b border-[#EADDCF] py-16 sm:py-20">
+      <section className="border-b border-[#EADDCF] py-20 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-[#EADDCF] bg-white p-8 shadow-sm sm:p-12">
+          <div className="rounded-3xl border border-[#EADDCF] bg-white p-8 shadow-sm sm:p-14">
             <div className="grid items-center gap-8 lg:grid-cols-12">
               <div className="lg:col-span-8">
-                <div className="inline-flex items-center gap-2 rounded-full bg-[#FFF1F6] px-3.5 py-1 text-xs font-semibold text-[#D6246E]">
-                  <Camera className="h-3.5 w-3.5" />
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#FFF1F6] px-4 py-1 text-xs font-bold text-[#D6246E]">
+                  <Camera className="h-4 w-4" />
                   <span>For Wedding Photographers &amp; Planners</span>
                 </div>
-                <h2 className="text-2.5xl mt-3 font-serif font-bold tracking-tight text-[#1F1A2E] sm:text-3xl">
-                  Offer luxury digital invitations to your wedding couples.
+                <h2 className="mt-4 font-serif text-2xl font-bold tracking-tight text-[#1F1A2E] sm:text-3xl lg:text-4xl">
+                  Offer luxury digital wedding suites to your couples.
                 </h2>
-                <p className="mt-3 text-sm leading-relaxed text-[#1F1A2E]/75">
+                <p className="mt-3 text-sm leading-relaxed text-[#1F1A2E]/75 sm:text-base">
                   Deliver an end-to-end digital experience for your couples while unlocking partner
-                  referral earnings and co-branded portfolio credits.
+                  referral margins and co-branded portfolio credits.
                 </p>
 
-                <div className="mt-6 flex flex-wrap gap-4 text-xs font-medium text-[#1F1A2E]">
+                <div className="mt-6 flex flex-wrap gap-5 text-xs font-semibold text-[#1F1A2E] sm:text-sm">
                   <span className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-[#0E9F8E]" /> Co-branded invitations
+                    <Check className="h-4 w-4 text-[#0E9F8E]" /> Co-branded wedding links
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-[#0E9F8E]" /> Dedicated concierge line
+                    <Check className="h-4 w-4 text-[#0E9F8E]" /> Priority concierge turnaround
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 text-[#0E9F8E]" /> Attractive partner margins
+                    <Check className="h-4 w-4 text-[#0E9F8E]" /> Generous partner commissions
                   </span>
                 </div>
               </div>
@@ -856,7 +941,7 @@ export default function HomePage() {
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#1F1A2E] px-6 py-3.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#D6246E]"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#1F1A2E] px-7 py-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#D6246E]"
                 >
                   <MessageCircle className="h-4 w-4" />
                   <span>Join Partner Network</span>
@@ -868,57 +953,60 @@ export default function HomePage() {
       </section>
 
       {/* SECTION 10: FINAL CALL TO ACTION */}
-      <section className="bg-[#1F1A2E] py-20 text-[#FAF7F2]">
+      <section className="bg-[#1F1A2E] py-24 text-[#FAF7F2]">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-          <span className="text-xs font-semibold uppercase tracking-widest text-[#F5A524]">
-            Start Your Invitation Today
+          <span className="font-cinzel text-xs font-bold uppercase tracking-[0.25em] text-[#F5A524]">
+            Start Your Celebration
           </span>
-          <h2 className="sm:text-4.5xl mt-3 font-serif text-3xl font-bold tracking-tight text-[#FAF7F2]">
-            Stop answering &ldquo;what time is the sangeet?&rdquo;
+          <h2 className="mt-4 font-serif text-3xl font-bold tracking-tight text-[#FAF7F2] sm:text-5xl lg:text-6xl">
+            Celebrate with Shadify.
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base text-[#FAF7F2]/80">
-            Send us your wedding date and details on WhatsApp. Our concierge will prepare your first
-            preview in 24 hours.
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[#FAF7F2]/80 sm:text-lg sm:leading-8">
+            Forward your wedding date and details on WhatsApp. Our concierge team will prepare your
+            first polished preview in 24 hours.
           </p>
 
-          <div className="mt-8 flex flex-col justify-center gap-3.5 sm:flex-row">
+          <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
             <a
               href={defaultWhatsAppUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D6246E] px-8 py-4 text-sm font-semibold text-white shadow-lg transition hover:bg-[#B81D5B]"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D6246E] px-8 py-4 text-sm font-bold text-white shadow-lg transition hover:bg-[#B81D5B]"
             >
               <MessageCircle className="h-4 w-4" />
               <span>Message Concierge on WhatsApp</span>
             </a>
             <Link
               href="/priya-rahul"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-4 text-sm font-semibold text-[#FAF7F2] backdrop-blur-sm transition hover:bg-white/10"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-sm font-semibold text-[#FAF7F2] backdrop-blur-sm transition hover:bg-white/10"
             >
               <span>Explore Priya &amp; Rahul&apos;s Wedding</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
-          <p className="mt-6 text-xs text-[#FAF7F2]/60">
-            One-time payment &bull; 5-year hosting &bull; No credit card needed to preview
+          <p className="mt-8 text-xs font-medium text-[#FAF7F2]/60">
+            One-time payment &bull; Guaranteed 5-year cloud preservation &bull; No credit card
+            needed to preview
           </p>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-[#EADDCF] bg-[#FFFBF5] py-12 text-[#1F1A2E]">
+      <footer className="border-t border-[#EADDCF] bg-[#FFFBF5] py-14 text-[#1F1A2E]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#D6246E] font-serif text-sm font-bold text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#D6246E] font-serif text-sm font-bold text-white shadow-sm">
                 S
               </div>
-              <span className="font-serif text-base font-bold text-[#1F1A2E]">Shadify</span>
-              <span className="text-xs text-[#1F1A2E]/60">&mdash; Modern Indian Weddings</span>
+              <span className="font-serif text-lg font-bold text-[#1F1A2E]">Shadify</span>
+              <span className="text-xs text-[#1F1A2E]/60">
+                &mdash; Modern Royal Indian Weddings
+              </span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-[#1F1A2E]/70">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-[#1F1A2E]/70">
               <Link href="/terms" className="transition hover:text-[#D6246E]">
                 Terms of Service
               </Link>
@@ -931,12 +1019,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-8 border-t border-[#EADDCF] pt-6 text-center text-xs text-[#1F1A2E]/60 sm:flex sm:justify-between sm:text-left">
+          <div className="mt-10 border-t border-[#EADDCF] pt-6 text-center text-xs text-[#1F1A2E]/60 sm:flex sm:justify-between sm:text-left">
             <p>
               &copy; {new Date().getFullYear()} {SITE_CONFIG.legalEntity}. All rights reserved.
             </p>
             <p className="mt-2 sm:mt-0">
-              Zero contact harvesting &bull; Direct UPI &bull; Built with respect for family
+              Zero contact harvesting &bull; Direct UPI &bull; Handcrafted with care for family
               privacy.
             </p>
           </div>
