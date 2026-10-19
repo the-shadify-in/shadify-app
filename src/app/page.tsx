@@ -208,7 +208,7 @@ export default function HomePage() {
               {/* Main Headline */}
               <h1 className="mt-6 font-serif text-4xl font-bold tracking-tight text-[#1F1A2E] sm:text-6xl lg:text-[4.25rem] lg:leading-[1.08]">
                 Celebrate with Shadify.
-                <span className="mt-3 block bg-gradient-to-r from-[#D6246E] via-[#A81755] to-[#D6246E] bg-clip-text text-transparent">
+                <span className="mt-3 block bg-gradient-to-r from-[#D6246E] via-[#A81755] to-[#D6246E] bg-clip-text font-serif italic text-transparent">
                   Every Ceremony, Direction &amp; Blessing in One Royal Link.
                 </span>
               </h1>

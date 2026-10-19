@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Plus_Jakarta_Sans, Cinzel } from "next/font/google";
+import { Playfair_Display, Outfit, Cinzel } from "next/font/google";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
+const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-serif",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
-const plusJakarta = Plus_Jakarta_Sans({
+const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -50,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${plusJakarta.variable} ${cormorant.variable} ${cinzel.variable} font-sans antialiased selection:bg-[#D6246E]/15 selection:text-[#1F1A2E]`}
+        className={`${outfit.variable} ${playfair.variable} ${cinzel.variable} font-sans antialiased selection:bg-[#D6246E]/15 selection:text-[#1F1A2E]`}
       >
         {children}
       </body>
