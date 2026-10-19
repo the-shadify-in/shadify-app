@@ -94,7 +94,7 @@ Code is organized in 4 layers with **strict downward dependencies only**:
 
 ## 5. Coding Conventions
 
-- **TypeScript**: Strict mode enabled. No `any` types (use `unknown` with type guards, or explicit eslint comments only in raw parser tests).
+- **TypeScript**: Strict mode enabled. Never use `any`, `@ts-ignore`, or `@ts-nocheck`. Parse unknown input with Zod (`const raw: unknown = await request.json(); const input = Schema.parse(raw)`). Use `unknown` and type guards, not `any`. Always report the exact lint and typecheck commands executed.
 - **Zod Schema First**: Every API route and mutation must parse input through a Zod schema before hitting domain services.
 - **Server Components Default**: Default to React Server Components; use `"use client"` only when interactive state, browser APIs, or client-side lifecycle calculations are necessary.
 - **Granular Database Errors**: When catching Prisma `P2002`, inspect `meta.target` to return specific typed errors (`DuplicateSlugError`, `DuplicatePhoneError`, `DuplicateEmailError`, `DuplicateDomainError`).

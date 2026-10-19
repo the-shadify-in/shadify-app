@@ -694,6 +694,7 @@ export default function WeddingGuestClient({
                 {showQrCode && (
                   <div className="mt-3 flex flex-col items-center justify-center rounded-lg bg-white p-3 text-center">
                     {/* Standard SVG QR rendering of upi://pay URI */}
+                    {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic external QR SVG code rendered on-demand */}
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
                         `upi://pay?pa=${wedding.upiVpa}&pn=${encodeURIComponent(

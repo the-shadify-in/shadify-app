@@ -78,6 +78,10 @@
       `generateMetadata` in `src/app/[slug]/page.tsx` dynamically extracts couple names with `React.cache` deduplication and Open Graph tags.
       **Done when:** page title and OG tags render "Bride & Groom's Wedding Celebration | Shadify" with `robots: noindex`.
 
+- [x] **A19 `[BLOCKER]` `@lead-eng` — Zero `any` and zero `@ts-ignore` in codebase.**
+      Enforced in `tsconfig.json` (`strict: true`, `noImplicitOverride`, `noFallthroughCasesInSwitch`) and `.eslintrc.json` (`@typescript-eslint/no-explicit-any: error`, `@typescript-eslint/ban-ts-comment: error`).
+      **Done when:** `grep` for `:\s*any`, `as any`, `<any>`, `any[]`, `Record<string, any>`, `@ts-ignore`, and `@ts-nocheck` returns zero occurrences in `src/`, and `npm run check` passes with 0 warnings.
+
 ---
 
 ## B. Legal, tax and money

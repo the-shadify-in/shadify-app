@@ -1,8 +1,89 @@
 import { describe, it, expect } from "vitest";
 import { mapWeddingToDto } from "../queries";
 
+type DbWeddingPayload = Parameters<typeof mapWeddingToDto>[0];
+
+function createMockWedding(data: {
+  id: string;
+  slug: string;
+  brideName: string;
+  groomName: string;
+  weddingDate: Date;
+  showBranding: boolean;
+  monogramText: string;
+  upiVpa: string;
+  themeId: string;
+  contentExpiresAt: Date;
+  entitlement: { hostingUntil: Date };
+  events: Array<{
+    id: string;
+    weddingId: string;
+    title: string;
+    eventType: string;
+    startsAt: Date;
+    endsAt: Date;
+    venueName: string;
+    venueAddress: string;
+    venueMapUrl: string;
+    dressCode: string;
+  }>;
+  vips: Array<{
+    id: string;
+    weddingId: string;
+    groupLabel: "pillars" | "brides_tribe" | "grooms_squad";
+    name: string;
+    tagline: string;
+  }>;
+}): DbWeddingPayload {
+  return {
+    customDomain: null,
+    plan: "lite",
+    status: "published",
+    defaultLocale: "en",
+    timezone: "Asia/Kolkata",
+    phaseOverride: null,
+    themeConfig: null,
+    themeVersion: 1,
+    primaryColor: null,
+    accentColor: null,
+    heroPhotoId: null,
+    videoBiteKey: null,
+    liveStreamUrl: null,
+    privatePinHash: null,
+    publishedAt: null,
+    originalsExpireAt: null,
+    createdAt: new Date(),
+    deletedAt: null,
+    ...data,
+    events: data.events.map((e, idx) => ({
+      description: null,
+      visibility: "invited" as const,
+      sortOrder: idx,
+      createdAt: new Date(),
+      deletedAt: null,
+      ...e,
+    })),
+    vips: data.vips.map((v, idx) => ({
+      photoId: null,
+      linkUrl: null,
+      sortOrder: idx,
+      ...v,
+    })),
+    entitlement: {
+      weddingId: data.id,
+      maxGuests: null,
+      maxPhotos: null,
+      maxOriginalsGb: null,
+      videoBite: false,
+      customDomain: false,
+      faceSearch: false,
+      hostingUntil: data.entitlement.hostingUntil,
+    },
+  };
+}
+
 describe("Multi-Tenant Wedding Isolation", () => {
-  const weddingA = {
+  const weddingA = createMockWedding({
     id: "wed-aaa-111",
     slug: "priya-rahul",
     brideName: "Priya",
@@ -12,8 +93,6 @@ describe("Multi-Tenant Wedding Isolation", () => {
     monogramText: "P & R",
     upiVpa: "priyarahul@upi",
     themeId: "royal-crimson",
-    themeConfig: null,
-    themeVersion: 1,
     contentExpiresAt: new Date("2031-12-18"),
     entitlement: { hostingUntil: new Date("2031-12-18") },
     events: [
@@ -34,14 +113,14 @@ describe("Multi-Tenant Wedding Isolation", () => {
       {
         id: "vip-a1",
         weddingId: "wed-aaa-111",
-        groupLabel: "the_pillars",
+        groupLabel: "pillars",
         name: "Sharma Family",
         tagline: "Bride Parents",
       },
     ],
-  };
+  });
 
-  const weddingB = {
+  const weddingB = createMockWedding({
     id: "wed-bbb-222",
     slug: "ananya-kabir",
     brideName: "Ananya",
@@ -51,8 +130,6 @@ describe("Multi-Tenant Wedding Isolation", () => {
     monogramText: "A & K",
     upiVpa: "ananyakabir@okhdfcbank",
     themeId: "emerald-gold",
-    themeConfig: null,
-    themeVersion: 1,
     contentExpiresAt: new Date("2032-01-20"),
     entitlement: { hostingUntil: new Date("2032-01-20") },
     events: [
@@ -78,13 +155,11 @@ describe("Multi-Tenant Wedding Isolation", () => {
         tagline: "Groom Friends",
       },
     ],
-  };
+  });
 
   it("dto mapping preserves tenant data boundaries and never leaks cross-tenant events or vips", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dtoA = mapWeddingToDto(weddingA as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dtoB = mapWeddingToDto(weddingB as any);
+    const dtoA = mapWeddingToDto(weddingA);
+    const dtoB = mapWeddingToDto(weddingB);
 
     // Assert Wedding A has only its own slug, events, and VIPs
     expect(dtoA.slug).toBe("priya-rahul");
@@ -106,10 +181,8 @@ describe("Multi-Tenant Wedding Isolation", () => {
   });
 
   it("financial and entitlement boundaries remain isolated per tenant", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dtoA = mapWeddingToDto(weddingA as any);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dtoB = mapWeddingToDto(weddingB as any);
+    const dtoA = mapWeddingToDto(weddingA);
+    const dtoB = mapWeddingToDto(weddingB);
 
     expect(dtoA.upiVpa).toBe("priyarahul@upi");
     expect(dtoB.upiVpa).toBe("ananyakabir@okhdfcbank");
