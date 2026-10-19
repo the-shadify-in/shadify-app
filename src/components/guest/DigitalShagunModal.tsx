@@ -51,7 +51,13 @@ export function DigitalShagunModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg border-2 border-[#D4AF37] bg-theme-surface p-6 text-theme-text-primary shadow-2xl backdrop-blur-2xl sm:p-8">
+      <DialogContent
+        style={{
+          backgroundColor: "var(--theme-surface)",
+          color: "var(--theme-text-primary)",
+        }}
+        className="max-w-lg border-2 border-[#D4AF37] bg-theme-surface p-6 text-theme-text-primary shadow-2xl backdrop-blur-2xl sm:p-8"
+      >
         <DialogHeader className="text-center sm:text-center">
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#D4AF37] bg-theme-bg shadow-md">
             <Gift className="h-7 w-7 text-[#D4AF37]" />
@@ -109,7 +115,11 @@ export function DigitalShagunModal({
               placeholder="Or enter custom amount (e.g. ₹5,001)"
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value)}
-              className="bg-theme-bg/70 placeholder:text-theme-text-muted/60 border-[#D4AF37]/40 text-center font-serif text-base text-theme-text-primary focus-visible:ring-[#D4AF37]"
+              style={{
+                color: "var(--theme-text-primary)",
+                backgroundColor: "var(--theme-bg)",
+              }}
+              className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 border-[#D4AF37]/50 text-center font-serif text-base text-theme-text-primary focus-visible:ring-[#D4AF37]"
             />
           </div>
         </div>

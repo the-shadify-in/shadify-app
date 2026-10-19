@@ -72,7 +72,7 @@ export default function AdminLoginClient() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="concierge@shadify.in"
-            className="mt-1 w-full rounded-lg border border-[#C9933A]/30 bg-[#0A0406] px-3 py-2 text-[#FFF9F2] focus:border-[#C9933A] focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-[#C9933A]/30 bg-[#0A0406] px-3 py-2 text-[#FFF9F2] placeholder:text-stone-500 focus:border-[#C9933A] focus:outline-none"
           />
         </div>
 
@@ -84,7 +84,7 @@ export default function AdminLoginClient() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="mt-1 w-full rounded-lg border border-[#C9933A]/30 bg-[#0A0406] px-3 py-2 text-[#FFF9F2] focus:border-[#C9933A] focus:outline-none"
+            className="mt-1 w-full rounded-lg border border-[#C9933A]/30 bg-[#0A0406] px-3 py-2 text-[#FFF9F2] placeholder:text-stone-500 focus:border-[#C9933A] focus:outline-none"
           />
         </div>
 

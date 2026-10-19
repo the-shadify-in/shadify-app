@@ -156,6 +156,25 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
     return () => clearInterval(interval);
   }, [wedding.weddingDateIso]);
 
+  const c = theme.palette;
+  const loveStory = wedding.loveStory;
+  const gallery = wedding.gallery || [];
+
+  // Synchronize CSS custom properties to document.documentElement so modals/portals inherit them
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty("--theme-primary", c.primary);
+    root.style.setProperty("--theme-on-primary", c.onPrimary);
+    root.style.setProperty("--theme-accent", c.accent);
+    root.style.setProperty("--theme-on-accent", c.onAccent);
+    root.style.setProperty("--theme-bg", c.canvas);
+    root.style.setProperty("--theme-surface", c.surface);
+    root.style.setProperty("--theme-text-primary", c.text);
+    root.style.setProperty("--theme-text-muted", c.textMuted);
+    root.style.setProperty("--theme-envelope-bg", c.envelopeBg);
+    root.style.setProperty("--theme-wax-seal", c.waxSeal);
+  }, [c]);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4500);
@@ -174,10 +193,6 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
       </div>
     );
   }
-
-  const c = theme.palette;
-  const loveStory = wedding.loveStory;
-  const gallery = wedding.gallery || [];
 
   return (
     <main
@@ -198,6 +213,24 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
       }
       className="selection:text-theme-on-accent relative min-h-screen bg-theme-bg pb-20 font-sans text-theme-text-primary transition-colors duration-500 selection:bg-theme-accent md:pb-0"
     >
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            :root {
+              --theme-primary: ${c.primary};
+              --theme-on-primary: ${c.onPrimary};
+              --theme-accent: ${c.accent};
+              --theme-on-accent: ${c.onAccent};
+              --theme-bg: ${c.canvas};
+              --theme-surface: ${c.surface};
+              --theme-text-primary: ${c.text};
+              --theme-text-muted: ${c.textMuted};
+              --theme-envelope-bg: ${c.envelopeBg};
+              --theme-wax-seal: ${c.waxSeal};
+            }
+          `,
+        }}
+      />
       {/* 0. Ambient Floating Petals Canvas */}
       <canvas
         ref={canvasRef}

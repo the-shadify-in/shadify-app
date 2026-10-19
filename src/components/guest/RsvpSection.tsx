@@ -168,7 +168,11 @@ export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectio
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     placeholder="e.g. Vikramaditya Sharma"
-                    className="bg-theme-bg/70 placeholder:text-theme-text-muted/60 border-[#D4AF37]/40 text-theme-text-primary focus-visible:ring-[#D4AF37]"
+                    style={{
+                      color: "var(--theme-text-primary)",
+                      backgroundColor: "var(--theme-bg)",
+                    }}
+                    className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 border-[#D4AF37]/50 text-theme-text-primary focus-visible:ring-[#D4AF37]"
                   />
                 </div>
 
@@ -185,7 +189,11 @@ export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectio
                     value={guestPhone}
                     onChange={(e) => setGuestPhone(e.target.value)}
                     placeholder="+91 98765 43210"
-                    className="bg-theme-bg/70 placeholder:text-theme-text-muted/60 border-[#D4AF37]/40 text-theme-text-primary focus-visible:ring-[#D4AF37]"
+                    style={{
+                      color: "var(--theme-text-primary)",
+                      backgroundColor: "var(--theme-bg)",
+                    }}
+                    className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 border-[#D4AF37]/50 text-theme-text-primary focus-visible:ring-[#D4AF37]"
                   />
                 </div>
               </div>
@@ -205,12 +213,20 @@ export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectio
                         id="rsvp-party-size"
                         value={partySize}
                         onChange={(e) => setPartySize(Number(e.target.value))}
-                        className="bg-theme-bg/70 flex h-10 w-full rounded-lg border border-[#D4AF37]/40 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                        style={{
+                          color: "var(--theme-text-primary)",
+                          backgroundColor: "var(--theme-bg)",
+                        }}
+                        className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                       >
                         {[1, 2, 3, 4, 5, 6].map((num) => (
                           <option
                             key={num}
                             value={num}
+                            style={{
+                              backgroundColor: "var(--theme-surface, #1A0D14)",
+                              color: "var(--theme-text-primary, #FDF8F0)",
+                            }}
                             className="bg-theme-surface text-theme-text-primary"
                           >
                             {num} {num === 1 ? "Guest" : "Guests"}
@@ -230,19 +246,38 @@ export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectio
                         id="rsvp-meal-pref"
                         value={mealPref}
                         onChange={(e) => setMealPref(e.target.value)}
-                        className="bg-theme-bg/70 flex h-10 w-full rounded-lg border border-[#D4AF37]/40 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                        style={{
+                          color: "var(--theme-text-primary)",
+                          backgroundColor: "var(--theme-bg)",
+                        }}
+                        className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                       >
                         <option
                           value="pure_veg"
+                          style={{
+                            backgroundColor: "var(--theme-surface, #1A0D14)",
+                            color: "var(--theme-text-primary, #FDF8F0)",
+                          }}
                           className="bg-theme-surface text-theme-text-primary"
                         >
                           🥗 Pure Vegetarian
                         </option>
-                        <option value="jain" className="bg-theme-surface text-theme-text-primary">
+                        <option
+                          value="jain"
+                          style={{
+                            backgroundColor: "var(--theme-surface, #1A0D14)",
+                            color: "var(--theme-text-primary, #FDF8F0)",
+                          }}
+                          className="bg-theme-surface text-theme-text-primary"
+                        >
                           🌱 Jain Vegetarian
                         </option>
                         <option
                           value="non_veg"
+                          style={{
+                            backgroundColor: "var(--theme-surface, #1A0D14)",
+                            color: "var(--theme-text-primary, #FDF8F0)",
+                          }}
                           className="bg-theme-surface text-theme-text-primary"
                         >
                           🍗 Non-Vegetarian
@@ -285,7 +320,11 @@ export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectio
                   value={blessing}
                   onChange={(e) => setBlessing(e.target.value)}
                   placeholder="Share a heartfelt blessing, advice, or song request for the Sangeet night..."
-                  className="bg-theme-bg/70 placeholder:text-theme-text-muted/60 w-full rounded-xl border border-[#D4AF37]/40 p-3 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                  style={{
+                    color: "var(--theme-text-primary)",
+                    backgroundColor: "var(--theme-bg)",
+                  }}
+                  className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 w-full rounded-xl border border-[#D4AF37]/50 p-3 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                 />
               </div>
 

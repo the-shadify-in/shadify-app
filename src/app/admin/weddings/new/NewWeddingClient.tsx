@@ -224,7 +224,7 @@ export default function NewWeddingOnboardingPage() {
                   value={brideName}
                   onChange={(e) => setBrideName(e.target.value)}
                   placeholder="e.g. Priya"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
                 />
               </div>
 
@@ -238,7 +238,7 @@ export default function NewWeddingOnboardingPage() {
                   value={groomName}
                   onChange={(e) => setGroomName(e.target.value)}
                   placeholder="e.g. Rahul"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
                 />
               </div>
 
@@ -251,7 +251,7 @@ export default function NewWeddingOnboardingPage() {
                   required
                   value={weddingDate}
                   onChange={(e) => setWeddingDate(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
                 />
               </div>
 
@@ -265,7 +265,7 @@ export default function NewWeddingOnboardingPage() {
                   value={venueCity}
                   onChange={(e) => setVenueCity(e.target.value)}
                   placeholder="e.g. Udaipur, Rajasthan"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
                 />
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function NewWeddingOnboardingPage() {
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
                   }}
                   placeholder="priya-rahul-2026"
-                  className="w-full px-3 py-2 text-xs text-[#1F1A2E] focus:outline-none"
+                  className="w-full bg-white px-3 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
                 />
               </div>
               <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
@@ -419,7 +419,7 @@ export default function NewWeddingOnboardingPage() {
                     value={customPrimary}
                     onChange={(e) => setCustomPrimary(e.target.value)}
                     placeholder={activeBasePreset.palette.primary}
-                    className="w-full rounded-lg border border-[#EADDCF] px-3 py-1.5 font-mono text-xs uppercase"
+                    className="w-full rounded-lg border border-[#EADDCF] bg-white px-3 py-1.5 font-mono text-xs uppercase text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -440,7 +440,7 @@ export default function NewWeddingOnboardingPage() {
                     value={customAccent}
                     onChange={(e) => setCustomAccent(e.target.value)}
                     placeholder={activeBasePreset.palette.accent}
-                    className="w-full rounded-lg border border-[#EADDCF] px-3 py-1.5 font-mono text-xs uppercase"
+                    className="w-full rounded-lg border border-[#EADDCF] bg-white px-3 py-1.5 font-mono text-xs uppercase text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
                   />
                 </div>
               </div>
@@ -458,7 +458,7 @@ export default function NewWeddingOnboardingPage() {
                     setMonogramText(e.target.value);
                   }}
                   placeholder="e.g. P & R"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3 py-1.5 text-xs"
+                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3 py-1.5 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
                 />
               </div>
             </div>
@@ -517,7 +517,7 @@ export default function NewWeddingOnboardingPage() {
                     value={upiVpa}
                     onChange={(e) => setUpiVpa(e.target.value)}
                     placeholder="priya.rahul@okhdfcbank"
-                    className="w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                    className="w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
                   />
                 </div>
                 <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
@@ -535,7 +535,7 @@ export default function NewWeddingOnboardingPage() {
                   value={couplePhone}
                   onChange={(e) => setCouplePhone(e.target.value)}
                   placeholder="98XXXXXXXX"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
                 />
                 <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
                   Used for concierge invites and owner access.
@@ -551,7 +551,7 @@ export default function NewWeddingOnboardingPage() {
                   value={coupleEmail}
                   onChange={(e) => setCoupleEmail(e.target.value)}
                   placeholder="priya@example.com"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
                 />
               </div>
             </div>

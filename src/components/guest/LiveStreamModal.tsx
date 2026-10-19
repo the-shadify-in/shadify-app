@@ -20,7 +20,13 @@ interface LiveStreamModalProps {
 export function LiveStreamModal({ open, onOpenChange, bride, groom }: LiveStreamModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl border-2 border-[#D4AF37] bg-theme-surface p-6 text-theme-text-primary shadow-2xl backdrop-blur-2xl sm:p-8">
+      <DialogContent
+        style={{
+          backgroundColor: "var(--theme-surface)",
+          color: "var(--theme-text-primary)",
+        }}
+        className="max-w-2xl border-2 border-[#D4AF37] bg-theme-surface p-6 text-theme-text-primary shadow-2xl backdrop-blur-2xl sm:p-8"
+      >
         <DialogHeader className="text-center sm:text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-[#D4AF37] bg-theme-bg shadow-sm">
             <Video className="h-6 w-6 animate-pulse text-red-500" />

@@ -82,7 +82,13 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
 
   return (
     <Dialog open={!!event} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg border-2 border-[#D4AF37] bg-theme-surface p-6 text-theme-text-primary shadow-2xl backdrop-blur-2xl sm:p-8">
+      <DialogContent
+        style={{
+          backgroundColor: "var(--theme-surface)",
+          color: "var(--theme-text-primary)",
+        }}
+        className="max-w-lg border-2 border-[#D4AF37] bg-theme-surface p-6 text-theme-text-primary shadow-2xl backdrop-blur-2xl sm:p-8"
+      >
         <DialogHeader className="text-center sm:text-center">
           <p className="font-serif text-xs font-semibold uppercase tracking-[0.3em] text-theme-accent">
             Ceremony RSVP
@@ -116,7 +122,11 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               placeholder="e.g. Ananya Roy"
-              className="bg-theme-bg/70 border-[#D4AF37]/40 text-theme-text-primary focus-visible:ring-[#D4AF37]"
+              style={{
+                color: "var(--theme-text-primary)",
+                backgroundColor: "var(--theme-bg)",
+              }}
+              className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 border-[#D4AF37]/50 text-theme-text-primary focus-visible:ring-[#D4AF37]"
             />
           </div>
 
@@ -134,7 +144,11 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                 value={guestPhone}
                 onChange={(e) => setGuestPhone(e.target.value)}
                 placeholder="+91 98765 43210"
-                className="bg-theme-bg/70 border-[#D4AF37]/40 text-theme-text-primary focus-visible:ring-[#D4AF37]"
+                style={{
+                  color: "var(--theme-text-primary)",
+                  backgroundColor: "var(--theme-bg)",
+                }}
+                className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 border-[#D4AF37]/50 text-theme-text-primary focus-visible:ring-[#D4AF37]"
               />
             </div>
 
@@ -149,12 +163,20 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                 id="modal-party"
                 value={partySize}
                 onChange={(e) => setPartySize(Number(e.target.value))}
-                className="bg-theme-bg/70 flex h-10 w-full rounded-lg border border-[#D4AF37]/40 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                style={{
+                  color: "var(--theme-text-primary)",
+                  backgroundColor: "var(--theme-bg)",
+                }}
+                className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
               >
                 {[1, 2, 3, 4, 5, 6].map((num) => (
                   <option
                     key={num}
                     value={num}
+                    style={{
+                      backgroundColor: "var(--theme-surface, #1A0D14)",
+                      color: "var(--theme-text-primary, #FDF8F0)",
+                    }}
                     className="bg-theme-surface text-theme-text-primary"
                   >
                     {num} {num === 1 ? "Guest" : "Guests"}
@@ -175,21 +197,51 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
               id="modal-meal"
               value={mealPref}
               onChange={(e) => setMealPref(e.target.value)}
-              className="bg-theme-bg/70 flex h-10 w-full rounded-lg border border-[#D4AF37]/40 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+              style={{
+                color: "var(--theme-text-primary)",
+                backgroundColor: "var(--theme-bg)",
+              }}
+              className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
             >
-              <option value="pure_veg" className="bg-theme-surface text-theme-text-primary">
+              <option
+                value="pure_veg"
+                style={{
+                  backgroundColor: "var(--theme-surface, #1A0D14)",
+                  color: "var(--theme-text-primary, #FDF8F0)",
+                }}
+                className="bg-theme-surface text-theme-text-primary"
+              >
                 🥗 Pure Vegetarian
               </option>
-              <option value="jain" className="bg-theme-surface text-theme-text-primary">
+              <option
+                value="jain"
+                style={{
+                  backgroundColor: "var(--theme-surface, #1A0D14)",
+                  color: "var(--theme-text-primary, #FDF8F0)",
+                }}
+                className="bg-theme-surface text-theme-text-primary"
+              >
                 🌱 Jain Vegetarian
               </option>
-              <option value="non_veg" className="bg-theme-surface text-theme-text-primary">
+              <option
+                value="non_veg"
+                style={{
+                  backgroundColor: "var(--theme-surface, #1A0D14)",
+                  color: "var(--theme-text-primary, #FDF8F0)",
+                }}
+                className="bg-theme-surface text-theme-text-primary"
+              >
                 🍗 Non-Vegetarian
               </option>
             </select>
           </div>
 
-          <div className="bg-theme-bg/50 flex items-center justify-between rounded-xl border border-[#D4AF37]/30 p-3">
+          <div
+            style={{
+              backgroundColor: "var(--theme-bg)",
+            }}
+            className="bg-theme-bg/50 flex items-center justify-between rounded-xl border border-[#D4AF37]/30 p-3"
+          >
             <div>
               <span className="block text-xs font-semibold text-theme-text-primary">
                 Outstation Stay Needed
@@ -218,7 +270,11 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Arriving on early morning flight"
-              className="bg-theme-bg/70 border-[#D4AF37]/40 text-theme-text-primary focus-visible:ring-[#D4AF37]"
+              style={{
+                color: "var(--theme-text-primary)",
+                backgroundColor: "var(--theme-bg)",
+              }}
+              className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 border-[#D4AF37]/50 text-theme-text-primary focus-visible:ring-[#D4AF37]"
             />
           </div>
 
