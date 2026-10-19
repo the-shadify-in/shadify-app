@@ -205,18 +205,25 @@ _Trigger: A guest requests: "Please delete my phone number, RSVP response, and p
    FROM "event_rsvps"
    WHERE respondent_phone = '<phone_number>' OR respondent_name ILIKE '<guest_name>';
 
-   -- 2. Permanently delete RSVP entry
-   DELETE FROM "event_rsvps"
+   -- 2. Anonymize personal fields (retaining headcount for event planning without PII)
+   UPDATE "event_rsvps"
+   SET "respondent_name" = '[Redacted]',
+       "respondent_phone" = NULL,
+       "respondent_email" = NULL,
+       "dietary_notes" = NULL
    WHERE id = '<rsvp_id>';
 
    -- 3. Delete matching guest address entry if present
    DELETE FROM "guests"
    WHERE phone = '<phone_number>';
    ```
-3. **Audit Trail**: Record deletion event in `audit_logs` without storing the erased PII:
+3. **Manual Photo Takedown**:
+   - Locate the photo ID from the wedding gallery.
+   - Delete via Admin Concierge Portal or run `DELETE FROM "photos" WHERE id = '<photo_id>'` and remove corresponding keys in Cloudflare R2.
+4. **Audit Trail**: Record deletion event in `audit_logs` storing only a SHA-256 hash of the phone to verify future inquiries without storing plain-text PII:
    ```sql
    INSERT INTO "audit_logs" ("actor_user_id", "action", "resource_type", "resource_id", "metadata")
-   VALUES ('<admin-id>', 'dpdp_guest_erasure', 'event_rsvp', '<rsvp_id>', '{"status": "purged_on_request"}');
+   VALUES ('<admin-id>', 'dpdp_guest_erasure', 'event_rsvp', '<rsvp_id>', '{"phone_hash": "<sha256_hash>", "status": "anonymized"}');
    ```
 
 ---
@@ -227,21 +234,43 @@ _Trigger: Couple requests permanent decommissioning of their website and media a
 
 1. **Identity Gate**:
    - Must be verified via OTP / registered couple phone number.
-2. **Soft-Delete Database Rows**:
+2. **Anonymize and Redact Database Rows**:
    ```sql
+   -- Anonymize wedding core fields
    UPDATE "weddings"
-   SET "deleted_at" = NOW()
+   SET "bride_name" = '[Redacted]',
+       "groom_name" = '[Redacted]',
+       "monogram_text" = NULL,
+       "upi_vpa" = NULL,
+       "video_bite_key" = NULL,
+       "live_stream_url" = NULL,
+       "private_pin_hash" = NULL,
+       "status" = 'archived',
+       "deleted_at" = NOW()
    WHERE "slug" = '<wedding_slug>';
+
+   -- Anonymize associated user records
+   UPDATE "users"
+   SET "full_name" = '[Redacted]',
+       "phone" = NULL,
+       "email" = NULL,
+       "deleted_at" = NOW()
+   WHERE id IN (
+     SELECT user_id FROM "wedding_members" WHERE wedding_id = (SELECT id FROM "weddings" WHERE slug = '<wedding_slug>')
+   );
    ```
-3. **Purge Cloudflare R2 Media Files**:
+3. **Purge Cloudflare R2 Media Files Safely**:
    ```bash
-   # Run via AWS CLI configured with Cloudflare R2 credentials:
+   # STEP 1: ALWAYS run with --dryrun first to inspect targeted files!
+   aws s3 rm s3://shadify-media/weddings/<wedding_slug>/ --recursive --endpoint-url https://<account_id>.r2.cloudflarestorage.com --dryrun
+
+   # STEP 2: Execute actual deletion once dryrun list is verified:
    aws s3 rm s3://shadify-media/weddings/<wedding_slug>/ --recursive --endpoint-url https://<account_id>.r2.cloudflarestorage.com
    ```
 4. **Purge Edge CDN Cache**:
-   - Invalidate cache tag `wedding:<slug>` in Cloudflare Dashboard.
+   - Invalidate cache tag `wedding:<slug>` in Cloudflare Dashboard or call `revalidatePath('/<slug>')`.
 5. **Send Formal Closure Confirmation**:
-   Send email or WhatsApp receipt confirming all records, RSVP databases, and media archives have been permanently purged.
+   Send email or WhatsApp receipt confirming all records, RSVP databases, and media archives have been permanently anonymized and purged (noting that statutory tax invoices are retained for mandatory audit periods under GST/Income Tax laws).
 
 ---
 

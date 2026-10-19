@@ -17,9 +17,39 @@ export async function generateMetadata({
 }: {
   params: { slug: string };
 }): Promise<Metadata> {
+  const dbWedding = await getWeddingBySlug(params.slug);
+  const isDemoSlug =
+    params.slug === "priya-rahul" || params.slug === "sample" || params.slug === "demo";
+
+  if (!dbWedding && !isDemoSlug) {
+    return {
+      title: "Wedding Celebration | Shadify",
+      description: "Private wedding invitation and celebration.",
+      robots: { index: false, follow: false, nocache: true },
+    };
+  }
+
+  const coupleNames = dbWedding
+    ? `${dbWedding.brideName} & ${dbWedding.groomName}`
+    : "Priya & Rahul";
+
+  const title = `${coupleNames}'s Wedding Celebration | Shadify`;
+  const description = `Private wedding invitation and ceremony itinerary for ${coupleNames}.`;
+
   return {
-    title: `Wedding Celebration (${params.slug}) | Shadify`,
-    description: `Private wedding invitation and ceremony itinerary.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      siteName: "Shadify",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
     robots: {
       index: false,
       follow: false,
@@ -109,11 +139,14 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
 
   const dbWedding = await getWeddingBySlug(slug);
 
-  // 1. Deliberate Expired Site State
-  if (
-    dbWedding?.entitlement?.hostingUntil &&
-    new Date(dbWedding.entitlement.hostingUntil).getTime() < Date.now()
-  ) {
+  // 1. Deliberate Expired Site State (Zero PII or ceremony data leaked in HTML payload)
+  const isExpired = Boolean(
+    (dbWedding?.entitlement?.hostingUntil &&
+      new Date(dbWedding.entitlement.hostingUntil).getTime() < Date.now()) ||
+    (dbWedding?.contentExpiresAt && new Date(dbWedding.contentExpiresAt).getTime() < Date.now()),
+  );
+
+  if (isExpired) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-[#FDFBF7] px-4 text-center text-[#1F1A2E]">
         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#1F1A2E]/5 text-xl">
@@ -123,8 +156,7 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
           Celebration Website Concluded
         </h1>
         <p className="mt-3 max-w-md text-xs leading-relaxed text-[#1F1A2E]/70 sm:text-sm">
-          The active digital invitation and gallery hosting for {dbWedding.brideName} &{" "}
-          {dbWedding.groomName}&apos;s wedding has concluded.
+          This private wedding celebration website has concluded its active hosting period.
         </p>
       </div>
     );
@@ -133,8 +165,12 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
   // Fallback demo samples
   const isDemoSlug = slug === "priya-rahul" || slug === "sample" || slug === "demo";
 
-  // 2. Deliberate 404 for unknown slug
+  // 2. Deliberate 404 for unknown or draft slug (previews are served under /[slug]/preview)
   if (!dbWedding && !isDemoSlug) {
+    notFound();
+  }
+
+  if (dbWedding && dbWedding.status !== "published" && !isDemoSlug) {
     notFound();
   }
 

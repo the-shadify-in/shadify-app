@@ -144,15 +144,18 @@ export default function TermsPage() {
             4. Content Rights, Copyright & Display License
           </h2>
           <p className="text-xs leading-relaxed text-[#FAF7F2]/70">
-            You, your family, and your photographers retain{" "}
-            <strong>100% intellectual property ownership</strong> of all photographs, portrait
-            videos, and blessings uploaded to your wedding website.
+            Intellectual property ownership in uploaded photographs, videos, and creative works
+            remains with the respective copyright holders (the couple, family members, or contracted
+            professional wedding photographers in accordance with your individual photography
+            service contracts).
           </p>
           <p className="text-xs leading-relaxed text-[#FAF7F2]/70">
-            You grant Shadify a worldwide, non-exclusive, royalty-free, limited license solely to
-            host, compress, format, and display your media to guests who visit your wedding website.
-            Shadify will never license, sell, or use your private wedding photographs in commercial
-            advertisements without your express prior consent.
+            By uploading media, you represent and warrant that you hold all necessary licenses,
+            permissions, or author authorizations to publish such content. You grant Shadify a
+            limited, non-exclusive, royalty-free license solely to process, compress, host, and
+            display the media to invited guests on your celebration website during your hosting
+            term. Shadify will never sell, sublicense, or use your private celebration media for
+            commercial promotional campaigns without your express, written opt-in consent.
           </p>
         </section>
 

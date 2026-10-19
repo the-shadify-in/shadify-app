@@ -113,6 +113,11 @@ export default function RefundsPage() {
               </p>
             </div>
           </div>
+          <p className="text-[11px] text-[#FAF7F2]/50">
+            * Note: These policies operate without prejudice to mandatory statutory consumer rights
+            under the Consumer Protection Act, 2019 and applicable consumer protection regulations
+            in India.
+          </p>
         </section>
 
         {/* Section 2: Non-Refundable Items */}

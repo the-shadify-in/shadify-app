@@ -1,6 +1,8 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getAdminSession } from "@/lib/auth";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -14,6 +16,16 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminHealthDashboardPage() {
+  const session = await getAdminSession();
+  if (!session) {
+    redirect("/admin/login?from=/admin/health");
+  }
+
+  const r2Configured = Boolean(process.env.R2_BUCKET_NAME && process.env.R2_ACCOUNT_ID);
+  const errorTrackingConfigured = Boolean(
+    process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN,
+  );
+
   const start = performance.now();
   let dbStatus = "connected";
   let dbLatency = 0;
@@ -103,22 +115,46 @@ export default async function AdminHealthDashboardPage() {
               <HardDrive className="h-4 w-4 text-[#C9933A]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-semibold text-emerald-400">Normal</span>
-              <span className="text-xs text-[#FFF9F2]/40">(90-Day RAW Lifecycle)</span>
+              <span
+                className={`text-2xl font-semibold ${
+                  r2Configured ? "text-emerald-400" : "text-amber-400"
+                }`}
+              >
+                {r2Configured ? "Configured" : "Not Configured"}
+              </span>
+              <span className="text-xs text-[#FFF9F2]/40">
+                {r2Configured ? "(90-Day Lifecycle)" : "(Mock / Local)"}
+              </span>
             </div>
-            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">Zero egress fee media pipeline</p>
+            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">
+              {r2Configured
+                ? "Zero egress fee media pipeline"
+                : "R2 bucket credentials not set in env"}
+            </p>
           </div>
 
           <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-5">
             <div className="flex items-center justify-between text-xs text-[#FFF9F2]/60">
-              <span>Error Rate (24h)</span>
+              <span>Error Rate Tracking</span>
               <RefreshCw className="h-4 w-4 text-[#C9933A]" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl font-semibold text-emerald-400">0.00%</span>
-              <span className="text-xs text-[#FFF9F2]/40">(P0 SLA: &lt;5%)</span>
+              <span
+                className={`text-2xl font-semibold ${
+                  errorTrackingConfigured ? "text-emerald-400" : "text-zinc-400"
+                }`}
+              >
+                {errorTrackingConfigured ? "Active" : "Not Configured"}
+              </span>
+              <span className="text-xs text-[#FFF9F2]/40">
+                {errorTrackingConfigured ? "(Sentry DSN Set)" : "(Pending Sentry)"}
+              </span>
             </div>
-            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">RSVP & Uploads operational</p>
+            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">
+              {errorTrackingConfigured
+                ? "Exception stream active"
+                : "Sentry DSN not configured in env"}
+            </p>
           </div>
 
           <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-5">

@@ -1,10 +1,17 @@
+import React from "react";
 import { prisma } from "@/lib/db";
 import type { WeddingDataDto } from "./types";
 
+const reactCache =
+  typeof React.cache === "function"
+    ? React.cache
+    : <T extends (...args: Parameters<T>) => ReturnType<T>>(fn: T): T => fn;
+
 /**
  * Fetches a wedding by its URL slug and transforms it into a clean DTO.
+ * Wrapped with React.cache so generateMetadata and page rendering share the same query in Next.js RSC.
  */
-export async function getWeddingBySlug(slug: string) {
+export const getWeddingBySlug = reactCache(async (slug: string) => {
   try {
     const wedding = await prisma.wedding.findUnique({
       where: { slug },
@@ -19,7 +26,7 @@ export async function getWeddingBySlug(slug: string) {
     console.error(`[queries.getWeddingBySlug] Error fetching slug '${slug}':`, err);
     return null;
   }
-}
+});
 
 /**
  * Transforms a Prisma Wedding record into a clean WeddingDataDto.

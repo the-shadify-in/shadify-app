@@ -106,7 +106,7 @@ describe("RSVP API Route", () => {
       weddingId: "w-1",
       eventId: "e-1",
       respondentName: "Rajesh Kumar",
-      respondentPhone: "9876543210",
+      respondentPhone: "9811122233",
       attending: true,
     });
 
@@ -122,7 +122,7 @@ describe("RSVP API Route", () => {
       weddingId: "w-1",
       eventId: "e-1",
       respondentName: "Rajesh Kumar",
-      respondentPhone: "9876543210",
+      respondentPhone: "9811122233",
       attending: true,
       partySize: 2,
       mealPreference: "pure_veg",
@@ -133,7 +133,7 @@ describe("RSVP API Route", () => {
       weddingId: "w-1",
       eventId: "e-1",
       respondentName: "Rajesh Kumar",
-      respondentPhone: "9876543210",
+      respondentPhone: "9811122233",
       attending: true,
       partySize: 2,
       mealPreference: "pure_veg",

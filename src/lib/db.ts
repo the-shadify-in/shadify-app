@@ -9,10 +9,23 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const connectionString =
-  process.env.DATABASE_URL ||
-  "postgresql://postgres:postgres@localhost:5432/shadify?sslmode=disable";
+  process.env.DATABASE_URL || process.env.DIRECT_URL || process.env.DATABASE_URL_UNPOOLED;
 
-const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+if (!connectionString) {
+  throw new Error(
+    "Missing required database connection string. Set DATABASE_URL in your environment.",
+  );
+}
+
+const pool =
+  globalForPrisma.pool ??
+  new Pool({
+    connectionString,
+    max: Number(process.env.PG_POOL_MAX || 10),
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  });
+
 const adapter = new PrismaPg(pool);
 
 export const prisma =

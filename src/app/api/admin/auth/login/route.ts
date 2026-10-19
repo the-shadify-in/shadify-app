@@ -24,10 +24,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { email, password } = LoginSchema.parse(body);
 
-    // Verify staff credentials
-    // Matches internal concierge password or admin hash
-    const isValid =
-      password === (process.env.ADMIN_CONCIERGE_PASSWORD || "shadify2026") || password.length >= 8;
+    // Verify staff credentials against configured password
+    const expectedPassword = process.env.ADMIN_CONCIERGE_PASSWORD || "shadify2026";
+    const isValid = password === expectedPassword;
 
     if (!isValid) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });

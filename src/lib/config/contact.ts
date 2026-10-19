@@ -1,15 +1,18 @@
 /**
  * Centralized brand & concierge contact configuration.
- * Change the business number or support email in this single file.
+ * All public WhatsApp inquiries and support channels resolve from environment variables.
  */
+
+const envWhatsapp = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP?.replace(/\D/g, "");
+const envWhatsappDisplay = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY;
 
 export const SITE_CONFIG = {
   name: "Shadify",
   legalEntity: "Shadify Technologies Pvt. Ltd.",
-  domain: "shadify.in",
-  supportEmail: "concierge@shadify.in",
-  whatsappNumber: "919876543210", // Dedicated Shadify concierge WhatsApp line
-  whatsappDisplay: "+91 98765 43210",
+  domain: process.env.NEXT_PUBLIC_APP_DOMAIN || "shadify.in",
+  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "concierge@shadify.in",
+  whatsappNumber: envWhatsapp || "918000000000",
+  whatsappDisplay: envWhatsappDisplay || "+91 (Concierge Line)",
   address: "Indiranagar, Bengaluru, Karnataka 560038",
 };
 

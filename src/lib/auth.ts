@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "crypto";
 
 export const SESSION_COOKIE_NAME = "shadify_admin_session";
@@ -7,9 +6,12 @@ const SESSION_SECRET =
 
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
+export const CURRENT_SESSION_VERSION = process.env.ADMIN_SESSION_VERSION || "v1";
+
 export interface AdminSession {
   userId: string;
   role: string;
+  version?: string;
   exp: number;
 }
 
@@ -22,14 +24,20 @@ export function signSessionToken(
   ttlMs = SESSION_MAX_AGE_SECONDS * 1000,
 ): string {
   const exp = Date.now() + ttlMs;
-  const payload = JSON.stringify({ userId, role, iat: Date.now(), exp });
+  const payload = JSON.stringify({
+    userId,
+    role,
+    v: CURRENT_SESSION_VERSION,
+    iat: Date.now(),
+    exp,
+  });
   const encodedPayload = Buffer.from(payload).toString("base64url");
   const signature = createHmac("sha256", SESSION_SECRET).update(encodedPayload).digest("base64url");
   return `${encodedPayload}.${signature}`;
 }
 
 /**
- * Verifies an HMAC-SHA256 signed session token and checks expiration.
+ * Verifies an HMAC-SHA256 signed session token and checks expiration and session version.
  */
 export function verifySessionToken(token: string): AdminSession | null {
   try {
@@ -52,7 +60,12 @@ export function verifySessionToken(token: string): AdminSession | null {
       return null;
     }
 
-    return { userId: payload.userId, role: payload.role, exp: payload.exp };
+    // Invalidate if token version does not match current configured session version
+    if (payload.v && payload.v !== CURRENT_SESSION_VERSION) {
+      return null;
+    }
+
+    return { userId: payload.userId, role: payload.role, version: payload.v, exp: payload.exp };
   } catch {
     return null;
   }
@@ -62,10 +75,15 @@ export function verifySessionToken(token: string): AdminSession | null {
  * Server helper to get current admin session from cookies
  */
 export async function getAdminSession(): Promise<AdminSession | null> {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  if (!sessionCookie?.value) return null;
-  return verifySessionToken(sessionCookie.value);
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = cookies();
+    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+    if (!sessionCookie?.value) return null;
+    return verifySessionToken(sessionCookie.value);
+  } catch {
+    return null;
+  }
 }
 
 /**

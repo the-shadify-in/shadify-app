@@ -225,3 +225,33 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
     throw err;
   }
 }
+
+/**
+ * Publishes a wedding and immediately triggers Next.js cache invalidation
+ * so guests see the page within seconds of activation.
+ */
+export async function publishWeddingService(weddingId: string, actorUserId: string) {
+  const wedding = await prisma.wedding.update({
+    where: { id: weddingId },
+    data: { status: "published" },
+  });
+
+  try {
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath(`/${wedding.slug}`);
+    revalidatePath(`/${wedding.slug}`, "page");
+  } catch {
+    // In test runners or non-Next runtime environments, skip silently
+  }
+
+  await prisma.auditLog.create({
+    data: {
+      weddingId: wedding.id,
+      actorId: actorUserId,
+      action: "wedding.publish",
+      detail: { slug: wedding.slug },
+    },
+  });
+
+  return wedding;
+}

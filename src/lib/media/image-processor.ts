@@ -144,3 +144,28 @@ export async function generatePreviewAndThumb(input: Buffer): Promise<{
 
   return { preview, thumb };
 }
+
+/**
+ * Strips all EXIF and GPS location metadata from an original image buffer
+ * without downscaling resolution, preventing location leakage in downloadable originals.
+ */
+export async function stripExifFromOriginal(
+  input: Buffer,
+  detectedMime?: string,
+): Promise<{ buffer: Buffer; sizeBytes: number }> {
+  let pipeline = sharp(input).rotate();
+
+  if (detectedMime === "image/png") {
+    pipeline = pipeline.png({ compressionLevel: 9 });
+  } else if (detectedMime === "image/webp") {
+    pipeline = pipeline.webp({ quality: 95 });
+  } else if (detectedMime === "image/avif") {
+    pipeline = pipeline.avif({ quality: 90 });
+  } else {
+    // Default to high-quality JPEG
+    pipeline = pipeline.jpeg({ quality: 95, mozjpeg: true });
+  }
+
+  const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+  return { buffer: data, sizeBytes: info.size };
+}

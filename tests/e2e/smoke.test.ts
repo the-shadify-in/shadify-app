@@ -53,7 +53,7 @@ test.describe("Shadify Public Marketing & Policy Pages", () => {
 test.describe("Shadify Guest Wedding Journey (/[slug])", () => {
   test("guest can view seeded wedding celebration and reveal envelope", async ({ page }) => {
     await page.goto("/priya-rahul", { waitUntil: "domcontentloaded" });
-    await expect(page).toHaveTitle(/priya-rahul/i);
+    await expect(page).toHaveTitle(/Priya.*Rahul/i);
 
     // Verify Wedding Couple and Itinerary
     await expect(page.getByText(/Priya/i).first()).toBeVisible();
@@ -67,10 +67,12 @@ test.describe("Shadify Guest Wedding Journey (/[slug])", () => {
     await expect(page.getByText(/Shagun|Gifting|Blessings/i).first()).toBeVisible();
   });
 
-  test("legacy /w/:slug path permanently redirects to clean direct /:slug", async ({ page }) => {
-    const response = await page.goto("/w/priya-rahul");
-    expect(response?.url()).toContain("/priya-rahul");
-    expect(response?.url()).not.toContain("/w/priya-rahul");
+  test("legacy /w/:slug path temporarily redirects (307) to clean direct /:slug", async ({
+    request,
+  }) => {
+    const response = await request.get("/w/priya-rahul", { maxRedirects: 0 });
+    expect(response.status()).toBe(307);
+    expect(response.headers()["location"]).toBe("/priya-rahul");
   });
 });
 

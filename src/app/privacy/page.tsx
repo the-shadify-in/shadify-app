@@ -100,7 +100,7 @@ export default function PrivacyPage() {
         {/* Section 2 */}
         <section className="space-y-4">
           <h2 className="font-serif text-xl text-[#FAF7F2]">
-            2. Zero Third-Party Trackers on Wedding Websites
+            2. Third-Party Services & Privacy Architecture
           </h2>
           <p className="text-xs leading-relaxed text-[#FAF7F2]/70">
             Your wedding celebration is an intimate family milestone. We uphold strict architectural
@@ -108,12 +108,23 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-inside list-disc space-y-2 pl-2 text-xs text-[#FAF7F2]/70">
             <li>
-              <strong>No Meta, Google, or Advertising Pixels</strong> are embedded on couple
-              websites (<code>/[slug]</code>).
+              <strong>Self-Hosted Fonts:</strong> All design typography is served directly from our
+              own local origin. Zero requests or telemetry are sent to external font CDNs or Google
+              Fonts servers.
             </li>
             <li>
-              <strong>No Session Replay Software</strong> (e.g. Hotjar or Clarity) that records
-              screen activity or form keystrokes.
+              <strong>Cloudflare Turnstile Bot Defense:</strong> To safeguard wedding guestbooks and
+              RSVP forms against automated spam and denial-of-service probes, we utilize Cloudflare
+              Turnstile. Turnstile validates browser authenticity without interactive CAPTCHAs, does
+              not track user identities across the web, and does not store behavioral cookies.
+            </li>
+            <li>
+              <strong>Zero Advertising Pixels:</strong> No Meta, Google, TikTok, or advertising
+              trackers are embedded on couple websites (<code>/[slug]</code>).
+            </li>
+            <li>
+              <strong>No Session Replay Software:</strong> We do not use screen-recording or
+              keystroke monitoring tools (such as Hotjar or Microsoft Clarity).
             </li>
             <li>
               We utilize only first-party aggregate counters (e.g. total page views, RSVP counts)
@@ -179,6 +190,14 @@ export default function PrivacyPage() {
               <strong>Right to Erasure (Forget Me):</strong> Request the permanent, irreversible
               deletion of your wedding website, RSVP database, and Cloudflare R2 media files across
               our systems.
+            </li>
+            <li>
+              <strong>Statutory Retention Exception:</strong> Personal data and media are purged
+              upon erasure request. However, statutory billing and tax invoice records required
+              under applicable Indian tax laws (e.g., GST and Income Tax regulations) must be
+              preserved for the legally mandated statutory audit period (up to 8 years). Encrypted
+              rolling disaster recovery backups are purged systematically upon expiration of their
+              retention cycle (up to 30 days).
             </li>
           </ul>
         </section>

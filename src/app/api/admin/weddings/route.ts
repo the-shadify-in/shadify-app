@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth";
 import { logRequest } from "@/lib/log";
@@ -36,6 +37,10 @@ export async function POST(req: NextRequest) {
 
     // 2. Delegate to weddings domain service
     const wedding = await createWeddingService(data, session.userId);
+
+    // 3. Invalidate cached 404s or existing static entries for this slug
+    revalidatePath(`/${wedding.slug}`);
+    revalidatePath(`/${wedding.slug}`, "page");
 
     logRequest({
       requestId,

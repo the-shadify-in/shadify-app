@@ -4,6 +4,7 @@ import {
   validateImageMagicBytes,
   stripExifAndOptimize,
   generatePreviewAndThumb,
+  stripExifFromOriginal,
 } from "../image-processor";
 
 describe("Image Processor & Magic Bytes Validation", () => {
@@ -126,5 +127,26 @@ describe("Image Processor & Magic Bytes Validation", () => {
     expect(thumb.format).toBe("webp");
     expect(thumb.width).toBeLessThanOrEqual(400);
     expect(thumb.height).toBeLessThanOrEqual(400);
+  });
+
+  it("strips EXIF from original while preserving dimensions", async () => {
+    const rawImage = await sharp({
+      create: {
+        width: 1920,
+        height: 1080,
+        channels: 3,
+        background: { r: 50, g: 100, b: 150 },
+      },
+    })
+      .jpeg()
+      .toBuffer();
+
+    const result = await stripExifFromOriginal(rawImage, "image/jpeg");
+    expect(result.sizeBytes).toBeGreaterThan(0);
+
+    const meta = await sharp(result.buffer).metadata();
+    expect(meta.width).toBe(1920);
+    expect(meta.height).toBe(1080);
+    expect(meta.exif).toBeUndefined();
   });
 });
