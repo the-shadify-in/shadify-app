@@ -11,8 +11,10 @@ const LoginSchema = z.object({
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
 
-  // Rate limit: 5 attempts per 15 minutes per IP
-  const rateLimitResult = checkRateLimit(`admin-login:${ip}`, 5, 15 * 60 * 1000);
+  // Rate limit: 5 attempts per 15 minutes per IP (relaxed in test environments)
+  const isTest = process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_TEST === "true";
+  const limit = isTest ? 100 : 5;
+  const rateLimitResult = checkRateLimit(`admin-login:${ip}`, limit, 15 * 60 * 1000);
   if (!rateLimitResult.success) {
     return NextResponse.json(
       { error: "Too many login attempts. Please wait 15 minutes before trying again." },

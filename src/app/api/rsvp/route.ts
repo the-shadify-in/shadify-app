@@ -2,19 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. IP Rate Limiting (max 5 submissions per 60s window)
     const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(`rsvp:${ip}`, 5, 60000);
-    if (!rateCheck.success) {
-      return NextResponse.json(
-        { error: "Too many requests. Please wait a moment before trying again." },
-        { status: 429, headers: { "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)) } },
-      );
-    }
-
     const body = await request.json();
     const {
       weddingId: rawWeddingId,
@@ -36,6 +28,17 @@ export async function POST(request: NextRequest) {
       turnstileToken,
     } = body;
 
+    // 1. Rate Limiting: Keyed by wedding AND client IP with generous allowance (60/min) for shared venue Wi-Fi
+    // Primary bot defense is Cloudflare Turnstile token verification
+    const weddingKey = (weddingSlug || rawWeddingId || "global").toString().toLowerCase().trim();
+    const rateCheck = checkRateLimit(`rsvp:${weddingKey}:${ip}`, 60, 60000);
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment before trying again." },
+        { status: 429, headers: { "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)) } },
+      );
+    }
+
     // 2. Cloudflare Turnstile Bot Protection Verification
     const turnstileCheck = await verifyTurnstileToken(turnstileToken, ip);
     if (!turnstileCheck.success) {
@@ -56,7 +59,21 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedName = (rawRespondentName || guestName || "").trim();
-    const normalizedPhone = (rawRespondentPhone || guestPhone || "").trim() || null;
+
+    // Strict E.164 phone normalization across domestic and international guests
+    const rawPhone = (rawRespondentPhone || guestPhone || "").trim();
+    let normalizedPhone: string | null = null;
+    if (rawPhone) {
+      const phoneValidation = normalizePhoneNumber(rawPhone);
+      if (!phoneValidation.valid) {
+        return NextResponse.json(
+          { error: phoneValidation.error || "Invalid phone number format." },
+          { status: 400 },
+        );
+      }
+      normalizedPhone = phoneValidation.e164 || null;
+    }
+
     const resolvedAttending = typeof attending === "boolean" ? attending : true;
     const resolvedNeedsStay = Boolean(needsStay || needsAccommodation);
     const resolvedBlessing = blessingMessage || notes;

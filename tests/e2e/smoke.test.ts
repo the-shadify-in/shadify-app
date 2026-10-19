@@ -8,7 +8,7 @@ test.describe("Shadify Public Marketing & Policy Pages", () => {
     // Verify Brand Hero Heading
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
-    await expect(heading).toContainText(/wedding invitation that feels like royal mail/i);
+    await expect(heading).toContainText(/Stop answering.*what time is the mehendi/i);
 
     // Verify 3 Pricing Plans are present with INR pricing
     await expect(page.getByText("Lite", { exact: true }).first()).toBeVisible();
@@ -83,6 +83,18 @@ test.describe("Shadify Security, Middleware & API Smoke Tests", () => {
     await expect(page.getByRole("heading", { name: /Staff Concierge/i })).toBeVisible();
     await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible();
     await expect(page.locator('input[type="password"], input[name="password"]')).toBeVisible();
+  });
+
+  test("staff concierge login works end-to-end and grants access to /admin", async ({ page }) => {
+    await page.goto("/admin/login", { waitUntil: "networkidle" });
+    await page.fill('input[type="email"]', "concierge@shadify.in");
+    await page.fill('input[type="password"]', "shadify2026");
+    await page.click('button[type="submit"]');
+
+    // Should redirect to /admin dashboard
+    await expect(page).toHaveURL(/\/admin$/, { timeout: 10000 });
+    await expect(page.getByText(/Shadify.*Concierge/i).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /Sign Out/i })).toBeVisible();
   });
 
   test("middleware rejects malicious probe patterns with 404", async ({ request }) => {

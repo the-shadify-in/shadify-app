@@ -18,6 +18,8 @@ import {
 } from "@/lib/media/image-processor";
 import { PRICING_PLANS } from "@/lib/config/pricing";
 
+export const maxDuration = 60; // Extended timeout for serverless image processing
+
 const FinalizeSchema = z.object({
   weddingSlug: z.string().trim().toLowerCase(),
   key: z.string().trim().min(5),
@@ -70,6 +72,14 @@ export async function POST(req: NextRequest) {
 
     if (!wedding || wedding.deletedAt) {
       return NextResponse.json({ error: "Wedding not found." }, { status: 404 });
+    }
+
+    // Security Check: Enforce strict storage key ownership
+    if (!key.startsWith(`weddings/${wedding.id}/`)) {
+      return NextResponse.json(
+        { error: "Forbidden: Storage object does not belong to this wedding celebration." },
+        { status: 403 },
+      );
     }
 
     if (crewPassWeddingId && crewPassWeddingId !== wedding.id) {
@@ -136,11 +146,25 @@ export async function POST(req: NextRequest) {
     // Compute SHA-256 hash of original file for deduplication audit
     const sha256 = crypto.createHash("sha256").update(sanitizedOriginal.buffer).digest("hex");
 
-    // 7. Atomic Quota Enforcement in PostgreSQL Transaction
+    // 7. Atomic Quota Enforcement & Row-Locking in PostgreSQL Transaction
     const planConfig = PRICING_PLANS[wedding.plan];
     const maxAllowedPhotos = wedding.entitlement?.maxPhotos || planConfig.maxPhotos;
 
     const result = await prisma.$transaction(async (tx) => {
+      // Row lock on wedding to prevent parallel upload race conditions
+      await tx.$executeRaw`SELECT 1 FROM weddings WHERE id = ${wedding.id}::uuid FOR UPDATE`;
+
+      // Deduplication check: if this photo key or SHA-256 hash was already finalized, return existing record
+      const existing = await tx.photo.findFirst({
+        where: {
+          weddingId: wedding.id,
+          OR: [{ keyOriginal: key }, { sha256 }],
+        },
+      });
+      if (existing) {
+        return existing;
+      }
+
       const currentCount = await tx.photo.count({
         where: { weddingId: wedding.id },
       });

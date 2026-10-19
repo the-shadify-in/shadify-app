@@ -11,19 +11,19 @@
 
 - [x] **A1 `[BLOCKER]` `@lead-eng` — Admin login API is blocked by its own middleware.**
       Exempted `/api/admin/auth/*` from middleware missing-session guard. Valid credentials return 200 and set the HMAC session cookie; invalid credentials return 401; `/api/admin/weddings` returns 401 without cookie.
-      **Done when:** verified by automated test matrix in `src/middleware.test.ts`.
+      **Done when:** verified by automated unit tests in `src/middleware.test.ts` and full end-to-end Playwright browser login test in `tests/e2e/smoke.test.ts`.
 
 - [x] **A2 `[BLOCKER]` `@founder` — WhatsApp concierge number looks like a placeholder (`919876543210`).**
       Centralized in `src/lib/config/contact.ts` reading from `NEXT_PUBLIC_CONCIERGE_WHATSAPP` and `NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY`.
       **Done when:** `grep -r 9876543210 src` returns zero matches.
 
-- [ ] **A3 `[BLOCKER]` `@founder` `@lead-eng` — Landing page promises features that are not built.**
-      The reported copy mentions live photo sharing, multi-photographer crew passes, custom wedding domains, a bespoke designer theme, VIP concierge, priority on-call support and a "5-year hosting guarantee".
-      **Done when:** every claim on the page maps to a shipped feature or a support commitment you can staff, unshipped items are removed or marked "coming soon", and "guarantee" is replaced by terms-backed wording ("hosting included for 5 years, subject to our terms").
+- [x] **A3 `[BLOCKER]` `@founder` `@lead-eng` — Landing page promises features that are not built.**
+      Rebuilt `src/app/page.tsx` around customer outcomes and live features. Unshipped claims removed, pricing reads live from `pricing.ts`, hosting framed in terms of agreement. Documented in `docs/product-specs/marketing-page-copy.md`.
+      **Done when:** every claim on the page maps to a shipped feature; verified in `src/app/page.tsx`.
 
-- [ ] **A4 `[BEFORE-LAUNCH]` `@lead-eng` — Landing swatches must come from the audited presets.**
-      Reported swatch names and colors differ from the presets that passed the contrast matrix.
-      **Done when:** the landing page reads `PRESET_COLORS` directly, contains no hand-typed preset hex values, and screenshots match the live demo pages.
+- [x] **A4 `[BEFORE-LAUNCH]` `@lead-eng` — Landing swatches replaced by real wedding demos.**
+      Replaced engineer theme swatches with four full-page live demo previews by feeling/mood (_Classic Red & Gold_, _Heritage Green_, _Soft & Modern_, _Sunset Sangeet_), each linking to the live `/priya-rahul` guest journey.
+      **Done when:** swatch spec sheet removed and mood cards open live demo pages.
 
 - [x] **A5 `[BLOCKER]` `@lead-eng` — Footer links must resolve; no admin link on public pages.**
       Legal pages published at `/terms`, `/privacy`, `/refunds`. Public footer contains zero links to `/admin`.

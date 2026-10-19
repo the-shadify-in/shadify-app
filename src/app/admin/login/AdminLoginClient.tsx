@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Shield } from "lucide-react";
 
 export default function AdminLoginClient() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +39,7 @@ export default function AdminLoginClient() {
         return;
       }
 
-      router.push(destination);
+      window.location.href = destination;
     } catch {
       setError("Network error. Please try again.");
       setLoading(false);
@@ -64,7 +63,7 @@ export default function AdminLoginClient() {
         </div>
       )}
 
-      <form onSubmit={handleLogin} className="mt-6 space-y-4 text-xs">
+      <form onSubmit={handleLogin} action="#" className="mt-6 space-y-4 text-xs">
         <div>
           <label className="block text-[#E2D5C7]/80">Staff Email</label>
           <input

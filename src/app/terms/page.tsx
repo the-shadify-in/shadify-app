@@ -144,10 +144,11 @@ export default function TermsPage() {
             4. Content Rights, Copyright & Display License
           </h2>
           <p className="text-xs leading-relaxed text-[#FAF7F2]/70">
-            Intellectual property ownership in uploaded photographs, videos, and creative works
-            remains with the respective copyright holders (the couple, family members, or contracted
-            professional wedding photographers in accordance with your individual photography
-            service contracts).
+            Intellectual property rights in uploaded photographs, videos, and creative works are
+            governed by the agreement between the couple and their photographer or content creator.
+            By uploading media to Shadify, the couple represents that they possess the necessary
+            rights or permissions to publish and display the content on their wedding invitation
+            page.
           </p>
           <p className="text-xs leading-relaxed text-[#FAF7F2]/70">
             By uploading media, you represent and warrant that you hold all necessary licenses,

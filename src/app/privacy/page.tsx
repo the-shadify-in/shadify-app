@@ -194,10 +194,10 @@ export default function PrivacyPage() {
             <li>
               <strong>Statutory Retention Exception:</strong> Personal data and media are purged
               upon erasure request. However, statutory billing and tax invoice records required
-              under applicable Indian tax laws (e.g., GST and Income Tax regulations) must be
-              preserved for the legally mandated statutory audit period (up to 8 years). Encrypted
-              rolling disaster recovery backups are purged systematically upon expiration of their
-              retention cycle (up to 30 days).
+              under applicable Indian tax and accounting laws are preserved for the statutory period
+              mandated by law. Encrypted rolling disaster recovery backups (including Neon database
+              point-in-time recovery) age out systematically upon expiration of their configured
+              retention window (7 to 30 days).
             </li>
           </ul>
         </section>

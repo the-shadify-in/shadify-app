@@ -18,15 +18,15 @@
   --ui-text-muted: #6b7280;
 
   /* Platform Brand Tokens (Strictly for Marketing & Admin shells) */
-  --brand-primary: #8b1e3f;
-  --brand-marigold: #ff9f1c;
-  --brand-teal: #2ec4b6;
-  --brand-indigo: #1f1a2e;
-  --brand-ground: #fdfbf7;
+  --brand-primary: #d6246e;
+  --brand-marigold: #f5a524;
+  --brand-teal: #0e9f8e;
+  --brand-indigo: #3d3bc4;
+  --brand-ground: #fffbf5;
   --brand-ink: #1f1a2e;
   --brand-surface: #ffffff;
   --brand-border: #eaddcf;
-  --brand-tint: rgba(139, 30, 63, 0.08);
+  --brand-tint: #fff1f6;
 
   /* Motion Tokens (GPU-accelerated transitions) */
   --motion-fast: 150ms;

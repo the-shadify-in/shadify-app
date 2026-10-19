@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { THEME_PRESETS, validateContrast, type PresetId } from "@/lib/themes/tokens";
 import { PRICING_PLANS } from "@/lib/config/pricing";
 import type { CreateWeddingInput } from "./schemas";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 export class ContrastValidationError extends Error {
   constructor(public details: string[]) {
@@ -105,7 +106,8 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
     now.getTime() + planConfig.rawOriginalsRetentionDays * 24 * 60 * 60 * 1000,
   );
 
-  const normalizedPhone = data.couplePhone ? `+91${data.couplePhone}` : null;
+  const phoneValidation = data.couplePhone ? normalizePhoneNumber(data.couplePhone) : null;
+  const normalizedPhone = phoneValidation?.e164 || null;
   const coupleFullName = `${data.brideName} & ${data.groomName}`;
 
   try {

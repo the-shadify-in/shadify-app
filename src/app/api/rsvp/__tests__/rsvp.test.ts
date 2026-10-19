@@ -146,5 +146,43 @@ describe("RSVP API Route", () => {
     const json = await res.json();
     expect(json.success).toBe(true);
     expect(json.rsvpId).toBe("rsvp-123");
+    expect(prisma.eventRsvp.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          respondentPhone: "+919811122233",
+        }),
+      }),
+    );
+  });
+
+  it("normalizes international phone numbers (+1) to canonical E.164 on RSVP", async () => {
+    vi.mocked(prisma.eventRsvp.create).mockResolvedValue({
+      id: "rsvp-456",
+      weddingId: "w-1",
+      eventId: "e-1",
+      respondentName: "Uncle Sam",
+      respondentPhone: "+15552345678",
+      attending: true,
+      partySize: 1,
+    } as unknown as Awaited<ReturnType<typeof prisma.eventRsvp.create>>);
+
+    const req = createRsvpRequest({
+      weddingId: "w-1",
+      eventId: "e-1",
+      respondentName: "Uncle Sam",
+      respondentPhone: "+1 (650) 253-0000",
+      attending: true,
+      turnstileToken: "test-turnstile-token",
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(prisma.eventRsvp.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          respondentPhone: "+16502530000",
+        }),
+      }),
+    );
   });
 });

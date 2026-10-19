@@ -1,19 +1,39 @@
 /**
+ * Groups IPv6 addresses to their /64 routing prefix to prevent address cycling,
+ * while leaving IPv4 addresses unchanged.
+ */
+export function normalizeIp(ip: string): string {
+  const trimmed = ip.trim();
+  if (trimmed.includes(":")) {
+    const hextets = trimmed.split(":");
+    return hextets.slice(0, 4).join(":") + "::/64";
+  }
+  return trimmed;
+}
+
+/**
  * Safely extracts client IP from trusted edge proxy headers.
- * Prioritizes cf-connecting-ip and x-real-ip to prevent spoofing of x-forwarded-for.
+ * Prioritizes Vercel and Cloudflare platform edge headers.
  */
 export function getClientIp(request: Request): string {
   const headers = request.headers;
-  const cfIp = headers.get("cf-connecting-ip");
-  if (cfIp && cfIp.trim().length > 0) return cfIp.trim();
 
+  // 1. Vercel's edge-injected client IP (cannot be spoofed from client)
+  const vercelIp = headers.get("x-vercel-ip");
+  if (vercelIp && vercelIp.trim().length > 0) return normalizeIp(vercelIp);
+
+  // 2. Cloudflare's connecting IP (if behind Cloudflare)
+  const cfIp = headers.get("cf-connecting-ip");
+  if (cfIp && cfIp.trim().length > 0) return normalizeIp(cfIp);
+
+  // 3. Fallback edge headers
   const realIp = headers.get("x-real-ip");
-  if (realIp && realIp.trim().length > 0) return realIp.trim();
+  if (realIp && realIp.trim().length > 0) return normalizeIp(realIp);
 
   const forwardedFor = headers.get("x-forwarded-for");
   if (forwardedFor && forwardedFor.trim().length > 0) {
     const candidate = forwardedFor.split(",")[0]?.trim();
-    if (candidate) return candidate;
+    if (candidate) return normalizeIp(candidate);
   }
 
   return "127.0.0.1";

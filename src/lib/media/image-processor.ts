@@ -100,7 +100,8 @@ export async function stripExifAndOptimize(
 ): Promise<ProcessedImageResult> {
   const { maxWidth = 2048, maxHeight = 2048, quality = 85, format = "webp" } = options;
 
-  let pipeline = sharp(input)
+  // Set max pixel limit (50 Megapixels) to protect against decompression bomb attacks
+  let pipeline = sharp(input, { limitInputPixels: 50_000_000 })
     .rotate() // Auto-orient based on EXIF orientation before stripping tags
     .resize({
       width: maxWidth,
@@ -153,7 +154,8 @@ export async function stripExifFromOriginal(
   input: Buffer,
   detectedMime?: string,
 ): Promise<{ buffer: Buffer; sizeBytes: number }> {
-  let pipeline = sharp(input).rotate();
+  // Auto-orient vertical photos and enforce 50MP limit
+  let pipeline = sharp(input, { limitInputPixels: 50_000_000 }).rotate();
 
   if (detectedMime === "image/png") {
     pipeline = pipeline.png({ compressionLevel: 9 });
