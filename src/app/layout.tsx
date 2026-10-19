@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Outfit, Cinzel } from "next/font/google";
+import { Marcellus, Plus_Jakarta_Sans, Cinzel } from "next/font/google";
 import "./globals.css";
 
-const playfair = Playfair_Display({
+const marcellus = Marcellus({
   subsets: ["latin"],
   variable: "--font-serif",
-  weight: ["400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
+  weight: ["400"],
   display: "swap",
 });
 
-const outfit = Outfit({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -51,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body
-        className={`${outfit.variable} ${playfair.variable} ${cinzel.variable} font-sans antialiased selection:bg-[#D6246E]/15 selection:text-[#1F1A2E]`}
+        className={`${plusJakarta.variable} ${marcellus.variable} ${cinzel.variable} font-sans antialiased selection:bg-[#D6246E]/15 selection:text-[#1F1A2E]`}
       >
         {children}
       </body>

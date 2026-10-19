@@ -116,7 +116,7 @@
       **Done when:** the Razorpay account (or manual UPI plus payment links) is approved, one real test payment and one test refund are completed, and a GST invoice is issued for the test.
 
 - [ ] **B9 `[BEFORE-LAUNCH]` `@legal` `@ca` — Partner commission terms.**
-      Technical Runbook 2 established in `docs/RUNBOOKS.md` for manual ₹1,000 partner commission tracking. Awaiting formal partner agreement from lawyer and CA TDS guidance.
+      Technical Runbook 2 established in `docs/operations/runbooks.md` for manual ₹1,000 partner commission tracking. Awaiting formal partner agreement from lawyer and CA TDS guidance.
       **Done when:** a one-page partner agreement exists covering rate, when it becomes payable, reversal on refund, tax and payout method.
 
 - [ ] **B10 `[BEFORE-LAUNCH]` `@founder` — Licensing of everything shown publicly.**
@@ -152,7 +152,7 @@
       **Done when:** automated backups with point-in-time recovery are on, and a restore into a scratch database has been done and checked.
 
 - [x] **C9 `[BEFORE-LAUNCH]` `@founder` — Data inventory, retention and deletion procedure.**
-      Established in Runbook 3 (`docs/RUNBOOKS.md`) for 30-day DPDP right-to-be-forgotten erasures.
+      Established in Runbook 3 (`docs/operations/runbooks.md`) for 30-day DPDP right-to-be-forgotten erasures.
       **Done when:** a document lists what is stored, why, where, and when deleted; a step-by-step erasure and export procedure exists and was dry-run once; a vendor list names every service that touches personal data and its region.
 
 - [ ] **C10 `[BEFORE-LAUNCH]` `@founder` — One-page breach response.**
@@ -223,7 +223,7 @@
       **Done when:** the preview turnaround, number of included edits, last date for changes before the wedding, and late-change fee are written and shared with each customer.
 
 - [x] **E5 `[BEFORE-LAUNCH]` `@ops` — Wedding-day runbook.**
-      Published in `docs/RUNBOOKS.md` (Runbook 1).
+      Published in `docs/operations/runbooks.md` (Runbook 1).
       **Done when:** a checklist for the day before (content check, test RSVP, cache check) and a contact and escalation plan for the day itself exist, with a backup person named.
 
 - [ ] **E6 `[BEFORE-LAUNCH]` `@ops` — Support channel.**
@@ -233,7 +233,7 @@
       **Done when:** you track weddings sold, time from first message to live site, RSVP completion rate and hours spent per wedding, in a simple sheet.
 
 - [x] **E8 `[BEFORE-LAUNCH]` `@growth` — Referral operations (manual).**
-      Published in `docs/RUNBOOKS.md` (Runbook 2).
+      Published in `docs/operations/runbooks.md` (Runbook 2).
       **Done when:** a runbook says how a referral is recorded, when a reward is paid (after payment clears and the refund window passes), and how fraud is checked.
 
 ---
@@ -248,7 +248,7 @@
 - [ ] **F4 `[LATER]` `@lead-eng` `@legal` — Face search.** **Done when:** a commercially licensed model or API is chosen, consent flow and deletion are built, and the privacy notice is updated.
 - [ ] **F5 `[LATER]` `@lead-eng` — Custom domains and subdomains.**
 - [ ] **F6 `[LATER]` `@lead-eng` — PWA offline schedule, language toggle and translations.**
-- [ ] **F7 `[LATER]` `@lead-eng` — Error tracking, log drain and usage counters as designed in `OBSERVABILITY.md`.** **Done when:** Sentry (with scrubbing) and the log drain are live and an RSVP-route error alert fires in a test.
+- [ ] **F7 `[LATER]` `@lead-eng` — Error tracking, log drain and usage counters as designed in `docs/operations/observability.md`.** **Done when:** Sentry (with scrubbing) and the log drain are live and an RSVP-route error alert fires in a test.
 - [ ] **F8 `[LATER]` `@growth` — Testimonials, case studies and a content plan.** Only after real pilots.
 
 ---

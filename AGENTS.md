@@ -16,7 +16,7 @@ The system is divided into three strictly isolated product zones:
 | **Guest Wedding Sites** | `/[slug]`                  | Couple's selected preset (`--theme-*`) | Invited wedding guests. `noindex`, statically cached via CDN/ISR. |
 
 - **Stack**: Next.js 14 (App Router), TypeScript (Strict), Prisma 7 (`@prisma/adapter-pg` with `pg.Pool`), Tailwind CSS, Radix UI.
-- **Detailed Docs**: Refer to [`docs/ENGINEERING-GUIDELINES.md`](file:///Volumes/CVS%20Sandisk%201TB%20SkyBlue/Shadify/shadify-app/docs/ENGINEERING-GUIDELINES.md), [`docs/UI-UX-GUIDELINES.md`](file:///Volumes/CVS%20Sandisk%201TB%20SkyBlue/Shadify/shadify-app/docs/UI-UX-GUIDELINES.md), and [`docs/LAUNCH-CHECKLIST.md`](file:///Volumes/CVS%20Sandisk%201TB%20SkyBlue/Shadify/shadify-app/docs/LAUNCH-CHECKLIST.md).
+- **Detailed Docs**: Refer to [`docs/engineering/engineering-guidelines.md`](file:///Volumes/CVS%20Sandisk%201TB%20SkyBlue/Shadify/shadify-app/docs/engineering/engineering-guidelines.md), [`docs/engineering/ui-ux-guidelines.md`](file:///Volumes/CVS%20Sandisk%201TB%20SkyBlue/Shadify/shadify-app/docs/engineering/ui-ux-guidelines.md), and [`docs/operations/launch-checklist.md`](file:///Volumes/CVS%20Sandisk%201TB%20SkyBlue/Shadify/shadify-app/docs/operations/launch-checklist.md).
 
 ---
 

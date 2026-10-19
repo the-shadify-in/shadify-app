@@ -185,11 +185,11 @@ The database setup uses a two-step migration architecture:
 
 For in-depth product, architectural, operational, and financial specifications, refer to [`docs/`](./docs/):
 
-- **[ENGINEERING-GUIDELINES.md](./docs/ENGINEERING-GUIDELINES.md)**: 4 component layers, domain boundaries, brand token isolation CI gate.
-- **[UI-UX-GUIDELINES.md](./docs/UI-UX-GUIDELINES.md)**: Luxury Indian wedding design tokens, 5 curated presets, envelope reveal, and mobile ergonomics.
-- **[LAUNCH-CHECKLIST.md](./docs/LAUNCH-CHECKLIST.md)**: Pre-launch verification matrix, blocker tracking, and quality gates.
-- **[RUNBOOKS.md](./docs/RUNBOOKS.md)**: Concierge operations runbooks (Emergency triage, B2B partner payouts, DPDP erasure).
-- **[OBSERVABILITY.md](./docs/OBSERVABILITY.md)**: Structured JSON logging, `/api/health` heartbeat, `/admin/health` gate, and P0/P1 alert matrix.
+- **[engineering-guidelines.md](./docs/engineering/engineering-guidelines.md)**: 4 component layers, domain boundaries, brand token isolation CI gate.
+- **[ui-ux-guidelines.md](./docs/engineering/ui-ux-guidelines.md)**: Luxury Indian wedding design tokens, 5 curated presets, envelope reveal, and mobile ergonomics.
+- **[launch-checklist.md](./docs/operations/launch-checklist.md)**: Pre-launch verification matrix, blocker tracking, and quality gates.
+- **[runbooks.md](./docs/operations/runbooks.md)**: Concierge operations runbooks (Emergency triage, B2B partner payouts, DPDP erasure).
+- **[observability.md](./docs/operations/observability.md)**: Structured JSON logging, `/api/health` heartbeat, `/admin/health` gate, and P0/P1 alert matrix.
 - **[00-master-plan.md](./docs/product-specs/00-master-plan.md)**: Architectural principles and development standards.
 - **[01-product-vision-and-mvp.md](./docs/product-specs/01-product-vision-and-mvp.md)**: Product scope, unit economics table, and break-even targets.
 - **[02-system-architecture.md](./docs/product-specs/02-system-architecture.md)**: Caching tiers, monolith layout, and R2 presigned upload mechanics.
