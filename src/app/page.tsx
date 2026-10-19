@@ -37,43 +37,56 @@ export const metadata = {
 
 const SAMPLE_WEDDINGS = [
   {
-    id: "classic-red-gold",
-    feeling: "Classic Red & Gold",
-    description: "A grand North Indian celebration with palatial Vivah and regal Sangeet.",
+    id: "royal-rajputana",
+    title: "Royal Rajputana",
+    aesthetic: "Velvet Crimson & Antique Gold",
+    description:
+      "A grand palatial Vivah with candlelit courtyards, royal mandap pheras, and Udaipur lakeside splendour.",
     slug: "priya-rahul",
     accentColor: "#941C2F",
-    tagline: "Grand Royal Heritage",
+    tagline: "Udaipur & Heritage Forts",
     monogram: "P & R",
+    scriptBadge: "॥ शुभ विवाह ॥",
+    bestFor: "Best for: Heritage Forts & Palatial Vivah",
   },
   {
-    id: "heritage-green",
-    feeling: "Heritage Green",
+    id: "sacred-temple",
+    title: "Sacred Temple Heritage",
+    aesthetic: "Forest Emerald & Temple Gold",
     description:
-      "A serene Udaipur destination weekend with candlelit courtyards and royal peacocks.",
+      "Warm brass lamps, sacred Vedic chants, delicate jasmine borders, and traditional silk muhurtham.",
     slug: "ananya-kabir",
     accentColor: "#0D4D33",
-    tagline: "Palatial & Serene",
+    tagline: "Vedic & South Indian Ceremonies",
     monogram: "A & K",
+    scriptBadge: "கல்யாணம் • శుభం",
+    bestFor: "Best for: Temple Mandaps & Sacred Vivah",
   },
   {
-    id: "soft-modern",
-    feeling: "Soft Ivory & Gold",
+    id: "understated-minimalist",
+    title: "Understated Minimalist",
+    aesthetic: "Soft Ivory, Champagne & Gold",
     description:
-      "An intimate ceremony with understated warmth, delicate florals, and timeless gold.",
+      "Clean editorial typography, warm gold accents, and contemporary elegance for intimate farmhouse celebrations.",
     slug: "diya-arjun",
     accentColor: "#7A5A40",
-    tagline: "Minimalist Elegance",
+    tagline: "Contemporary Destination Resorts",
     monogram: "D & A",
+    scriptBadge: "Shubh Vivah • Minimal",
+    bestFor: "Best for: Farmhouses & Modern Elegance",
   },
   {
-    id: "sunset-sangeet",
-    feeling: "Sunset Sangeet",
+    id: "sundowner-sangeet",
+    title: "Sundowner Sangeet",
+    aesthetic: "Terracotta, Rose & Sunset Gold",
     description:
-      "A vibrant coastal celebration with terracotta dusk hues, marigolds, and celebration.",
+      "Vibrant beachside cocktail soiree with sunset dusk tones, marigold garlands, and high-energy music beats.",
     slug: "zoya-farhan",
     accentColor: "#D46A7E",
-    tagline: "Festive Beachside Warmth",
+    tagline: "Goa Beachside & Festive Sangeet",
     monogram: "Z & F",
+    scriptBadge: "Mubarak • Celebration",
+    bestFor: "Best for: Beachside Sundowners & Cocktails",
   },
 ];
 
@@ -470,19 +483,20 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* SECTION 4: REAL SAMPLE WEDDINGS */}
+      {/* SECTION 4: ROYAL AESTHETICS & HERITAGE THEMES */}
       <section id="samples" className="border-b border-[#EADDCF] bg-white py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <span className="font-cinzel text-xs font-bold uppercase tracking-[0.2em] text-[#D6246E]">
-              Bespoke Craftsmanship
+              Royal Aesthetics &amp; Heritage Themes
             </span>
             <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#1F1A2E] sm:text-4xl lg:text-5xl">
-              Explore real celebrations.
+              Crafted for your family&apos;s heritage &amp; style.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
-              Every couple has a distinct love story and heritage. Experience each celebration
-              exactly as your guests will on their mobile screens.
+              From palatial Rajasthan fortresses to sacred temple mandaps and sunlit Goa beaches.
+              Every invitation suite is custom-tailored with your wedding colors, family monograms,
+              and native scripts.
             </p>
           </div>
 
@@ -490,27 +504,40 @@ export default function HomePage() {
             {SAMPLE_WEDDINGS.map((sample) => (
               <div
                 key={sample.id}
-                className="group flex flex-col justify-between rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-7 shadow-sm transition hover:border-[#D6246E] hover:shadow-md"
+                className="group flex flex-col justify-between rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-7 shadow-sm transition hover:border-[#D6246E] hover:shadow-lg"
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <div
-                      className="h-2.5 w-12 rounded-full"
-                      style={{ backgroundColor: sample.accentColor }}
-                    />
-                    <span className="font-cinzel text-xs font-bold text-[#1F1A2E]/40">
-                      {sample.monogram}
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="h-3 w-8 rounded-full shadow-inner"
+                        style={{ backgroundColor: sample.accentColor }}
+                      />
+                      <span className="font-cinzel text-[11px] font-bold text-[#1F1A2E]/50">
+                        {sample.monogram}
+                      </span>
+                    </div>
+                    <span className="shadow-xs rounded-full border border-[#EADDCF] bg-white px-2.5 py-0.5 text-[10px] font-bold text-[#1F1A2E]/70">
+                      {sample.scriptBadge}
                     </span>
                   </div>
-                  <span className="mt-4 block font-cinzel text-[11px] font-bold uppercase tracking-wider text-[#1F1A2E]/60">
+
+                  <span className="mt-5 block font-cinzel text-[11px] font-bold uppercase tracking-wider text-[#D6246E]">
                     {sample.tagline}
                   </span>
                   <h3 className="mt-1 font-serif text-2xl font-bold text-[#1F1A2E]">
-                    {sample.feeling}
+                    {sample.title}
                   </h3>
+                  <p className="mt-1 text-[11px] font-semibold text-[#1F1A2E]/60">
+                    {sample.aesthetic}
+                  </p>
                   <p className="mt-3 text-xs leading-relaxed text-[#1F1A2E]/75">
                     {sample.description}
                   </p>
+
+                  <div className="mt-4 rounded-xl border border-[#EADDCF]/60 bg-white/70 px-3 py-2 text-[11px] font-medium text-[#1F1A2E]/70">
+                    {sample.bestFor}
+                  </div>
                 </div>
 
                 <div className="mt-8 border-t border-[#EADDCF] pt-4">
@@ -526,11 +553,62 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-12 rounded-2xl border border-[#EADDCF] bg-[#FFFBF5] p-6 text-center">
-            <p className="font-serif text-base italic text-[#1F1A2E] sm:text-lg">
-              &ldquo;Your wedding colors, your names in your native script, and your custom family
-              monogram. Tell our concierge your vision and we will bring it to life.&rdquo;
-            </p>
+          {/* Regional Typography & Concierge Customizer Trust Banner */}
+          <div className="mt-12 rounded-3xl border border-[#EADDCF] bg-[#FFFBF5] p-8 shadow-sm">
+            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-12">
+              <div className="md:col-span-8">
+                <span className="font-cinzel text-[11px] font-bold uppercase tracking-[0.2em] text-[#D6246E]">
+                  Inclusive Regional Typography
+                </span>
+                <h3 className="mt-2 font-serif text-2xl font-bold text-[#1F1A2E] sm:text-3xl">
+                  Invitation text in your elders&apos; mother tongue.
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#1F1A2E]/75">
+                  Honor grandparents and extended family across generations. Present your wedding
+                  itinerary, muhurtham timings, and sacred blessings in traditional Indic scripts
+                  alongside English.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                  <span className="shadow-2xs rounded-full border border-[#EADDCF] bg-white px-3 py-1 text-[#1F1A2E]">
+                    हिंदी (Devanagari)
+                  </span>
+                  <span className="shadow-2xs rounded-full border border-[#EADDCF] bg-white px-3 py-1 text-[#1F1A2E]">
+                    தமிழ் (Tamil)
+                  </span>
+                  <span className="shadow-2xs rounded-full border border-[#EADDCF] bg-white px-3 py-1 text-[#1F1A2E]">
+                    తెలుగు (Telugu)
+                  </span>
+                  <span className="shadow-2xs rounded-full border border-[#EADDCF] bg-white px-3 py-1 text-[#1F1A2E]">
+                    ગુજરાતી (Gujarati)
+                  </span>
+                  <span className="shadow-2xs rounded-full border border-[#EADDCF] bg-white px-3 py-1 text-[#1F1A2E]">
+                    ਪੰਜਾਬੀ (Gurmukhi)
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-[#D6246E]/20 bg-[#FFF1F6] p-6 text-center md:col-span-4">
+                <span className="text-3xl">✨</span>
+                <p className="mt-2 font-serif text-lg font-bold text-[#1F1A2E]">
+                  Bespoke Concierge Customization
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-[#1F1A2E]/70">
+                  Tell us your vision on WhatsApp. Our concierge tailors your color scheme and
+                  monogram at zero extra fee.
+                </p>
+                <a
+                  href={getConciergeWhatsAppUrl(
+                    "Hi Shadify Concierge, I would like to see theme customizations for our wedding.",
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[#D6246E] px-5 py-2.5 text-xs font-bold text-white shadow-sm transition hover:opacity-90"
+                >
+                  <span>Chat with Concierge</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>

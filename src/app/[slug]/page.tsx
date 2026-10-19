@@ -8,8 +8,62 @@ import WeddingGuestClient from "./WeddingGuestClient";
 // Revalidate every hour, or via on-demand tag revalidation when wedding content changes
 export const revalidate = 3600;
 
+interface DemoPresetSpec {
+  bride: string;
+  groom: string;
+  monogram: string;
+  themeId: PresetId;
+  venueCity: string;
+  date: string;
+  tagline: string;
+}
+
+const DEMO_PRESETS: Record<string, DemoPresetSpec> = {
+  "priya-rahul": {
+    bride: "Priya",
+    groom: "Rahul",
+    monogram: "P & R",
+    themeId: "royal-crimson",
+    venueCity: "Udaipur, Rajasthan",
+    date: "February 15, 2027",
+    tagline: "Royal Palatial Heritage",
+  },
+  "ananya-kabir": {
+    bride: "Ananya",
+    groom: "Kabir",
+    monogram: "A & K",
+    themeId: "emerald-gold",
+    venueCity: "Jaipur, Rajasthan",
+    date: "November 28, 2026",
+    tagline: "Sacred Temple Heritage",
+  },
+  "diya-arjun": {
+    bride: "Diya",
+    groom: "Arjun",
+    monogram: "D & A",
+    themeId: "ivory-minimal",
+    venueCity: "Alibaug, Maharashtra",
+    date: "January 18, 2027",
+    tagline: "Understated Minimalist Grace",
+  },
+  "zoya-farhan": {
+    bride: "Zoya",
+    groom: "Farhan",
+    monogram: "Z & F",
+    themeId: "sunset-dusk",
+    venueCity: "Goa, India",
+    date: "March 06, 2027",
+    tagline: "Sundowner Sangeet & Beachside Vivah",
+  },
+};
+
 export function generateStaticParams() {
-  return [{ slug: "priya-rahul" }];
+  return [
+    { slug: "priya-rahul" },
+    { slug: "ananya-kabir" },
+    { slug: "diya-arjun" },
+    { slug: "zoya-farhan" },
+  ];
 }
 
 export async function generateMetadata({
@@ -18,8 +72,10 @@ export async function generateMetadata({
   params: { slug: string };
 }): Promise<Metadata> {
   const dbWedding = await getWeddingBySlug(params.slug);
-  const isDemoSlug =
-    params.slug === "priya-rahul" || params.slug === "sample" || params.slug === "demo";
+  const demoSpec =
+    DEMO_PRESETS[params.slug] ||
+    (params.slug === "sample" || params.slug === "demo" ? DEMO_PRESETS["priya-rahul"] : null);
+  const isDemoSlug = Boolean(demoSpec);
 
   if (!dbWedding && !isDemoSlug) {
     return {
@@ -31,7 +87,9 @@ export async function generateMetadata({
 
   const coupleNames = dbWedding
     ? `${dbWedding.brideName} & ${dbWedding.groomName}`
-    : "Priya & Rahul";
+    : demoSpec
+      ? `${demoSpec.bride} & ${demoSpec.groom}`
+      : "Priya & Rahul";
 
   const title = `${coupleNames}'s Wedding Celebration | Shadify`;
   const description = `Private wedding invitation and ceremony itinerary for ${coupleNames}.`;
@@ -223,7 +281,10 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
   }
 
   // Fallback demo samples
-  const isDemoSlug = slug === "priya-rahul" || slug === "sample" || slug === "demo";
+  const demoSpec =
+    DEMO_PRESETS[slug] ||
+    (slug === "sample" || slug === "demo" ? DEMO_PRESETS["priya-rahul"] : null);
+  const isDemoSlug = Boolean(demoSpec);
 
   // 2. Deliberate 404 for unknown or draft slug (previews are served under /[slug]/preview)
   if (!dbWedding && !isDemoSlug) {
@@ -234,13 +295,24 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
     notFound();
   }
 
+  // Tailored demo wedding DTO
+  const baseDemoWedding: WeddingDataDto = {
+    ...SAMPLE_DEMO_WEDDING,
+    slug,
+    bride: demoSpec?.bride || SAMPLE_DEMO_WEDDING.bride,
+    groom: demoSpec?.groom || SAMPLE_DEMO_WEDDING.groom,
+    monogram: demoSpec?.monogram || SAMPLE_DEMO_WEDDING.monogram,
+    venueCity: demoSpec?.venueCity || SAMPLE_DEMO_WEDDING.venueCity,
+    date: demoSpec?.date || SAMPLE_DEMO_WEDDING.date,
+  };
+
   // Format wedding data using the queries DTO mapper or fallback demo
   const wedding: WeddingDataDto = dbWedding
     ? {
         ...mapWeddingToDto(dbWedding),
-        heroImage: isDemoSlug ? SAMPLE_DEMO_WEDDING.heroImage : undefined,
-        loveStory: isDemoSlug ? SAMPLE_DEMO_WEDDING.loveStory : undefined,
-        gallery: isDemoSlug ? SAMPLE_DEMO_WEDDING.gallery : undefined,
+        heroImage: isDemoSlug ? baseDemoWedding.heroImage : undefined,
+        loveStory: isDemoSlug ? baseDemoWedding.loveStory : undefined,
+        gallery: isDemoSlug ? baseDemoWedding.gallery : undefined,
         showBranding: isDemoSlug ? true : dbWedding.showBranding,
         events:
           dbWedding.events.length > 0
@@ -248,16 +320,15 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
                 ...e,
                 coverImage:
                   e.coverImage ||
-                  (isDemoSlug ? SAMPLE_DEMO_WEDDING.events[idx]?.coverImage : undefined),
+                  (isDemoSlug ? baseDemoWedding.events[idx]?.coverImage : undefined),
               }))
-            : SAMPLE_DEMO_WEDDING.events,
-        vips:
-          dbWedding.vips.length > 0 ? mapWeddingToDto(dbWedding).vips : SAMPLE_DEMO_WEDDING.vips,
+            : baseDemoWedding.events,
+        vips: dbWedding.vips.length > 0 ? mapWeddingToDto(dbWedding).vips : baseDemoWedding.vips,
       }
-    : SAMPLE_DEMO_WEDDING;
+    : baseDemoWedding;
 
   // Resolve the official published wedding theme (preset + verified overrides)
-  const presetId = (dbWedding?.themeId as PresetId) || "royal-crimson";
+  const presetId = (dbWedding?.themeId as PresetId) || demoSpec?.themeId || "royal-crimson";
   const overrides = (dbWedding?.themeConfig as Record<string, unknown> | null) ?? null;
   const { theme, report } = resolveTheme(presetId, overrides);
 
