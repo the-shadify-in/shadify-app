@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { signSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
-import { checkRateLimit } from "@/lib/ratelimit";
+import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 
 const LoginSchema = z.object({
   email: z.string().trim().email(),
@@ -9,7 +9,7 @@ const LoginSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+  const ip = getClientIp(req);
 
   // Rate limit: 5 attempts per 15 minutes per IP
   const rateLimitResult = checkRateLimit(`admin-login:${ip}`, 5, 15 * 60 * 1000);

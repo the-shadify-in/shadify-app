@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { checkRateLimit } from "@/lib/ratelimit";
+import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 
 const GuestbookPostSchema = z.object({
@@ -20,7 +20,7 @@ const GuestbookPostSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // 1. IP Rate Limiting (5 guestbook posts per minute per IP)
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+    const ip = getClientIp(request);
     const rateCheck = checkRateLimit(`guestbook:${ip}`, 5, 60000);
     if (!rateCheck.success) {
       return NextResponse.json(

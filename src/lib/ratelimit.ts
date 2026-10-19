@@ -1,7 +1,23 @@
 /**
- * Lightweight in-memory sliding window rate limiter
- * Protects open public forms (RSVP, Shagun, Guestbook) against spam bursts
+ * Safely extracts client IP from trusted edge proxy headers.
+ * Prioritizes cf-connecting-ip and x-real-ip to prevent spoofing of x-forwarded-for.
  */
+export function getClientIp(request: Request): string {
+  const headers = request.headers;
+  const cfIp = headers.get("cf-connecting-ip");
+  if (cfIp && cfIp.trim().length > 0) return cfIp.trim();
+
+  const realIp = headers.get("x-real-ip");
+  if (realIp && realIp.trim().length > 0) return realIp.trim();
+
+  const forwardedFor = headers.get("x-forwarded-for");
+  if (forwardedFor && forwardedFor.trim().length > 0) {
+    const candidate = forwardedFor.split(",")[0]?.trim();
+    if (candidate) return candidate;
+  }
+
+  return "127.0.0.1";
+}
 
 interface RateLimitRecord {
   timestamps: number[];

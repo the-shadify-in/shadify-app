@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { checkRateLimit } from "@/lib/ratelimit";
+import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export async function POST(request: NextRequest) {
   try {
     // 1. IP Rate Limiting (max 5 submissions per 60s window)
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+    const ip = getClientIp(request);
     const rateCheck = checkRateLimit(`rsvp:${ip}`, 5, 60000);
     if (!rateCheck.success) {
       return NextResponse.json(

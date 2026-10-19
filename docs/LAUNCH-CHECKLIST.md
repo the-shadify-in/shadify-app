@@ -246,3 +246,64 @@
 - [ ] **F6 `[LATER]` `@lead-eng` — PWA offline schedule, language toggle and translations.**
 - [ ] **F7 `[LATER]` `@lead-eng` — Error tracking, log drain and usage counters as designed in `OBSERVABILITY.md`.** **Done when:** Sentry (with scrubbing) and the log drain are live and an RSVP-route error alert fires in a test.
 - [ ] **F8 `[LATER]` `@growth` — Testimonials, case studies and a content plan.** Only after real pilots.
+
+---
+
+## G. Real-Wedding Operational & UX Hardening
+
+- [ ] **G1 `[BLOCKER]` `@lead-eng` — UPI Fallback Matrix (In-App Browser & Desktop Guard).**
+      Deep link `upi://pay` fails silently inside WhatsApp's in-app browser on iOS and on desktop browsers.
+      **Done when:** the Shagun modal displays a dynamic QR code, a one-tap "Copy UPI ID" button with copy feedback, a prominent visible text VPA, and an NRI explanatory note for overseas relatives.
+
+- [ ] **G2 `[BLOCKER]` `@lead-eng` — International E.164 Phone Validation for Guests & NRIs.**
+      RSVP and onboarding forms reject international phone numbers because of 10-digit Indian regex.
+      **Done when:** RSVP form accepts valid international numbers in E.164 format with country dial code support; tested with US (+1), UK (+44), UAE (+971), and India (+91).
+
+- [ ] **G3 `[BLOCKER]` `@lead-eng` — Distributed / DB-Backed Rate Limiting & Edge Client IP Header.**
+      In-memory rate limiter (`hitStore`) fails across multi-instance serverless functions on Vercel.
+      **Done when:** rate limiting uses PostgreSQL persistence or shared Redis, validates edge proxy IP headers (`x-real-ip` / `cf-connecting-ip`), and blocks spoofed `x-forwarded-for` bursts.
+
+- [ ] **G4 `[BLOCKER]` `@lead-eng` — Draft vs. Published Content State & Versioning.**
+      Staff edits to published weddings go live instantly without a preview gate.
+      **Done when:** updates to published weddings can be staged in draft status, reviewed on `/[slug]/preview`, published atomically, and rolled back if needed.
+
+- [ ] **G5 `[BLOCKER]` `@founder` `@design` — Production Design Assets & Licensing.**
+      Code lacks authentic vector and texture assets for the wax seal, envelope reveal, border ornaments, and crest monograms.
+      **Done when:** vector SVG assets and WebP textures are licensed, optimized under 50 KB, and committed to the repository with commercial usage documentation.
+
+- [ ] **G6 `[BEFORE-LAUNCH]` `@lead-eng` — Platform Brand Token Alignment (Rani Pink, Marigold, Ivory).**
+      Marketing and policy pages drifted to dark obsidian/gold (the couple preset palette) instead of Shadify platform tokens.
+      **Done when:** `src/app/page.tsx` and policy pages use Ivory Ground (`#FFFBF5`), Midnight Ink (`#1F1A2E`), Rani Pink (`#D6246E`), and Marigold (`#F5A524`).
+
+- [ ] **G7 `[BEFORE-LAUNCH]` `@lead-eng` — WhatsApp OpenGraph Dynamic Link Previews.**
+      WhatsApp aggressively caches link previews upon first scrape.
+      **Done when:** dynamic OpenGraph images generate per-wedding with couple names and theme colors, serve in under 200ms, and verify cleanly on WhatsApp crawler.
+
+- [ ] **G8 `[BEFORE-LAUNCH]` `@lead-eng` — Indic Typography, Language Attributes & Number Formatting.**
+      Indic script names combine awkwardly when forced into uppercase, letter-spaced, or lacking HTML language tags.
+      **Done when:** couple and guest names include proper `lang` attributes (e.g. `lang="hi"`, `lang="te"`), dates and currencies use `en-IN` grouping, and no CSS uppercase transforms apply to non-Latin text.
+
+- [ ] **G9 `[BEFORE-LAUNCH]` `@ops` — Real-User Usability Testing (Elders & Mobile).**
+      **Done when:** 3–5 non-technical users (including parents and elders on budget Android phones and desktop laptops) successfully open the envelope, review events, and submit an RSVP without assistance.
+
+- [ ] **G10 `[BEFORE-LAUNCH]` `@lead-eng` — Hero Photo Focal Point Cropping & Blur Placeholders.**
+      Couples upload varied aspect ratios that clip heads on mobile viewports.
+      **Done when:** hero images support customizable focal-point positioning and render with lightweight blurhash/base64 placeholders during loading.
+
+- [ ] **G11 `[BEFORE-LAUNCH]` `@ops` — Solo Founder Continuity & Emergency Runbook ("Bus Factor").**
+      **Done when:** emergency access contact, encrypted master password vault, and hosting failover runbook are documented for wedding-day emergencies.
+
+- [ ] **G12 `[LATER]` `@lead-eng` — RSVP Editing, Households & Plus-Ones.**
+      **Done when:** guests can update an existing RSVP using their token, add named plus-ones, and track dietary needs per family member.
+
+- [ ] **G13 `[LATER]` `@lead-eng` — Transactional Email & WhatsApp Couple Notifications.**
+      **Done when:** verified sending domain with SPF, DKIM, and DMARC delivers instant alerts when guests submit RSVPs or Shagun declarations.
+
+- [ ] **G14 `[LATER]` `@growth` — Share Tools: 1-Tap Invite Templates, QR Poster, Pocket Itinerary.**
+      **Done when:** downloadable printable QR card, calendar `.ics` export, and WhatsApp 1-tap template generator are available in admin and guest views.
+
+- [ ] **G15 `[LATER]` `@lead-eng` — Automated Accessibility (axe-core) & Visual Regression CI.**
+      **Done when:** Playwright executes automated axe-core accessibility checks and snapshot visual regression testing across all curated presets in CI.
+
+- [ ] **G16 `[LATER]` `@lead-eng` — Photo Handover Expiry Reminders (Day 60, Day 80, Year 5).**
+      **Done when:** automated cron triggers reminder notifications prior to original photo deletion (Day 90) and site archive (Year 5).

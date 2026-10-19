@@ -12,6 +12,9 @@ import {
   Sparkles,
   X,
   ChevronDown,
+  Copy,
+  QrCode,
+  Check,
 } from "lucide-react";
 import type { ThemeConfig, ContrastReport } from "@/lib/themes/tokens";
 import { TurnstileWidget } from "@/components/ui/turnstile";
@@ -44,6 +47,15 @@ export default function WeddingGuestClient({
   const [isShagunModalOpen, setIsShagunModalOpen] = useState(false);
   const [shagunAmount, setShagunAmount] = useState<number>(2101);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [showQrCode, setShowQrCode] = useState(false);
+
+  const handleCopyUpi = () => {
+    if (!wedding.upiVpa) return;
+    navigator.clipboard.writeText(wedding.upiVpa);
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2500);
+  };
 
   // Real-time countdown timer to wedding date
   const [timeLeft, setTimeLeft] = useState<{
@@ -492,13 +504,15 @@ export default function WeddingGuestClient({
                   </div>
 
                   <div>
-                    <label className="block text-theme-text-muted">WhatsApp Phone Number *</label>
+                    <label className="block text-theme-text-muted">
+                      WhatsApp / Mobile Number (with Country Code) *
+                    </label>
                     <input
                       type="tel"
                       required
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 98765 43210 or +1 415 555 2671"
                       className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                     />
                   </div>
@@ -620,19 +634,88 @@ export default function WeddingGuestClient({
               ))}
             </div>
 
-            {/* Direct UPI Deep Link */}
-            <div className="mt-6">
+            {/* Direct UPI Deep Link & Fallback Matrix */}
+            <div className="mt-6 space-y-3">
               <a
                 href={`upi://pay?pa=${wedding.upiVpa}&pn=${encodeURIComponent(
                   `${wedding.bride} and ${wedding.groom} Wedding`,
                 )}&am=${shagunAmount}&cu=INR&tn=${encodeURIComponent("Wedding Shagun Blessing")}`}
-                className="text-theme-on-primary block w-full rounded-full bg-theme-primary py-3 text-sm font-semibold tracking-wide shadow-lg transition-transform hover:scale-105"
+                className="text-theme-on-primary block w-full rounded-full bg-theme-primary py-3 text-sm font-semibold tracking-wide shadow-lg transition-transform hover:scale-[1.02]"
               >
                 Send ₹{shagunAmount.toLocaleString("en-IN")} via UPI App
               </a>
-              <p className="mt-2 text-[11px] text-theme-text-muted opacity-70">
-                Opens GPay, PhonePe, Paytm, or BHIM instantly
+              <p className="text-[11px] text-theme-text-muted opacity-75">
+                Opens Google Pay, PhonePe, Paytm, or BHIM instantly
               </p>
+
+              {/* In-App Browser & Desktop Fallback: Copy UPI & QR Code */}
+              <div className="border-theme-accent/20 bg-theme-surface/70 rounded-xl border p-3 text-left">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-theme-text-muted">
+                      UPI ID / VPA
+                    </span>
+                    <p className="select-all font-mono text-xs font-semibold text-theme-text-primary">
+                      {wedding.upiVpa}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleCopyUpi}
+                    type="button"
+                    className="border-theme-accent/30 bg-theme-canvas inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-medium text-theme-text-primary hover:border-theme-accent"
+                  >
+                    {copiedUpi ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                        <span className="text-green-500">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 text-theme-accent" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* QR Code Toggle for Desktop / WhatsApp In-App Browser */}
+                <div className="border-theme-accent/10 mt-2.5 flex items-center justify-between border-t pt-2.5">
+                  <span className="text-[11px] text-theme-text-muted">On iPhone or laptop?</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowQrCode((prev) => !prev)}
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-theme-accent hover:underline"
+                  >
+                    <QrCode className="h-3.5 w-3.5" />
+                    <span>{showQrCode ? "Hide QR Code" : "Show QR Code"}</span>
+                  </button>
+                </div>
+
+                {showQrCode && (
+                  <div className="mt-3 flex flex-col items-center justify-center rounded-lg bg-white p-3 text-center">
+                    {/* Standard SVG QR rendering of upi://pay URI */}
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                        `upi://pay?pa=${wedding.upiVpa}&pn=${encodeURIComponent(
+                          `${wedding.bride} and ${wedding.groom} Wedding`,
+                        )}&am=${shagunAmount}&cu=INR&tn=${encodeURIComponent("Wedding Shagun Blessing")}`,
+                      )}&margin=8`}
+                      alt="UPI Payment QR Code"
+                      className="h-36 w-36 rounded shadow-inner"
+                      loading="lazy"
+                    />
+                    <p className="mt-2 text-[10px] text-gray-700">
+                      Scan with any UPI app on another phone
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* NRI & International Relatives Note */}
+              <div className="bg-theme-surface/40 rounded-lg p-2.5 text-center text-[10px] leading-relaxed text-theme-text-muted">
+                🌐 <strong>NRI &amp; Overseas Relatives:</strong> If UPI is not accessible outside
+                India, please contact the couple or concierge for bank wire / account details.
+              </div>
             </div>
           </div>
         </div>

@@ -37,7 +37,10 @@ export const CreateWeddingSchema = z.object({
   couplePhone: z
     .string()
     .trim()
-    .regex(/^[6-9]\d{9}$/, "Must be a valid 10-digit Indian mobile number")
+    .regex(
+      /^(\+?[1-9]\d{6,14}|[6-9]\d{9})$/,
+      "Must be a valid phone number with optional country code (e.g. +91 9876543210 or +1 4155552671)",
+    )
     .optional()
     .or(z.literal("")),
   coupleEmail: z.string().trim().email("Must be a valid email").optional().or(z.literal("")),

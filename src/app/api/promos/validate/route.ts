@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit } from "@/lib/ratelimit";
+import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 import {
   ValidatePromoSchema,
   validatePromoService,
@@ -12,7 +12,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     // 1. IP Rate Limiting to prevent brute-force promo guessing (10 attempts / min)
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+    const ip = getClientIp(request);
     const rateCheck = checkRateLimit(`promo-check:${ip}`, 10, 60000);
     if (!rateCheck.success) {
       return NextResponse.json(

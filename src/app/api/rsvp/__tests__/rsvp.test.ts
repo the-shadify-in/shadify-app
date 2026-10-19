@@ -11,6 +11,7 @@ vi.mock("@/lib/turnstile", () => ({
 
 vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: vi.fn(),
+  getClientIp: vi.fn(() => "203.0.113.80"),
 }));
 
 vi.mock("@/lib/db", () => ({
