@@ -55,7 +55,9 @@ export async function executeWeddingErasure(
     purgedCount++;
   }
 
-  const tombstoneSuffix = crypto.randomUUID().slice(0, 12);
+  // Tombstone slug: 'erased-' (7 chars) + 32 hex chars = 39 chars, strictly satisfying:
+  // CHECK (slug ~ '^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])$') [max 40 chars, no trailing hyphens]
+  const tombstoneSuffix = crypto.randomUUID().replace(/-/g, "").toLowerCase();
   const tombstoneSlug = `erased-${tombstoneSuffix}`;
 
   // 2. Anonymize and redact database records in an atomic transaction
@@ -68,7 +70,7 @@ export async function executeWeddingErasure(
     // Redact couple user records with unique tombstones
     // Crucial: Avoids UNIQUE collisions on multiple erasures while satisfying CHECK (email IS NOT NULL OR phone IS NOT NULL)
     for (const member of wedding.members) {
-      const userTombstone = crypto.randomUUID();
+      const userTombstone = crypto.randomUUID().replace(/-/g, "").toLowerCase();
       await tx.user.update({
         where: { id: member.userId },
         data: {
@@ -80,6 +82,20 @@ export async function executeWeddingErasure(
         },
       });
     }
+
+    // Redact events (titles, descriptions, venue details contain names)
+    await tx.event.updateMany({
+      where: { weddingId: wedding.id },
+      data: {
+        title: "Private Event",
+        description: null,
+        venueName: "Private Venue",
+        venueAddress: null,
+        venueMapUrl: null,
+        dressCode: null,
+        deletedAt: new Date(),
+      },
+    });
 
     // Redact guest directory
     await tx.guest.updateMany({
@@ -133,6 +149,23 @@ export async function executeWeddingErasure(
       },
     });
 
+    // Redact consents & erasure requests
+    await tx.consent.updateMany({
+      where: { weddingId: wedding.id },
+      data: {
+        subject: "erased-subject",
+        withdrawnAt: new Date(),
+      },
+    });
+
+    await tx.erasureRequest.updateMany({
+      where: { weddingId: wedding.id },
+      data: {
+        subject: "erased-subject",
+        completedAt: new Date(),
+      },
+    });
+
     // Redact orders: scrub billing PII and couple names from slug copy while preserving statutory tax invoice amounts
     await tx.order.updateMany({
       where: { weddingId: wedding.id },
@@ -163,15 +196,24 @@ export async function executeWeddingErasure(
       },
     });
 
-    // Record audit log entry without plain-text PII (store SHA-256 hash for audit verification)
-    const slugHash = crypto.createHash("sha256").update(weddingSlug).digest("hex").slice(0, 16);
+    // Record audit log entry using HMAC with secret key outside database to prevent rainbow-table slug recovery
+    const secretKey =
+      process.env.ERASURE_HMAC_SECRET ||
+      process.env.ADMIN_SESSION_SECRET ||
+      "shadify-audit-log-hmac-salt-secret";
+    const slugHmac = crypto.createHmac("sha256", secretKey).update(weddingSlug).digest("hex");
+    const isUuid =
+      Boolean(actorId) &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(actorId);
+
     await tx.auditLog.create({
       data: {
         weddingId: wedding.id,
-        actorId,
+        actorId: isUuid ? actorId : null,
         action: "privacy.erasure",
         detail: {
-          slugHash,
+          actorRef: isUuid ? undefined : actorId,
+          slugHmac,
           photosPurged: purgedCount,
           timestamp: new Date().toISOString(),
         },

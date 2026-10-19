@@ -1,13 +1,53 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual, scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
 import { z } from "zod";
 
-export const SESSION_COOKIE_NAME = "shadify_admin_session";
+const scryptAsync = promisify(scrypt);
+
+/**
+ * Returns the RFC 6265bis __Host- cookie name in production to ensure
+ * strict HTTPS-only, host-only, root-path session storage.
+ */
+export function getSessionCookieName(): string {
+  return process.env.NODE_ENV === "production"
+    ? "__Host-shadify_admin_session"
+    : "shadify_admin_session";
+}
+
+export const SESSION_COOKIE_NAME = getSessionCookieName();
+
 const SESSION_SECRET =
   process.env.ADMIN_SESSION_SECRET ?? "fallback-dev-secret-do-not-use-in-production";
 
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
-export const CURRENT_SESSION_VERSION = process.env.ADMIN_SESSION_VERSION || "v1";
+// Bumped to v2 to immediately invalidate any legacy or previously exposed session tokens
+export const CURRENT_SESSION_VERSION = process.env.ADMIN_SESSION_VERSION || "v2";
+
+/**
+ * Hashes a plaintext password using crypto.scrypt with a random 16-byte salt.
+ */
+export async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${derivedKey.toString("hex")}`;
+}
+
+/**
+ * Verifies a plaintext password against an scrypt salt:hash string using constant-time timingSafeEqual.
+ */
+export async function verifyPassword(password: string, combinedHash: string): Promise<boolean> {
+  try {
+    const [salt, key] = combinedHash.split(":");
+    if (!salt || !key) return false;
+    const keyBuffer = Buffer.from(key, "hex");
+    const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer;
+    if (keyBuffer.length !== derivedKey.length) return false;
+    return timingSafeEqual(keyBuffer, derivedKey);
+  } catch {
+    return false;
+  }
+}
 
 export interface AdminSession {
   userId: string;
@@ -97,7 +137,10 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   try {
     const { cookies } = await import("next/headers");
     const cookieStore = cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+    const sessionCookie =
+      cookieStore.get(SESSION_COOKIE_NAME) ||
+      cookieStore.get("__Host-shadify_admin_session") ||
+      cookieStore.get("shadify_admin_session");
     if (!sessionCookie?.value) return null;
     return verifySessionToken(sessionCookie.value);
   } catch {

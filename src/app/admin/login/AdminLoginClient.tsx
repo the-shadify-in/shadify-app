@@ -15,7 +15,7 @@ export default function AdminLoginClient() {
   const rawFrom = searchParams.get("from");
   const isSafeAdminPath =
     rawFrom &&
-    /^\/admin(\/|$)/.test(rawFrom) &&
+    /^\/admin(\/[A-Za-z0-9\-_/]*)?$/.test(rawFrom) &&
     !rawFrom.startsWith("//") &&
     !rawFrom.includes("\\");
   const destination = isSafeAdminPath ? rawFrom : "/admin";
@@ -63,7 +63,7 @@ export default function AdminLoginClient() {
         </div>
       )}
 
-      <form onSubmit={handleLogin} action="#" className="mt-6 space-y-4 text-xs">
+      <form onSubmit={handleLogin} method="POST" action="#" className="mt-6 space-y-4 text-xs">
         <div>
           <label className="block text-[#E2D5C7]/80">Staff Email</label>
           <input

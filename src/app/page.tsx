@@ -46,7 +46,7 @@ const SAMPLE_WEDDINGS = [
     feeling: "Heritage Green",
     description:
       "A serene destination weekend surrounded by nature, candlelight, and royal peacocks.",
-    slug: "priya-rahul",
+    slug: "ananya-kabir",
     accentColor: "#0D4D33",
     tagline: "Palatial & Serene",
   },
@@ -55,7 +55,7 @@ const SAMPLE_WEDDINGS = [
     feeling: "Soft & Modern",
     description:
       "A small, elegant ivory ceremony with minimalist typography and contemporary warmth.",
-    slug: "priya-rahul",
+    slug: "diya-arjun",
     accentColor: "#7A5A40",
     tagline: "Minimalist Elegance",
   },
@@ -64,8 +64,8 @@ const SAMPLE_WEDDINGS = [
     feeling: "Sunset Sangeet",
     description:
       "A vibrant beach-side celebration with festive terracotta, marigold, and dusk tones.",
-    slug: "priya-rahul",
-    accentColor: "#B8435A",
+    slug: "zoya-farhan",
+    accentColor: "#D46A7E",
     tagline: "Festive Beachside Warmth",
   },
 ];

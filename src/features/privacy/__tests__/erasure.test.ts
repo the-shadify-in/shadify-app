@@ -15,6 +15,9 @@ vi.mock("@/lib/db", () => ({
     user: {
       update: vi.fn(),
     },
+    event: {
+      updateMany: vi.fn(),
+    },
     guest: {
       updateMany: vi.fn(),
     },
@@ -28,6 +31,12 @@ vi.mock("@/lib/db", () => ({
       updateMany: vi.fn(),
     },
     vip: {
+      updateMany: vi.fn(),
+    },
+    consent: {
+      updateMany: vi.fn(),
+    },
+    erasureRequest: {
       updateMany: vi.fn(),
     },
     order: {
@@ -173,11 +182,34 @@ describe("DPDP Act 2023 Wedding Data Erasure Engine", () => {
       }),
     });
 
+    // Verify Events are redacted
+    expect(prisma.event.updateMany).toHaveBeenCalledWith({
+      where: { weddingId: "wedding-uuid-123" },
+      data: expect.objectContaining({
+        title: "Private Event",
+        venueName: "Private Venue",
+      }),
+    });
+
+    // Verify Consents and ErasureRequests are redacted
+    expect(prisma.consent.updateMany).toHaveBeenCalledWith({
+      where: { weddingId: "wedding-uuid-123" },
+      data: expect.objectContaining({
+        subject: "erased-subject",
+      }),
+    });
+    expect(prisma.erasureRequest.updateMany).toHaveBeenCalledWith({
+      where: { weddingId: "wedding-uuid-123" },
+      data: expect.objectContaining({
+        subject: "erased-subject",
+      }),
+    });
+
     // Verify Wedding slug is tombstoned away from priya-rahul
     expect(prisma.wedding.update).toHaveBeenCalledWith({
       where: { id: "wedding-uuid-123" },
       data: expect.objectContaining({
-        slug: expect.stringMatching(/^erased-/),
+        slug: expect.stringMatching(/^erased-[a-f0-9]{32}$/),
         brideName: "Erased",
         groomName: "Erased",
         upiVpa: null,
@@ -185,13 +217,13 @@ describe("DPDP Act 2023 Wedding Data Erasure Engine", () => {
       }),
     });
 
-    // Verify Audit Log has zero plain-text PII (only hashed slug)
+    // Verify Audit Log has zero plain-text PII (only HMAC-hashed slug)
     expect(prisma.auditLog.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         weddingId: "wedding-uuid-123",
         action: "privacy.erasure",
         detail: expect.objectContaining({
-          slugHash: expect.any(String),
+          slugHmac: expect.any(String),
           photosPurged: 1,
         }),
       }),

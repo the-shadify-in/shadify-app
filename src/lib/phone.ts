@@ -11,11 +11,13 @@ export interface PhoneValidationResult {
  * Normalizes any national or international phone number to canonical E.164 format.
  * Defaults to "IN" (India) if no international calling code is provided.
  *
- * Examples:
- * - "9876543210" -> "+919876543210"
- * - "098765 43210" -> "+919876543210"
- * - "+91 98765 43210" -> "+919876543210"
- * - "+1 (555) 234-5678" -> "+15552345678"
+ * Handles:
+ * - Standard 10-digit: "9876543210" -> "+919876543210"
+ * - Trunk prefix 0: "098765 43210" -> "+919876543210"
+ * - International + prefix: "+91 98765 43210" -> "+919876543210"
+ * - International with spaces: "+ 91 98765 43210" -> "+919876543210"
+ * - IDD 00 prefix: "00919876543210" -> "+919876543210", "00447911123456" -> "+447911123456"
+ * - Rejects invalid numbers: "1234567", "0000000000"
  */
 export function normalizePhoneNumber(
   raw: string,
@@ -25,15 +27,24 @@ export function normalizePhoneNumber(
     return { valid: false, error: "Phone number is required." };
   }
 
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) {
+  let cleaned = raw.trim();
+  if (cleaned.length === 0) {
     return { valid: false, error: "Phone number is required." };
   }
 
+  // Handle leading + with spaces, e.g. "+ 91 98765 43210" -> "+91 98765 43210"
+  cleaned = cleaned.replace(/^\+\s+/, "+");
+
+  // Handle IDD 00 prefix (e.g. 0091... -> +91..., 0044... -> +44...)
+  if (cleaned.startsWith("00")) {
+    cleaned = "+" + cleaned.slice(2);
+  }
+
   try {
-    const parsed = parsePhoneNumberFromString(trimmed, defaultCountry);
-    // Use isPossible() to allow newly minted telecom prefixes while ensuring proper country and length
-    if (!parsed || !parsed.isPossible()) {
+    const parsed = parsePhoneNumberFromString(cleaned, defaultCountry);
+
+    // Strictly enforce isValid() (not isPossible()) so invalid numbers like 0000000000 are rejected
+    if (!parsed || !parsed.isValid()) {
       return {
         valid: false,
         error: "Please enter a valid phone number (e.g. +91 98765 43210 or 10-digit mobile).",
@@ -56,4 +67,12 @@ export function normalizePhoneNumber(
   } catch {
     return { valid: false, error: "Invalid phone number format." };
   }
+}
+
+/**
+ * Returns plain numeric digits without leading '+' for WhatsApp click-to-chat links
+ * (e.g. "+919876543210" -> "919876543210" for https://wa.me/919876543210)
+ */
+export function toWhatsAppNumber(e164: string): string {
+  return e164.replace(/^\+/, "").replace(/\D/g, "");
 }

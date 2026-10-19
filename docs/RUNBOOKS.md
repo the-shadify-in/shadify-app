@@ -389,7 +389,7 @@ SET "bride_name" = '[Erased]',
     "video_bite_key" = NULL,
     "live_stream_url" = NULL,
     "private_pin_hash" = NULL,
-    "slug" = 'erased-' || id::text,
+    "slug" = 'erased-' || substr(replace(id::text, '-', ''), 1, 30),
     "status" = 'archived',
     "deleted_at" = NOW()
 WHERE id = '<wedding_uuid>';
@@ -469,7 +469,7 @@ WHERE wedding_id = '<wedding_uuid>';
 
 -- 11. Redact Orders weddingSlugCopy (billing address/GST records retained for tax law)
 UPDATE "orders"
-SET "wedding_slug_copy" = 'erased-' || id::text
+SET "wedding_slug_copy" = 'erased-' || substr(replace(id::text, '-', ''), 1, 30)
 WHERE wedding_id = '<wedding_uuid>';
 
 -- 12. Delete Photos table records
