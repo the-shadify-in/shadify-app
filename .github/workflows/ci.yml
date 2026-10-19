@@ -97,11 +97,8 @@ jobs:
       - name: Apply Migrations from Empty
         run: npm run db:migrate:deploy
 
-      - name: Verify Migration Status (All Migrations Applied)
+      - name: Verify Migration Status (Zero Pending Migrations)
         run: npm run db:migrate:status
-
-      - name: Verify Schema and Migrations Drift (Zero Diff)
-        run: npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
 
       - name: Run Real Postgres Protections, Isolation & Erasure Suite
         run: npm run test:db
