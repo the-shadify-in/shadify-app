@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Heart,
   MapPin,
-  Calendar,
   Clock,
   Gift,
   Share2,
@@ -38,7 +37,7 @@ export default function WeddingGuestClient({
   theme,
   contrastReport,
 }: WeddingGuestClientProps) {
-  // 1. Client-Side Real-Time Expiration Gate (ensures CDN-cached HTML flips immediately)
+  // 1. Client-Side Real-Time Expiration Gate
   const isExpired = wedding.hostingUntil && Date.now() > new Date(wedding.hostingUntil).getTime();
 
   // Envelope state (true = sealed, false = opened)
@@ -49,6 +48,97 @@ export default function WeddingGuestClient({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<{ url: string; caption: string } | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // In-page RSVP form state
+  const [inPageGuestName, setInPageGuestName] = useState("");
+  const [inPageGuestPhone, setInPageGuestPhone] = useState("");
+  const [inPageAttending, setInPageAttending] = useState("yes");
+  const [inPagePartySize, setInPagePartySize] = useState(1);
+  const [inPageMealPref, setInPageMealPref] = useState("pure_veg");
+  const [inPageNeedsStay, setInPageNeedsStay] = useState(false);
+  const [inPageBlessing, setInPageBlessing] = useState("");
+  const [inPageTurnstileToken, setInPageTurnstileToken] = useState<string | null>(null);
+  const [inPageIsSubmitting, setInPageIsSubmitting] = useState(false);
+  const [inPageSubmitted, setInPageSubmitted] = useState(false);
+
+  // Modal RSVP form state
+  const [modalGuestName, setModalGuestName] = useState("");
+  const [modalGuestPhone, setModalGuestPhone] = useState("");
+  const [modalPartySize, setModalPartySize] = useState(1);
+  const [modalMealPref, setModalMealPref] = useState("pure_veg");
+  const [modalNeedsStay, setModalNeedsStay] = useState(false);
+  const [modalBlessing, setModalBlessing] = useState("");
+  const [modalTurnstileToken, setModalTurnstileToken] = useState<string | null>(null);
+
+  // Lightbox keyboard ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxImage(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Falling rose petals ambient animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let animId: number;
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize, { passive: true });
+
+    const colors = ["#FFB347", "#FF6B6B", "#FFD700", "#E8B96B", "#D6246E", "#FFAAA6"];
+    const petals = Array.from({ length: 28 }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight - window.innerHeight,
+      size: Math.random() * 6 + 3,
+      speed: Math.random() * 1.0 + 0.35,
+      angle: Math.random() * Math.PI * 2,
+      rot: (Math.random() - 0.5) * 0.035,
+      opacity: Math.random() * 0.4 + 0.15,
+      color: colors[Math.floor(Math.random() * colors.length)] ?? "#FFB347",
+    }));
+
+    const tick = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      petals.forEach((p) => {
+        p.y += p.speed;
+        p.x += Math.sin(p.y * 0.008) * 0.6;
+        p.angle += p.rot;
+        if (p.y > canvas.height + 20) {
+          p.y = -20;
+          p.x = Math.random() * canvas.width;
+        }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.globalAlpha = p.opacity;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size, p.size / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+      animId = requestAnimationFrame(tick);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
 
   const handleCopyUpi = () => {
     if (!wedding.upiVpa) return;
@@ -107,16 +197,52 @@ export default function WeddingGuestClient({
     setIsEnvelopeOpened(true);
   };
 
-  // Form state
-  const [guestName, setGuestName] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
-  const [partySize, setPartySize] = useState(1);
-  const [mealPref, setMealPref] = useState("pure_veg");
-  const [needsStay, setNeedsStay] = useState(false);
-  const [blessing, setBlessing] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 4500);
+  };
 
-  const handleRsvpSubmit = async (e: React.FormEvent) => {
+  // In-Page RSVP Submission
+  const handleInPageRsvpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inPageGuestName.trim()) return;
+
+    setInPageIsSubmitting(true);
+    try {
+      const res = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          weddingSlug: wedding.slug,
+          eventId: wedding.events[0]?.id || "main-wedding",
+          guestName: inPageGuestName.trim(),
+          guestPhone: inPageGuestPhone.trim(),
+          partySize: Number(inPagePartySize),
+          attending: inPageAttending === "yes",
+          mealPreference: inPageMealPref,
+          needsAccommodation: inPageNeedsStay,
+          notes: inPageBlessing.trim(),
+          turnstileToken: inPageTurnstileToken || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        setInPageSubmitted(true);
+        showToast(
+          `🎉 Thank you ${inPageGuestName.split(" ")[0]}! Your RSVP has been confirmed with love!`,
+        );
+      } else {
+        alert("Unable to register RSVP. Please check your contact number.");
+      }
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setInPageIsSubmitting(false);
+    }
+  };
+
+  // Modal RSVP Submission
+  const handleModalRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeRsvpEvent) return;
 
@@ -127,19 +253,20 @@ export default function WeddingGuestClient({
         body: JSON.stringify({
           weddingSlug: wedding.slug,
           eventId: activeRsvpEvent.id,
-          guestName,
-          guestPhone,
-          partySize: Number(partySize),
+          guestName: modalGuestName.trim(),
+          guestPhone: modalGuestPhone.trim(),
+          partySize: Number(modalPartySize),
           attending: true,
-          mealPreference: mealPref,
-          needsAccommodation: needsStay,
-          notes: blessing,
-          turnstileToken: turnstileToken || undefined,
+          mealPreference: modalMealPref,
+          needsAccommodation: modalNeedsStay,
+          notes: modalBlessing.trim(),
+          turnstileToken: modalTurnstileToken || undefined,
         }),
       });
 
       if (res.ok) {
         setIsSubmitted(true);
+        showToast(`🎉 Thank you ${modalGuestName.split(" ")[0]}! RSVP recorded!`);
       } else {
         alert("Unable to register RSVP. Please check your contact number.");
       }
@@ -152,7 +279,7 @@ export default function WeddingGuestClient({
     const text = encodeURIComponent(
       `🌸 *Wedding Invitation: ${wedding.bride} & ${wedding.groom}* 🌸\n\n` +
         `We would be honored by your presence as we celebrate our wedding in ${wedding.venueCity} on ${wedding.date}.\n\n` +
-        `Tap here to view the royal invitation, event itinerary, and RSVP:\n` +
+        `Tap here to view the royal invitation, ceremony itinerary, photo gallery & RSVP:\n` +
         `${typeof window !== "undefined" ? window.location.href : `https://shadify.in/${wedding.slug}`}`,
     );
     return `https://api.whatsapp.com/send?text=${text}`;
@@ -168,7 +295,8 @@ export default function WeddingGuestClient({
           Celebration Website Concluded
         </h1>
         <p className="mt-3 max-w-md text-xs leading-relaxed text-[#1F1A2E]/70 sm:text-sm">
-          The active digital invitation and gallery hosting for {wedding.bride} & {wedding.groom}
+          The active digital invitation and gallery hosting for {wedding.bride} &amp;{" "}
+          {wedding.groom}
           &apos;s wedding has concluded.
         </p>
       </div>
@@ -176,6 +304,8 @@ export default function WeddingGuestClient({
   }
 
   const c = theme.palette;
+  const loveStory = wedding.loveStory;
+  const gallery = wedding.gallery || [];
 
   return (
     <main
@@ -194,10 +324,29 @@ export default function WeddingGuestClient({
           "--theme-wax-seal": c.waxSeal,
         } as React.CSSProperties
       }
-      className="selection:text-theme-on-accent min-h-screen bg-theme-bg pb-24 font-sans text-theme-text-primary transition-colors duration-500 selection:bg-theme-accent md:pb-0"
+      className="selection:text-theme-on-accent relative min-h-screen bg-theme-bg pb-24 font-sans text-theme-text-primary transition-colors duration-500 selection:bg-theme-accent md:pb-0"
     >
       {/* ----------------------------------------------------------- */}
-      {/* 1. ROYAL ENVELOPE OVERLAY (CSS REVEAL) */}
+      {/* 0. AMBIENT FALLING ROSE PETALS CANVAS */}
+      {/* ----------------------------------------------------------- */}
+      <canvas
+        ref={canvasRef}
+        id="petals-canvas"
+        className="pointer-events-none fixed inset-0 z-0 h-full w-full"
+        aria-hidden="true"
+      />
+
+      {/* ----------------------------------------------------------- */}
+      {/* 0. TOAST NOTIFICATION */}
+      {/* ----------------------------------------------------------- */}
+      {toastMessage && (
+        <div className="border-theme-accent/50 fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full border bg-[#1A0A00]/95 px-6 py-3 font-serif text-sm text-[#E8B96B] shadow-2xl backdrop-blur-md transition-all">
+          {toastMessage}
+        </div>
+      )}
+
+      {/* ----------------------------------------------------------- */}
+      {/* 1. ROYAL ENVELOPE OVERLAY (WAX SEAL REVEAL) */}
       {/* ----------------------------------------------------------- */}
       {!isEnvelopeOpened && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-xl">
@@ -246,79 +395,135 @@ export default function WeddingGuestClient({
       )}
 
       {/* ----------------------------------------------------------- */}
-      {/* 2. HERO SECTION */}
+      {/* 2. STICKY GLASSMORPHIC NAVIGATION BAR */}
       {/* ----------------------------------------------------------- */}
-      <section className="relative flex min-h-[85vh] flex-col items-center justify-center px-4 text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.12)_0,transparent_70%)]" />
+      <nav className="border-theme-accent/20 bg-theme-surface/85 fixed inset-x-0 top-0 z-40 border-b px-6 py-3.5 shadow-sm backdrop-blur-md transition-all">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <a
+            href="#hero"
+            className="font-serif text-lg font-semibold tracking-wide text-theme-primary"
+          >
+            {wedding.bride} &amp; {wedding.groom}
+          </a>
 
-        <div className="relative z-10 max-w-2xl">
-          <div className="border-theme-accent/40 mb-4 inline-flex items-center gap-2 rounded-full border bg-theme-surface px-4 py-1 text-xs uppercase tracking-widest text-theme-accent">
-            <span>Namaste &amp; Welcome</span>
+          <div className="hidden items-center gap-8 text-xs font-medium uppercase tracking-[0.15em] text-theme-text-primary md:flex">
+            {loveStory && (
+              <a href="#story" className="transition hover:text-theme-accent">
+                Our Story
+              </a>
+            )}
+            <a href="#events" className="transition hover:text-theme-accent">
+              Ceremonies
+            </a>
+            {gallery.length > 0 && (
+              <a href="#gallery" className="transition hover:text-theme-accent">
+                Gallery
+              </a>
+            )}
+            {wedding.vips.length > 0 && (
+              <a href="#vips" className="transition hover:text-theme-accent">
+                Family
+              </a>
+            )}
+            <a href="#rsvp" className="transition hover:text-theme-accent">
+              RSVP
+            </a>
           </div>
 
-          <h1 className="font-serif text-5xl font-light tracking-tight text-theme-text-primary md:text-7xl">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsShagunModalOpen(true)}
+              className="border-theme-accent/40 hidden items-center gap-1.5 rounded-full border bg-theme-surface px-4 py-1.5 text-xs font-medium text-theme-text-primary transition hover:border-theme-accent sm:inline-flex"
+            >
+              <Gift className="h-3.5 w-3.5 text-theme-accent" />
+              <span>Digital Shagun</span>
+            </button>
+            <a
+              href="#rsvp"
+              className="text-theme-on-primary rounded-full bg-theme-primary px-5 py-1.5 text-xs font-semibold tracking-wider transition hover:opacity-95"
+            >
+              RSVP
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* ----------------------------------------------------------- */}
+      {/* 3. HERO SECTION */}
+      {/* ----------------------------------------------------------- */}
+      <section
+        id="hero"
+        className="relative flex min-h-[92vh] flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center"
+      >
+        {wedding.heroImage && (
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-1000"
+            style={{
+              backgroundImage: `url(${wedding.heroImage})`,
+              transform: "scale(1.05)",
+            }}
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-theme-bg" />
+
+        <div className="relative z-10 mx-auto max-w-3xl text-white">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-black/40 px-5 py-1 text-xs font-medium uppercase tracking-[0.25em] text-amber-200 backdrop-blur-md">
+            <span>✦ Together Forever ✦</span>
+          </div>
+
+          <h1 className="font-serif text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
             {wedding.bride} <br />
-            <span className="font-serif text-3xl text-theme-accent md:text-5xl">&amp;</span> <br />
+            <span className="font-serif text-3xl italic text-amber-300 md:text-5xl">
+              &amp;
+            </span>{" "}
+            <br />
             {wedding.groom}
           </h1>
 
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-theme-text-muted">
-            <span className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-theme-accent" />
-              {wedding.date}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-theme-accent" />
-              {wedding.venueCity}
-            </span>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 font-serif text-base tracking-widest text-white/90 md:text-lg">
+            <span>✦</span>
+            <span>{wedding.date}</span>
+            <span>·</span>
+            <span>{wedding.venueCity}</span>
+            <span>✦</span>
           </div>
 
           {/* Real-Time Live Countdown */}
           {timeLeft && (
-            <div className="mt-8 flex items-center justify-center gap-3 font-serif text-xs uppercase tracking-wider text-theme-accent">
-              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
-                <span className="block text-2xl font-light text-theme-text-primary">
-                  {timeLeft.days}
-                </span>
-                <span className="text-[10px] tracking-widest text-theme-text-muted">Days</span>
+            <div className="mt-8 flex items-center justify-center gap-3 font-serif text-xs uppercase tracking-wider text-amber-200">
+              <div className="min-w-[62px] rounded-xl border border-amber-300/30 bg-black/50 px-3.5 py-2.5 text-center shadow-lg backdrop-blur-md">
+                <span className="block text-2xl font-light text-white">{timeLeft.days}</span>
+                <span className="text-[10px] tracking-widest text-amber-200/80">Days</span>
               </div>
-              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
-                <span className="block text-2xl font-light text-theme-text-primary">
-                  {timeLeft.hours}
-                </span>
-                <span className="text-[10px] tracking-widest text-theme-text-muted">Hours</span>
+              <div className="min-w-[62px] rounded-xl border border-amber-300/30 bg-black/50 px-3.5 py-2.5 text-center shadow-lg backdrop-blur-md">
+                <span className="block text-2xl font-light text-white">{timeLeft.hours}</span>
+                <span className="text-[10px] tracking-widest text-amber-200/80">Hours</span>
               </div>
-              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
-                <span className="block text-2xl font-light text-theme-text-primary">
-                  {timeLeft.minutes}
-                </span>
-                <span className="text-[10px] tracking-widest text-theme-text-muted">Mins</span>
+              <div className="min-w-[62px] rounded-xl border border-amber-300/30 bg-black/50 px-3.5 py-2.5 text-center shadow-lg backdrop-blur-md">
+                <span className="block text-2xl font-light text-white">{timeLeft.minutes}</span>
+                <span className="text-[10px] tracking-widest text-amber-200/80">Mins</span>
               </div>
-              <div className="border-theme-accent/30 bg-theme-surface/80 min-w-[58px] rounded-xl border px-3.5 py-2 text-center shadow-sm backdrop-blur-sm">
-                <span className="block text-2xl font-light text-theme-text-primary">
-                  {timeLeft.seconds}
-                </span>
-                <span className="text-[10px] tracking-widest text-theme-text-muted">Secs</span>
+              <div className="min-w-[62px] rounded-xl border border-amber-300/30 bg-black/50 px-3.5 py-2.5 text-center shadow-lg backdrop-blur-md">
+                <span className="block text-2xl font-light text-white">{timeLeft.seconds}</span>
+                <span className="text-[10px] tracking-widest text-amber-200/80">Secs</span>
               </div>
             </div>
           )}
 
           {/* Quick Actions */}
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <button
-              onClick={() => setActiveRsvpEvent(wedding.events[0] ?? null)}
-              className={`text-theme-on-primary rounded-full bg-theme-primary px-8 py-3 text-sm font-semibold tracking-wide shadow-lg transition-transform hover:scale-105 ${
-                contrastReport.primaryNeedsBorder ? "border-2 border-theme-accent" : ""
-              }`}
+            <a
+              href="#rsvp"
+              className="rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-3 text-sm font-semibold tracking-wide text-black shadow-lg transition-transform hover:scale-105"
             >
               RSVP Now
-            </button>
+            </a>
 
             <button
               onClick={() => setIsShagunModalOpen(true)}
-              className="border-theme-accent/50 inline-flex items-center gap-2 rounded-full border bg-theme-surface px-6 py-3 text-sm font-medium text-theme-text-primary transition-colors hover:border-theme-accent"
+              className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/40 px-6 py-3 text-sm font-medium text-white backdrop-blur-md transition-colors hover:border-amber-300"
             >
-              <Gift className="h-4 w-4 text-theme-accent" />
+              <Gift className="h-4 w-4 text-amber-300" />
               Digital Shagun
             </button>
 
@@ -326,132 +531,467 @@ export default function WeddingGuestClient({
               href={getWhatsAppShareUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-green-600/40 bg-green-950/20 px-6 py-3 text-sm font-medium text-green-400 transition-colors hover:bg-green-900/30"
+              className="inline-flex items-center gap-2 rounded-full border border-green-500/50 bg-green-950/40 px-6 py-3 text-sm font-medium text-green-300 backdrop-blur-md transition-colors hover:bg-green-900/50"
             >
               <Share2 className="h-4 w-4" />
-              Share on WhatsApp
+              Share Invitation
             </a>
           </div>
         </div>
 
-        <div className="text-theme-accent/70 absolute bottom-6 animate-bounce">
-          <ChevronDown className="h-6 w-6" />
-        </div>
+        <a
+          href="#story"
+          className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-[11px] uppercase tracking-widest text-white/70 transition hover:text-white"
+        >
+          <span>Scroll to explore</span>
+          <ChevronDown className="h-4 w-4 animate-bounce" />
+        </a>
       </section>
 
-      {/* ----------------------------------------------------------- */}
-      {/* 3. EVENT SCHEDULE (ITINERARY) */}
-      {/* ----------------------------------------------------------- */}
-      <section className="mx-auto max-w-4xl px-4 py-20">
-        <div className="mb-12 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
-            Ceremonies &amp; Timings
-          </p>
-          <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
-            The Wedding Itinerary
-          </h2>
+      {/* Decorative Auspicious Divider */}
+      <div className="relative py-8 text-center">
+        <div className="absolute inset-0 flex items-center">
+          <div className="border-theme-accent/20 w-full border-t" />
         </div>
+        <div className="relative inline-flex items-center gap-2 bg-theme-bg px-4 text-theme-accent">
+          <span>✦</span>
+          <span>🌸</span>
+          <span>✦</span>
+        </div>
+      </div>
 
-        <div className="space-y-6">
-          {wedding.events.map((evt) => (
-            <div
-              key={evt.id}
-              className="border-theme-accent/25 hover:border-theme-accent/60 relative rounded-2xl border bg-theme-surface p-6 transition-all"
-            >
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-theme-on-primary inline-block rounded-md bg-theme-primary px-3 py-1 text-xs font-medium">
-                      {evt.tag} • {evt.date}
-                    </span>
-                    {evt.startTimeIso &&
-                      Date.now() >= new Date(evt.startTimeIso).getTime() &&
-                      (!evt.endTimeIso ||
-                        Date.now() <= new Date(evt.endTimeIso).getTime() ||
-                        Date.now() <= new Date(evt.startTimeIso).getTime() + 4 * 3600 * 1000) && (
-                        <span className="inline-flex animate-pulse items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>{" "}
-                          Happening Now
-                        </span>
-                      )}
-                  </div>
-                  <h3 className="mt-2 font-serif text-2xl font-light text-theme-text-primary">
-                    {evt.title}
-                  </h3>
-                  <div className="mt-2 flex flex-wrap gap-4 text-xs text-theme-text-muted">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3.5 w-3.5 text-theme-accent" />
-                      {evt.time}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5 text-theme-accent" />
-                      {evt.venue}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-xs text-theme-accent">Dress Code: {evt.dressCode}</p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <a
-                    href={evt.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="border-theme-accent/40 inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-xs font-medium text-theme-text-muted hover:border-theme-accent hover:text-theme-text-primary"
-                  >
-                    <MapPin className="h-3.5 w-3.5 text-theme-accent" />
-                    Directions
-                  </a>
-                  <button
-                    onClick={() => setActiveRsvpEvent(evt)}
-                    className="text-theme-on-accent rounded-lg bg-theme-accent px-4 py-2 text-xs font-semibold transition-transform hover:scale-105"
-                  >
-                    RSVP
-                  </button>
-                </div>
+      {/* ----------------------------------------------------------- */}
+      {/* 4. OUR STORY & JOURNEY MILESTONES */}
+      {/* ----------------------------------------------------------- */}
+      {loveStory && (
+        <section id="story" className="mx-auto max-w-5xl px-4 py-16">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            {/* Couple Framed Photo */}
+            <div className="relative mx-auto max-w-md">
+              <div className="border-theme-accent/60 relative overflow-hidden rounded-2xl border-2 p-2 shadow-2xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={loveStory.coupleImage}
+                  alt={`${wedding.bride} and ${wedding.groom}`}
+                  className="aspect-[3/4] w-full rounded-xl object-cover"
+                />
+              </div>
+              <div className="border-theme-accent/40 absolute -bottom-4 -right-4 rounded-xl border bg-theme-primary px-5 py-3 text-center text-white shadow-xl">
+                <p className="text-[10px] uppercase tracking-wider opacity-85">Together Since</p>
+                <p className="font-serif text-2xl font-bold">{loveStory.togetherSinceYear}</p>
               </div>
             </div>
-          ))}
+
+            {/* Narrative & Timeline */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
+                {loveStory.tagline}
+              </p>
+              <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
+                {loveStory.headline}
+              </h2>
+
+              <p className="mt-4 font-serif text-base leading-relaxed text-theme-text-muted md:text-lg">
+                {loveStory.storyP1}
+              </p>
+              <p className="mt-3 font-serif text-base leading-relaxed text-theme-text-muted md:text-lg">
+                {loveStory.storyP2}
+              </p>
+
+              {/* Milestones Timeline */}
+              {loveStory.milestones && loveStory.milestones.length > 0 && (
+                <div className="border-theme-accent/30 mt-8 space-y-6 border-l-2 pl-6">
+                  {loveStory.milestones.map((m, idx) => (
+                    <div key={idx} className="relative">
+                      <div className="absolute -left-[31px] top-1 h-3.5 w-3.5 rounded-full border-2 border-theme-bg bg-theme-accent" />
+                      <p className="text-xs font-semibold uppercase tracking-wider text-theme-accent">
+                        {m.year} · {m.title}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-theme-text-muted">
+                        {m.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ----------------------------------------------------------- */}
+      {/* 5. WEDDING CEREMONIES & ITINERARY */}
+      {/* ----------------------------------------------------------- */}
+      <section
+        id="events"
+        className="border-theme-accent/10 bg-theme-surface/40 border-y px-4 py-20"
+      >
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
+              Wedding Celebrations
+            </p>
+            <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
+              Join Us for Every Ceremony
+            </h2>
+            <p className="mt-2 text-sm text-theme-text-muted">
+              Four days of love, laughter &amp; timeless traditions
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {wedding.events.map((evt) => {
+              const isHappeningNow =
+                evt.startTimeIso &&
+                Date.now() >= new Date(evt.startTimeIso).getTime() &&
+                (!evt.endTimeIso ||
+                  Date.now() <= new Date(evt.endTimeIso).getTime() ||
+                  Date.now() <= new Date(evt.startTimeIso).getTime() + 4 * 3600 * 1000);
+
+              const eventIcon = evt.tag.toLowerCase().includes("mehendi")
+                ? "🌿"
+                : evt.tag.toLowerCase().includes("sangeet")
+                  ? "🎶"
+                  : evt.tag.toLowerCase().includes("wedding") ||
+                      evt.tag.toLowerCase().includes("mandap")
+                    ? "🔥"
+                    : "🥂";
+
+              return (
+                <div
+                  key={evt.id}
+                  className="border-theme-accent/20 hover:border-theme-accent/60 group flex flex-col justify-between overflow-hidden rounded-2xl border bg-theme-surface shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <div>
+                    {evt.coverImage && (
+                      <div className="relative h-44 w-full overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={evt.coverImage}
+                          alt={evt.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <span className="absolute bottom-3 left-3 text-2xl">{eventIcon}</span>
+                        {isHappeningNow && (
+                          <span className="absolute right-3 top-3 inline-flex animate-pulse items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/30 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300 backdrop-blur-md">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                            Happening Now
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="p-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-theme-on-primary rounded-md bg-theme-primary px-2.5 py-0.5 text-[11px] font-medium">
+                          {evt.tag}
+                        </span>
+                        <span className="text-[11px] text-theme-text-muted">{evt.date}</span>
+                      </div>
+
+                      <h3 className="mt-3 font-serif text-xl font-medium text-theme-text-primary">
+                        {evt.title}
+                      </h3>
+
+                      <div className="mt-3 space-y-1.5 text-xs text-theme-text-muted">
+                        <p className="flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-theme-accent" />
+                          <span>{evt.time}</span>
+                        </p>
+                        <p className="flex items-center gap-1.5">
+                          <MapPin className="h-3.5 w-3.5 text-theme-accent" />
+                          <span>{evt.venue}</span>
+                        </p>
+                      </div>
+
+                      <p className="mt-3 text-[11px] text-theme-accent">
+                        Dress Code: {evt.dressCode}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="border-theme-accent/15 flex items-center justify-between gap-2 border-t p-4">
+                    <a
+                      href={evt.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border-theme-accent/40 inline-flex flex-1 items-center justify-center gap-1 rounded-lg border py-2 text-xs font-medium text-theme-text-muted hover:border-theme-accent hover:text-theme-text-primary"
+                    >
+                      <MapPin className="h-3 w-3 text-theme-accent" />
+                      <span>Directions</span>
+                    </a>
+                    <button
+                      onClick={() => setActiveRsvpEvent(evt)}
+                      className="text-theme-on-accent flex-1 rounded-lg bg-theme-accent py-2 text-xs font-semibold transition-transform hover:scale-105"
+                    >
+                      RSVP
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
       {/* ----------------------------------------------------------- */}
-      {/* 4. MEET THE VIPS */}
+      {/* 6. PHOTO GALLERY & LIGHTBOX */}
       {/* ----------------------------------------------------------- */}
-      <section className="border-theme-accent/10 bg-theme-surface/50 border-t px-4 py-20">
-        <div className="mx-auto max-w-4xl">
+      {gallery.length > 0 && (
+        <section id="gallery" className="mx-auto max-w-6xl px-4 py-20">
           <div className="mb-12 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
-              Family &amp; Entourage
+              Our Memories
             </p>
             <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
-              Meet the VIPs
+              Photo Gallery
             </h2>
+            <p className="mt-2 text-sm text-theme-text-muted">
+              Moments captured across our journey together
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {wedding.vips.map((vip, i) => (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            {gallery.map((photo, i) => (
               <div
                 key={i}
-                className="border-theme-accent/20 rounded-xl border bg-theme-surface p-6 text-center"
+                onClick={() => setLightboxImage(photo)}
+                className={`border-theme-accent/20 group relative cursor-pointer overflow-hidden rounded-xl border shadow-sm transition-all hover:scale-[1.02] hover:shadow-xl ${
+                  photo.aspect === "tall"
+                    ? "row-span-2 aspect-[3/4]"
+                    : photo.aspect === "wide"
+                      ? "col-span-2 aspect-[16/9]"
+                      : "aspect-square"
+                }`}
               >
-                <div className="border-theme-accent/30 mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border bg-theme-surface text-theme-accent">
-                  <Heart className="h-5 w-5" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photo.url}
+                  alt={photo.caption}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-transparent to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <span className="font-serif text-sm italic text-white">{photo.caption}</span>
                 </div>
-                <p className="text-xs font-medium uppercase tracking-wider text-theme-accent">
-                  {vip.group}
-                </p>
-                <h4 className="mt-1 font-serif text-lg font-medium text-theme-text-primary">
-                  {vip.name}
-                </h4>
-                <p className="mt-2 text-xs text-theme-text-muted">{vip.tagline}</p>
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div
+          onClick={() => setLightboxImage(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-md"
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            className="absolute right-6 top-6 text-white/80 hover:text-white"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <div
+            className="max-h-[90vh] max-w-[90vw] text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxImage.url}
+              alt={lightboxImage.caption}
+              className="max-h-[80vh] w-auto rounded-lg object-contain shadow-2xl"
+            />
+            <p className="mt-3 font-serif text-base italic text-amber-200">
+              {lightboxImage.caption}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ----------------------------------------------------------- */}
+      {/* 7. MEET THE VIPS (FAMILY & ENTOURAGE) */}
+      {/* ----------------------------------------------------------- */}
+      {wedding.vips.length > 0 && (
+        <section
+          id="vips"
+          className="border-theme-accent/10 bg-theme-surface/50 border-t px-4 py-20"
+        >
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-12 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
+                Family &amp; Entourage
+              </p>
+              <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
+                Meet the VIPs
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+              {wedding.vips.map((vip, i) => (
+                <div
+                  key={i}
+                  className="border-theme-accent/20 rounded-xl border bg-theme-surface p-6 text-center shadow-sm"
+                >
+                  <div className="border-theme-accent/30 mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border bg-theme-surface text-theme-accent">
+                    <Heart className="h-5 w-5" />
+                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wider text-theme-accent">
+                    {vip.group}
+                  </p>
+                  <h4 className="mt-1 font-serif text-lg font-medium text-theme-text-primary">
+                    {vip.name}
+                  </h4>
+                  <p className="mt-2 text-xs text-theme-text-muted">{vip.tagline}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ----------------------------------------------------------- */}
+      {/* 8. IN-PAGE RSVP SECTION */}
+      {/* ----------------------------------------------------------- */}
+      <section
+        id="rsvp"
+        className="border-theme-accent/15 border-t bg-gradient-to-b from-theme-bg via-[#5C0000]/10 to-theme-bg px-4 py-20"
+      >
+        <div className="mx-auto max-w-2xl">
+          <div className="text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-theme-accent">
+              You&apos;re Invited
+            </p>
+            <h2 className="mt-2 font-serif text-3xl font-light text-theme-text-primary md:text-4xl">
+              Will You Join Us?
+            </h2>
+            <p className="mt-2 text-sm text-theme-text-muted">
+              Please RSVP by January 15, 2027 to help us prepare your royal welcome
+            </p>
+          </div>
+
+          <div className="border-theme-accent/30 bg-theme-surface/90 mt-10 rounded-2xl border p-8 shadow-2xl backdrop-blur-md">
+            {inPageSubmitted ? (
+              <div className="py-8 text-center">
+                <CheckCircle className="mx-auto h-12 w-12 text-emerald-500" />
+                <h3 className="mt-4 font-serif text-2xl text-theme-text-primary">RSVP Received!</h3>
+                <p className="mt-2 text-sm text-theme-text-muted">
+                  Thank you, {inPageGuestName}. We cannot wait to celebrate with you in Udaipur!
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleInPageRsvpSubmit} className="space-y-5 text-xs">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="block font-medium text-theme-text-muted">
+                      Your Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={inPageGuestName}
+                      onChange={(e) => setInPageGuestName(e.target.value)}
+                      placeholder="Amit Kumar"
+                      className="border-theme-accent/30 mt-1.5 w-full rounded-lg border bg-theme-bg px-3.5 py-2.5 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium text-theme-text-muted">
+                      WhatsApp Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={inPageGuestPhone}
+                      onChange={(e) => setInPageGuestPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      className="border-theme-accent/30 mt-1.5 w-full rounded-lg border bg-theme-bg px-3.5 py-2.5 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div>
+                    <label className="block font-medium text-theme-text-muted">Attending? *</label>
+                    <select
+                      value={inPageAttending}
+                      onChange={(e) => setInPageAttending(e.target.value)}
+                      className="border-theme-accent/30 mt-1.5 w-full rounded-lg border bg-theme-bg px-3.5 py-2.5 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                    >
+                      <option value="yes">✅ Joyfully Attending</option>
+                      <option value="no">😢 Unable to Attend</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-medium text-theme-text-muted">Total Guests</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={inPagePartySize}
+                      onChange={(e) => setInPagePartySize(Number(e.target.value))}
+                      className="border-theme-accent/30 mt-1.5 w-full rounded-lg border bg-theme-bg px-3.5 py-2.5 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium text-theme-text-muted">
+                      Meal Preference
+                    </label>
+                    <select
+                      value={inPageMealPref}
+                      onChange={(e) => setInPageMealPref(e.target.value)}
+                      className="border-theme-accent/30 mt-1.5 w-full rounded-lg border bg-theme-bg px-3.5 py-2.5 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                    >
+                      <option value="pure_veg">🥗 Pure Vegetarian</option>
+                      <option value="jain">🌱 Jain</option>
+                      <option value="non_veg">🍗 Non-Vegetarian</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="inPageNeedsStayCheck"
+                    checked={inPageNeedsStay}
+                    onChange={(e) => setInPageNeedsStay(e.target.checked)}
+                    className="border-theme-accent/30 h-4 w-4 rounded bg-theme-bg text-theme-accent focus:ring-0"
+                  />
+                  <label htmlFor="inPageNeedsStayCheck" className="text-theme-text-muted">
+                    Request hotel accommodation in Udaipur (outstation guests)
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block font-medium text-theme-text-muted">
+                    Personal Warm Blessing
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={inPageBlessing}
+                    onChange={(e) => setInPageBlessing(e.target.value)}
+                    placeholder="Share a loving note or blessing for Priya & Rahul..."
+                    className="border-theme-accent/30 mt-1.5 w-full rounded-lg border bg-theme-bg px-3.5 py-2.5 text-theme-text-primary focus:border-theme-accent focus:outline-none"
+                  />
+                </div>
+
+                <TurnstileWidget onSuccess={setInPageTurnstileToken} />
+
+                <button
+                  type="submit"
+                  disabled={inPageIsSubmitting}
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 py-3.5 font-serif text-sm font-semibold tracking-wider text-black shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
+                >
+                  {inPageIsSubmitting ? "Submitting RSVP..." : "Send RSVP with Love 💌"}
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </section>
 
       {/* ----------------------------------------------------------- */}
-      {/* 5. RSVP MODAL */}
+      {/* 9. MODAL RSVP (FOR EVENT CARDS) */}
       {/* ----------------------------------------------------------- */}
       {activeRsvpEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
@@ -471,7 +1011,7 @@ export default function WeddingGuestClient({
                 <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
                 <h3 className="mt-4 font-serif text-2xl text-theme-text-primary">RSVP Received!</h3>
                 <p className="mt-2 text-sm text-theme-text-muted">
-                  Thank you, {guestName}. We cannot wait to celebrate with you!
+                  Thank you, {modalGuestName}. We cannot wait to celebrate with you!
                 </p>
                 <button
                   onClick={() => {
@@ -484,11 +1024,11 @@ export default function WeddingGuestClient({
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleRsvpSubmit}>
+              <form onSubmit={handleModalRsvpSubmit}>
                 <h3 className="font-serif text-2xl font-light text-theme-text-primary">
                   RSVP for {activeRsvpEvent.title}
                 </h3>
-                <p className="mt-1 text-xs text-theme-accent">Please submit by November 25, 2026</p>
+                <p className="mt-1 text-xs text-theme-accent">Please submit by January 15, 2027</p>
 
                 <div className="mt-6 space-y-4 text-xs">
                   <div>
@@ -496,8 +1036,8 @@ export default function WeddingGuestClient({
                     <input
                       type="text"
                       required
-                      value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
+                      value={modalGuestName}
+                      onChange={(e) => setModalGuestName(e.target.value)}
                       placeholder="e.g. Aditi Sharma"
                       className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                     />
@@ -510,9 +1050,9 @@ export default function WeddingGuestClient({
                     <input
                       type="tel"
                       required
-                      value={guestPhone}
-                      onChange={(e) => setGuestPhone(e.target.value)}
-                      placeholder="+91 98765 43210 or +1 415 555 2671"
+                      value={modalGuestPhone}
+                      onChange={(e) => setModalGuestPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
                       className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                     />
                   </div>
@@ -524,8 +1064,8 @@ export default function WeddingGuestClient({
                         type="number"
                         min="1"
                         max="10"
-                        value={partySize}
-                        onChange={(e) => setPartySize(Number(e.target.value))}
+                        value={modalPartySize}
+                        onChange={(e) => setModalPartySize(Number(e.target.value))}
                         className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                       />
                     </div>
@@ -533,8 +1073,8 @@ export default function WeddingGuestClient({
                     <div>
                       <label className="block text-theme-text-muted">Dietary Preference</label>
                       <select
-                        value={mealPref}
-                        onChange={(e) => setMealPref(e.target.value)}
+                        value={modalMealPref}
+                        onChange={(e) => setModalMealPref(e.target.value)}
                         className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                       >
                         <option value="pure_veg">Pure Vegetarian</option>
@@ -547,13 +1087,13 @@ export default function WeddingGuestClient({
                   <div className="flex items-center gap-2 pt-1">
                     <input
                       type="checkbox"
-                      id="needsStayCheck"
-                      checked={needsStay}
-                      onChange={(e) => setNeedsStay(e.target.checked)}
+                      id="modalNeedsStayCheck"
+                      checked={modalNeedsStay}
+                      onChange={(e) => setModalNeedsStay(e.target.checked)}
                       className="border-theme-accent/30 h-4 w-4 rounded bg-theme-bg text-theme-accent focus:ring-0"
                     />
-                    <label htmlFor="needsStayCheck" className="text-theme-text-muted">
-                      Request hotel room allocation (for outstation guests)
+                    <label htmlFor="modalNeedsStayCheck" className="text-theme-text-muted">
+                      Request hotel room allocation (outstation guests)
                     </label>
                   </div>
 
@@ -561,15 +1101,15 @@ export default function WeddingGuestClient({
                     <label className="block text-theme-text-muted">Personal Warm Wishes</label>
                     <textarea
                       rows={3}
-                      value={blessing}
-                      onChange={(e) => setBlessing(e.target.value)}
+                      value={modalBlessing}
+                      onChange={(e) => setModalBlessing(e.target.value)}
                       placeholder="Share a loving note with the couple..."
                       className="border-theme-accent/30 mt-1 w-full rounded-lg border bg-theme-bg px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <TurnstileWidget onSuccess={setTurnstileToken} />
+                <TurnstileWidget onSuccess={setModalTurnstileToken} />
 
                 <div className="mt-6 flex justify-end gap-3">
                   <button
@@ -593,7 +1133,7 @@ export default function WeddingGuestClient({
       )}
 
       {/* ----------------------------------------------------------- */}
-      {/* 6. DIGITAL SHAGUN MODAL */}
+      {/* 10. DIGITAL SHAGUN MODAL */}
       {/* ----------------------------------------------------------- */}
       {isShagunModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
@@ -662,7 +1202,7 @@ export default function WeddingGuestClient({
                   <button
                     onClick={handleCopyUpi}
                     type="button"
-                    className="border-theme-accent/30 bg-theme-canvas inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-medium text-theme-text-primary hover:border-theme-accent"
+                    className="border-theme-accent/30 inline-flex items-center gap-1 rounded-md border bg-theme-bg px-2.5 py-1.5 text-xs font-medium text-theme-text-primary hover:border-theme-accent"
                   >
                     {copiedUpi ? (
                       <>
@@ -693,8 +1233,7 @@ export default function WeddingGuestClient({
 
                 {showQrCode && (
                   <div className="mt-3 flex flex-col items-center justify-center rounded-lg bg-white p-3 text-center">
-                    {/* Standard SVG QR rendering of upi://pay URI */}
-                    {/* eslint-disable-next-line @next/next/no-img-element -- Dynamic external QR SVG code rendered on-demand */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
                         `upi://pay?pa=${wedding.upiVpa}&pn=${encodeURIComponent(
@@ -723,21 +1262,32 @@ export default function WeddingGuestClient({
       )}
 
       {/* ----------------------------------------------------------- */}
-      {/* 7. NEUTRAL MONOCHROME BRAND FOOTER (ZERO BRAND CLASH) */}
+      {/* 11. BRAND & CONCIERGE FOOTER */}
       {/* ----------------------------------------------------------- */}
-      {wedding.showBranding && (
-        <footer className="border-theme-accent/15 border-t py-10 text-center text-xs text-theme-text-muted">
-          <p className="text-theme-text-primary/70 font-serif uppercase tracking-widest">
-            {wedding.bride} &amp; {wedding.groom} • {wedding.venueCity}
+      <footer className="border-theme-accent/15 border-t py-12 text-center text-xs text-theme-text-muted">
+        <p className="text-theme-text-primary/80 font-serif text-lg tracking-widest">
+          {wedding.bride} &amp; {wedding.groom}
+        </p>
+        <p className="mt-1 font-serif text-sm opacity-85">
+          {wedding.date} · {wedding.venueCity}
+        </p>
+        <div className="my-3 text-sm text-theme-accent opacity-75">✦ ॐ ✦</div>
+        {wedding.showBranding && (
+          <p className="text-[11px] tracking-wider opacity-75">
+            Website crafted with love on{" "}
+            <a
+              href="/"
+              className="font-serif font-semibold text-theme-text-primary underline hover:text-theme-accent"
+            >
+              Shadify
+            </a>{" "}
+            · Want one for your big day? Contact Concierge.
           </p>
-          <p className="mt-2 text-[11px] tracking-wider opacity-75">
-            Created with love on{" "}
-            <span className="font-serif font-semibold tracking-normal opacity-90">Shadify</span>
-          </p>
-        </footer>
-      )}
+        )}
+      </footer>
+
       {/* ----------------------------------------------------------- */}
-      {/* 8. MOBILE-FIRST STICKY ACTION BAR */}
+      {/* 12. MOBILE-FIRST STICKY ACTION DOCK */}
       {/* ----------------------------------------------------------- */}
       <nav
         aria-label="Mobile Quick Actions"
@@ -745,7 +1295,7 @@ export default function WeddingGuestClient({
       >
         <div className="flex items-center justify-around gap-2 text-center">
           <a
-            href={wedding.events[0]?.mapUrl || "#itinerary"}
+            href={wedding.events[0]?.mapUrl || "#events"}
             target="_blank"
             rel="noopener noreferrer"
             className="flex flex-1 flex-col items-center justify-center py-1.5 text-xs font-medium text-theme-text-primary transition hover:text-theme-accent"
@@ -753,13 +1303,12 @@ export default function WeddingGuestClient({
             <MapPin className="mb-0.5 h-4 w-4 text-theme-accent" />
             <span>Map</span>
           </a>
-          <button
-            type="button"
-            onClick={() => setActiveRsvpEvent(wedding.events[0] || null)}
+          <a
+            href="#rsvp"
             className="text-theme-on-primary flex-1 rounded-full bg-theme-primary py-2 text-xs font-semibold shadow-md transition active:scale-95"
           >
             RSVP
-          </button>
+          </a>
           <button
             type="button"
             onClick={() => setIsShagunModalOpen(true)}
@@ -783,7 +1332,7 @@ export default function WeddingGuestClient({
                 }
               } else if (typeof navigator !== "undefined" && navigator.clipboard) {
                 await navigator.clipboard.writeText(window.location.href);
-                alert("Wedding celebration link copied to clipboard!");
+                showToast("Wedding celebration link copied to clipboard!");
               }
             }}
             className="flex flex-1 flex-col items-center justify-center py-1.5 text-xs font-medium text-theme-text-primary transition hover:text-theme-accent"
