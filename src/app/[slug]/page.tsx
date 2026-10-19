@@ -238,9 +238,18 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
   const wedding: WeddingDataDto = dbWedding
     ? {
         ...mapWeddingToDto(dbWedding),
+        heroImage: isDemoSlug ? SAMPLE_DEMO_WEDDING.heroImage : undefined,
+        loveStory: isDemoSlug ? SAMPLE_DEMO_WEDDING.loveStory : undefined,
+        gallery: isDemoSlug ? SAMPLE_DEMO_WEDDING.gallery : undefined,
+        showBranding: isDemoSlug ? true : dbWedding.showBranding,
         events:
           dbWedding.events.length > 0
-            ? mapWeddingToDto(dbWedding).events
+            ? mapWeddingToDto(dbWedding).events.map((e, idx) => ({
+                ...e,
+                coverImage:
+                  e.coverImage ||
+                  (isDemoSlug ? SAMPLE_DEMO_WEDDING.events[idx]?.coverImage : undefined),
+              }))
             : SAMPLE_DEMO_WEDDING.events,
         vips:
           dbWedding.vips.length > 0 ? mapWeddingToDto(dbWedding).vips : SAMPLE_DEMO_WEDDING.vips,
