@@ -32,51 +32,171 @@ async function main() {
     },
   });
 
-  // 2. Create Sample Weddings for each of the 4 visual moods
+  // 2. Create Sample Weddings for each of the 4 visual moods with real IST times and full postal addresses
   const demoWeddings = [
     {
       slug: "priya-rahul",
       brideName: "Priya",
       groomName: "Rahul",
-      weddingDate: new Date("2026-12-18"),
+      weddingDate: new Date("2027-02-15T10:30:00+05:30"),
       themeId: "royal-crimson",
       monogramText: "P & R",
       primaryColor: "#8B0000",
       accentColor: "#C9933A",
-      upiVpa: "priyarahul@upi",
+      upiVpa: "priya.rahul@okhdfcbank",
+      events: [
+        {
+          eventType: "mehendi",
+          title: "Mehendi Ceremony",
+          venueName: "Laxmi Niwas Palace Courtyard",
+          venueAddress: "Lake Pichola, Udaipur, Rajasthan 313001",
+          startsAt: new Date("2027-02-13T16:00:00+05:30"),
+          dressCode: "Sunshine Yellow & Festive Boho",
+        },
+        {
+          eventType: "sangeet",
+          title: "Sangeet Night Celebration",
+          venueName: "Fateh Prakash Palace Ballroom",
+          venueAddress: "City Palace Complex, Udaipur, Rajasthan 313001",
+          startsAt: new Date("2027-02-14T19:30:00+05:30"),
+          dressCode: "Indo-Western Glitz & Regal Banarasi",
+        },
+        {
+          eventType: "wedding",
+          title: "Auspicious Vivah & Sacred Pheras",
+          venueName: "Jagmandir Island Palace",
+          venueAddress: "Lake Pichola, Udaipur, Rajasthan 313001",
+          startsAt: new Date("2027-02-15T10:30:00+05:30"),
+          dressCode: "Royal Pastels & Traditional Silk",
+        },
+        {
+          eventType: "reception",
+          title: "The Grand Reception",
+          venueName: "The Leela Palace Under The Stars",
+          venueAddress: "Lake Pichola, Udaipur, Rajasthan 313001",
+          startsAt: new Date("2027-02-15T19:00:00+05:30"),
+          dressCode: "Black Tie & Velvet Royal",
+        },
+      ],
     },
     {
       slug: "ananya-kabir",
       brideName: "Ananya",
       groomName: "Kabir",
-      weddingDate: new Date("2027-01-22"),
+      weddingDate: new Date("2026-11-28T09:30:00+05:30"),
       themeId: "emerald-gold",
       monogramText: "A & K",
       primaryColor: "#0D4D33",
       accentColor: "#D4AF37",
-      upiVpa: "ananyakabir@upi",
+      upiVpa: "ananya.kabir@icici",
+      events: [
+        {
+          eventType: "mehendi",
+          title: "Traditional Haldi & Mehendi",
+          venueName: "Nahargarh Fort Courtyard",
+          venueAddress: "Krishna Nagar, Brahampuri, Jaipur, Rajasthan 302002",
+          startsAt: new Date("2026-11-27T10:00:00+05:30"),
+          dressCode: "Turmeric Yellow & Traditional Gota Patti",
+        },
+        {
+          eventType: "sangeet",
+          title: "Classical Sangeet & Rasleela",
+          venueName: "Rambagh Palace Heritage Pavilion",
+          venueAddress: "Bhawani Singh Rd, Jaipur, Rajasthan 302005",
+          startsAt: new Date("2026-11-27T18:30:00+05:30"),
+          dressCode: "Deep Emerald & Temple Gold Zari",
+        },
+        {
+          eventType: "wedding",
+          title: "Sacred Temple Vivah & Muhurtham",
+          venueName: "City Palace Mandap",
+          venueAddress: "Tulsi Marg, Gangori Bazaar, Jaipur, Rajasthan 302002",
+          startsAt: new Date("2026-11-28T09:30:00+05:30"),
+          dressCode: "Kanjeevaram & Banarasi Silk",
+        },
+        {
+          eventType: "reception",
+          title: "Heritage Royal Feast",
+          venueName: "Jai Mahal Palace Lawns",
+          venueAddress: "Jacob Rd, Civil Lines, Jaipur, Rajasthan 302006",
+          startsAt: new Date("2026-11-28T19:30:00+05:30"),
+          dressCode: "Formal Heritage Attire",
+        },
+      ],
     },
     {
       slug: "diya-arjun",
       brideName: "Diya",
       groomName: "Arjun",
-      weddingDate: new Date("2027-02-14"),
+      weddingDate: new Date("2027-01-18T11:00:00+05:30"),
       themeId: "ivory-minimal",
       monogramText: "D & A",
       primaryColor: "#7A5A40",
       accentColor: "#8F6418",
-      upiVpa: "diyaarjun@upi",
+      upiVpa: "diya.arjun@axisbank",
+      events: [
+        {
+          eventType: "sangeet",
+          title: "Welcome Sundowner & Acoustic Evening",
+          venueName: "The Palm Grove Farmhouse",
+          venueAddress: "Kihim Beach Road, Alibaug, Maharashtra 402201",
+          startsAt: new Date("2027-01-17T16:30:00+05:30"),
+          dressCode: "Ivory, Champagne & Natural Linen",
+        },
+        {
+          eventType: "wedding",
+          title: "Intimate Coastal Vivah & Vows",
+          venueName: "Radisson Blu Coastal Lawn",
+          venueAddress: "Gondhalpada, Veshvi, Alibaug, Maharashtra 402209",
+          startsAt: new Date("2027-01-18T11:00:00+05:30"),
+          dressCode: "Subtle Pastels & Raw Silk",
+        },
+        {
+          eventType: "reception",
+          title: "Starlit Farmhouse Dinner",
+          venueName: "Bodhi Villa Courtyard",
+          venueAddress: "Awas Beach Road, Alibaug, Maharashtra 402201",
+          startsAt: new Date("2027-01-18T19:00:00+05:30"),
+          dressCode: "Casual Chic & Editorial Neutrals",
+        },
+      ],
     },
     {
       slug: "zoya-farhan",
       brideName: "Zoya",
       groomName: "Farhan",
-      weddingDate: new Date("2027-03-05"),
+      weddingDate: new Date("2027-03-06T11:30:00+05:30"),
       themeId: "sunset-dusk",
       monogramText: "Z & F",
       primaryColor: "#D46A7E",
       accentColor: "#E29578",
-      upiVpa: "zoyafarhan@upi",
+      upiVpa: "zoya.farhan@kotak",
+      events: [
+        {
+          eventType: "mehendi",
+          title: "Sunset Beach Mehendi & Cocktails",
+          venueName: "Rockpool Pavilion, W Goa",
+          venueAddress: "Vagator Beach, Bardez, Goa 403509",
+          startsAt: new Date("2027-03-05T15:30:00+05:30"),
+          dressCode: "Sunset Coral & Tropical Florals",
+        },
+        {
+          eventType: "sangeet",
+          title: "Sundowner Sangeet & Beats",
+          venueName: "Bayview Lawns",
+          venueAddress: "Ozran Beach Road, Small Vagator, Anjuna, Goa 403509",
+          startsAt: new Date("2027-03-05T18:30:00+05:30"),
+          dressCode: "Festive Shimmer & Indo-Western",
+        },
+        {
+          eventType: "wedding",
+          title: "Oceanfront Nikah & Celebrations",
+          venueName: "Grand Hyatt Bayview",
+          venueAddress: "PO Goa University, Bambolim, Goa 403206",
+          startsAt: new Date("2027-03-06T11:30:00+05:30"),
+          dressCode: "Ivory, Rose Gold & Festive Pastels",
+        },
+      ],
     },
   ];
 
@@ -84,9 +204,14 @@ async function main() {
     const wedding = await prisma.wedding.upsert({
       where: { slug: w.slug },
       update: {
+        brideName: w.brideName,
+        groomName: w.groomName,
+        weddingDate: w.weddingDate,
         themeId: w.themeId,
         primaryColor: w.primaryColor,
         accentColor: w.accentColor,
+        monogramText: w.monogramText,
+        upiVpa: w.upiVpa,
       },
       create: {
         slug: w.slug,
@@ -116,26 +241,29 @@ async function main() {
             maxPhotos: 500,
           },
         },
-        events: {
-          create: [
-            {
-              eventType: "sangeet",
-              title: `${w.brideName} & ${w.groomName}'s Sangeet Celebration`,
-              venueName: "Palatial Heritage Pavilion",
-              startsAt: new Date(w.weddingDate.getTime() - 24 * 60 * 60 * 1000),
-            },
-            {
-              eventType: "wedding",
-              title: `${w.brideName} & ${w.groomName}'s Auspicious Vivah`,
-              venueName: "Royal Courtyard Mandap",
-              startsAt: w.weddingDate,
-            },
-          ],
-        },
       },
     });
+
+    // Refresh events cleanly for each demo wedding
+    await prisma.event.deleteMany({ where: { weddingId: wedding.id } });
+    let idx = 0;
+    for (const evt of w.events) {
+      await prisma.event.create({
+        data: {
+          weddingId: wedding.id,
+          eventType: evt.eventType,
+          title: evt.title,
+          venueName: evt.venueName,
+          venueAddress: evt.venueAddress,
+          startsAt: evt.startsAt,
+          dressCode: evt.dressCode,
+          sortOrder: idx++,
+        },
+      });
+    }
+
     console.log(
-      `✅ Seeded wedding: ${wedding.brideName} & ${wedding.groomName} (/${wedding.slug}) [${w.themeId}]`,
+      `✅ Seeded wedding with ${w.events.length} events: ${wedding.brideName} & ${wedding.groomName} (/${wedding.slug}) [${w.themeId}]`,
     );
   }
 

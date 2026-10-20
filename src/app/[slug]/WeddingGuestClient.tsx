@@ -293,7 +293,6 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
       <EventsSection
         events={wedding.events}
         onSelectEventRsvp={(event) => setActiveRsvpEvent(event)}
-        onOpenLiveStream={() => setIsLiveStreamOpen(true)}
       />
 
       {/* 6. Masonry Photo Gallery with Radix Dialog Lightbox */}
@@ -306,6 +305,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
       <RsvpSection
         weddingSlug={wedding.slug}
         defaultEventId={wedding.events[0]?.id}
+        events={wedding.events}
         onToast={showToast}
       />
 

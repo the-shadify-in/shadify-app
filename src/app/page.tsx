@@ -21,17 +21,32 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Celebrate with Shadify — The Luxury Indian Wedding Celebration Suite",
+  title: "Celebrate with Shadify — Digital Wedding Invitations & RSVPs",
   description:
-    "Celebrate with Shadify. Every ceremony, Google Maps venue gate routing, 1-tap family RSVP with diet preferences, and direct 0%-fee UPI shagun in one royal link. Handcrafted by our WhatsApp concierge.",
+    "Celebrate with Shadify. Every ceremony, Google Maps venue gate routing, 1-tap family RSVP with diet preferences, and direct 0%-fee UPI shagun in one link. Handcrafted by our WhatsApp concierge within 24 hours.",
   openGraph: {
-    title: "Celebrate with Shadify — Luxury Digital Wedding Invitations & RSVPs",
+    title: "Celebrate with Shadify — Digital Wedding Invitations & RSVPs",
     description:
-      "Celebrate with Shadify. Every ceremony, direction, family RSVP, and direct UPI shagun in one royal link. No app download, 5-year hosting.",
+      "Every ceremony, direction, family RSVP, and direct UPI shagun in one link. No app download, 5-year hosting included per terms.",
     url: "https://shadify.in",
     siteName: "Shadify",
     locale: "en_IN",
     type: "website",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Celebrate with Shadify — Digital Wedding Invitations & RSVPs",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Celebrate with Shadify — Digital Wedding Invitations & RSVPs",
+    description:
+      "Every ceremony, direction, family RSVP, and direct UPI shagun in one link. Handcrafted for your family.",
+    images: ["/og-image.jpg"],
   },
 };
 
@@ -99,32 +114,36 @@ const FAQS = [
   {
     question: "Why choose Shadify over a traditional WhatsApp PDF invitation?",
     answer:
-      "A PDF is a flat, static picture. It cannot tally RSVPs, cannot launch 1-tap Google Maps navigation to the exact banquet gate, cannot accept direct UPI shagun into your bank account, and cannot be updated if a ceremony muhurat changes. Shadify replaces the chaos of 12 forwarded PDFs with a single royal celebration link that stays always up to date.",
+      "A PDF is a flat, static picture. It cannot tally RSVPs, cannot launch 1-tap Google Maps navigation to the exact banquet gate, cannot accept direct UPI shagun into your bank account, and cannot be updated if a ceremony muhurat changes. Shadify replaces the chaos of scattered PDFs with a single celebration link that stays always up to date.",
   },
   {
     question: "How do wedding gifts and shagun work?",
     answer:
-      "Your wedding page displays your verified UPI VPA and an interactive QR code. When guests send blessings, 100% of the gift transfers directly from their bank account to yours. Shadify charges a 0% platform fee and never holds, touches, or delays your shagun.",
+      "Your wedding page displays your UPI ID and an interactive QR code. When guests send blessings, 100% of the gift transfers directly from their bank account to yours. Shadify charges a 0% platform fee and never holds, touches, or delays your shagun.",
   },
   {
     question: "What if a ceremony timing or hall changes last minute?",
     answer:
-      "Simply message our WhatsApp concierge. We update your schedule immediately, so every relative and guest sees the correct time without needing you to print corrections or re-forward messages in family groups.",
+      "Simply message our WhatsApp concierge. We update your schedule for you, usually within 24 hours, so every relative and guest sees the correct time without needing you to print corrections or re-forward messages in family groups.",
   },
   {
     question: "Is our family's wedding information private?",
     answer:
-      "Completely. Your wedding page is unindexed by search engines like Google and Bing. Only guests with your private link can view it. We never sell, harvest, or spam your family contacts or phone numbers.",
+      "Private by default: your wedding page is not listed on search engines (noindex). Only guests who receive your direct link can open it. We never sell, harvest, or spam your family contacts or phone numbers.",
   },
   {
     question: "How long does setup take?",
     answer:
-      "Just forward your wedding card, photos, and schedule to our WhatsApp concierge. Our team designs, customizes, and polishes your royal preview within 24 to 48 hours. You approve every detail before sharing.",
+      "Within 24 hours. Just forward your wedding card, photos, and schedule on WhatsApp. Our concierge designs and polishes your preview within 24 hours. You approve every detail before sharing.",
   },
   {
     question: "How long does our wedding page stay active online?",
     answer:
-      "Every plan includes guaranteed 5-year cloud hosting. Your wedding photos, ceremony timeline, and memories remain live and easily accessible for years after your celebrations.",
+      "Included for 5 years, per our terms. Your web-sized photos and ceremony timeline stay hosted for 5 years. Original high-resolution master uploads are accessible for 90 days (with optional extended archiving).",
+  },
+  {
+    question: "Do plan prices include taxes?",
+    answer: "All plan fees exclude 18% GST, which will be itemized clearly during payment.",
   },
 ];
 
@@ -135,8 +154,10 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#FFFBF5] font-sans text-[#1F1A2E] antialiased selection:bg-[#D6246E]/15 selection:text-[#1F1A2E]">
       {/* Top Banner */}
       <div className="border-b border-[#EADDCF] bg-[#FFF1F6] px-4 py-2.5 text-center text-xs font-medium tracking-wide text-[#1F1A2E]">
-        <span className="font-semibold text-[#D6246E]">✨ Wedding Season Onboarding:</span>{" "}
-        <span>Reserve your concierge design slot for upcoming dates.</span>{" "}
+        <span className="font-semibold text-[#D6246E]">✨ Concierge Onboarding:</span>{" "}
+        <span>
+          Share your wedding details on WhatsApp to receive your polished preview within 24 hours.
+        </span>{" "}
         <a
           href={defaultWhatsAppUrl}
           target="_blank"
@@ -159,7 +180,7 @@ export default function HomePage() {
                 Shadify
               </span>
               <span className="ml-1.5 font-cinzel text-[10px] font-bold uppercase tracking-[0.2em] text-[#D6246E]">
-                Luxury
+                Celebration
               </span>
             </div>
           </Link>
@@ -210,11 +231,11 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-12">
             <div className="lg:col-span-7">
-              {/* Luxury Eyebrow Badge */}
+              {/* Eyebrow Badge */}
               <div className="inline-flex items-center gap-2.5 rounded-full border border-[#D6246E]/20 bg-white px-4 py-1.5 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5 text-[#D6246E]" />
                 <span className="font-cinzel text-xs font-semibold uppercase tracking-[0.18em] text-[#A81755]">
-                  Royal Wedding Celebration Suite
+                  Digital Wedding Celebration Suite
                 </span>
               </div>
 
@@ -222,16 +243,16 @@ export default function HomePage() {
               <h1 className="mt-6 font-serif text-4xl tracking-tight text-[#1F1A2E] sm:text-6xl lg:text-[4.25rem] lg:leading-[1.12]">
                 Celebrate with Shadify.
                 <span className="mt-3 block bg-gradient-to-r from-[#D6246E] via-[#A81755] to-[#D6246E] bg-clip-text font-serif text-transparent">
-                  Every Ceremony, Direction &amp; Blessing in One Royal Link.
+                  Every Ceremony, Direction &amp; Blessing in One Link.
                 </span>
               </h1>
 
               {/* Subheadline */}
               <p className="mt-6 max-w-2xl text-base leading-relaxed text-[#1F1A2E]/80 sm:text-lg sm:leading-8">
-                Replace frantic calls, scattered WhatsApp PDFs, and lost caterer counts with a regal
-                digital celebration. Animated wax-seal reveal, 1-tap Google Maps venue navigation,
-                sub-event family RSVPs, and 0%-fee direct bank UPI shagun — handcrafted for you by
-                our WhatsApp concierge.
+                Replace frantic calls, scattered WhatsApp PDFs, and lost caterer counts with an
+                elegant digital celebration. Animated wax-seal reveal, 1-tap Google Maps venue
+                navigation, sub-event family RSVPs, and 0%-fee direct bank UPI shagun — handcrafted
+                for you by our WhatsApp concierge within 24 hours.
               </p>
 
               {/* CTAs */}
@@ -266,7 +287,7 @@ export default function HomePage() {
                   <Check className="h-4 w-4 text-[#0E9F8E]" /> Direct UPI gifts (0% fee)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-[#0E9F8E]" /> 5-year cloud preservation
+                  <Check className="h-4 w-4 text-[#0E9F8E]" /> 5-year hosting included per terms
                 </span>
               </div>
             </div>
@@ -462,7 +483,7 @@ export default function HomePage() {
               </h3>
               <p className="mt-3 text-sm leading-relaxed text-[#1F1A2E]/75">
                 We craft your bespoke color palette, family names in native scripts (Devanagari,
-                Gurmukhi, etc.), and personalized monogram within 24 hours.
+                Tamil, Telugu, Gujarati), and personalized monogram within 24 hours.
               </p>
             </div>
 
@@ -581,9 +602,6 @@ export default function HomePage() {
                   <span className="shadow-2xs rounded-full border border-[#EADDCF] bg-white px-3 py-1 text-[#1F1A2E]">
                     ગુજરાતી (Gujarati)
                   </span>
-                  <span className="shadow-2xs rounded-full border border-[#EADDCF] bg-white px-3 py-1 text-[#1F1A2E]">
-                    ਪੰਜਾਬੀ (Gurmukhi)
-                  </span>
                 </div>
               </div>
 
@@ -701,16 +719,16 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3 className="font-serif text-xl font-bold text-[#1F1A2E]">
-                      Elders-First Mobile Guarantee
+                      Thoughtful, Elder-Friendly Mobile Design
                     </h3>
                     <p className="text-xs text-[#1F1A2E]/60">
-                      Tested on budget Android devices and iOS Safari
+                      Designed for budget Android phones and iOS Safari
                     </p>
                   </div>
                 </div>
 
                 <p className="mt-6 text-sm leading-relaxed text-[#1F1A2E]/80 sm:text-base">
-                  We verify our wedding suites across both flagship iPhones and budget Android
+                  We design our celebration suites for both flagship iPhones and budget Android
                   phones commonly held by elders. The typography has high contrast, buttons have
                   large touch targets, and pages load quickly even on overloaded banquet Wi-Fi.
                 </p>
@@ -782,11 +800,11 @@ export default function HomePage() {
                 <MessageCircle className="h-6 w-6" />
               </div>
               <h3 className="mt-5 font-serif text-lg font-bold text-[#1F1A2E]">
-                Real-Time WhatsApp Updates
+                WhatsApp Concierge Updates
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75 sm:text-sm">
-                Need to adjust a muhurat time or venue hall? Message our concierge and your live
-                suite updates instantly.
+                Need to adjust a muhurat time or venue hall? Message our concierge and we update it
+                for you, usually within 24 hours.
               </p>
             </div>
 
@@ -798,8 +816,8 @@ export default function HomePage() {
                 Gifts Directly to Your UPI
               </h3>
               <p className="mt-2 text-xs leading-relaxed text-[#1F1A2E]/75 sm:text-sm">
-                Blessings arrive straight in your family bank account via verified UPI QR code with
-                0% platform fee.
+                Blessings arrive straight in your family bank account via your direct UPI QR code or
+                UPI ID with 0% platform fee.
               </p>
             </div>
           </div>
@@ -817,8 +835,8 @@ export default function HomePage() {
               One simple price. 5-year hosting included.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-[#1F1A2E]/75 sm:text-lg">
-              No monthly subscription fees. Guaranteed 5-year cloud preservation for your wedding
-              memories.
+              No monthly subscription fees. Included for 5 years per our terms (web-sized photos for
+              5 years; originals for 90 days).
             </p>
           </div>
 
@@ -944,6 +962,10 @@ export default function HomePage() {
               </a>
             </div>
           </div>
+
+          <p className="mt-8 text-center text-xs text-[#1F1A2E]/60">
+            *All prices exclude 18% GST. Full payment upon your satisfaction before sharing.
+          </p>
         </div>
       </section>
 
@@ -1064,8 +1086,8 @@ export default function HomePage() {
           </div>
 
           <p className="mt-8 text-xs font-medium text-[#FAF7F2]/60">
-            One-time payment &bull; Guaranteed 5-year cloud preservation &bull; No credit card
-            needed to preview
+            One-time payment &bull; Included for 5 years per terms &bull; No credit card needed to
+            preview
           </p>
         </div>
       </section>

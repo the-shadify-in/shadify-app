@@ -6,13 +6,19 @@
 const envWhatsapp = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP?.replace(/\D/g, "");
 const envWhatsappDisplay = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY;
 
+if (!envWhatsapp || envWhatsapp === "918000000000") {
+  throw new Error(
+    "NEXT_PUBLIC_CONCIERGE_WHATSAPP must be configured with a valid business phone number and cannot be the placeholder 918000000000.",
+  );
+}
+
 export const SITE_CONFIG = {
   name: "Shadify",
-  legalEntity: "Shadify Technologies Pvt. Ltd.",
+  legalEntity: "Shadify",
   domain: process.env.NEXT_PUBLIC_APP_DOMAIN || "shadify.in",
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "concierge@shadify.in",
-  whatsappNumber: envWhatsapp || "918000000000",
-  whatsappDisplay: envWhatsappDisplay || "+91 (Concierge Line)",
+  whatsappNumber: envWhatsapp,
+  whatsappDisplay: envWhatsappDisplay || `+${envWhatsapp}`,
   address: "Indiranagar, Bengaluru, Karnataka 560038",
 };
 

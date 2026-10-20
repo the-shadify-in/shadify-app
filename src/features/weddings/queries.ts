@@ -78,8 +78,30 @@ export function mapWeddingToDto(
             address: e.venueAddress || "",
             mapUrl:
               e.venueMapUrl ||
-              `https://maps.google.com/?q=${encodeURIComponent(`${e.venueName} ${e.venueAddress || ""}`)}`,
+              `https://maps.google.com/?q=${encodeURIComponent([e.venueName, e.venueAddress].filter(Boolean).join(", "))}`,
             dressCode: e.dressCode || "Festive Traditional",
+            coverImage: (() => {
+              const t = (e.eventType + " " + e.title).toLowerCase();
+              if (t.includes("mehendi") || t.includes("haldi")) return "/demo/mehendi.jpg";
+              if (
+                t.includes("sangeet") ||
+                t.includes("dance") ||
+                t.includes("music") ||
+                t.includes("sundowner")
+              )
+                return "/demo/sangeet.jpg";
+              if (
+                t.includes("wedding") ||
+                t.includes("vivah") ||
+                t.includes("phera") ||
+                t.includes("nikah") ||
+                t.includes("muhurtham")
+              )
+                return "/demo/mandap.jpg";
+              if (t.includes("reception") || t.includes("feast") || t.includes("dinner"))
+                return "/demo/hero.jpg";
+              return "/demo/mandap.jpg";
+            })(),
             startTimeIso: new Date(e.startsAt).toISOString(),
             endTimeIso: e.endsAt ? new Date(e.endsAt).toISOString() : undefined,
           }))

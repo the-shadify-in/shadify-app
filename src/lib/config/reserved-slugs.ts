@@ -51,6 +51,7 @@ export const RESERVED_SLUGS_LIST = [
   "null",
   "official",
   "offline",
+  "og-image",
   "p",
   "partner",
   "partners",

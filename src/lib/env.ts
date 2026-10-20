@@ -38,6 +38,14 @@ const envSchema = z.object({
 
   // Public Client Variables
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+  NEXT_PUBLIC_CONCIERGE_WHATSAPP: z
+    .string()
+    .min(10, "NEXT_PUBLIC_CONCIERGE_WHATSAPP must be a valid 10+ digit phone number")
+    .refine(
+      (val) => val.replace(/\D/g, "") !== "918000000000",
+      "NEXT_PUBLIC_CONCIERGE_WHATSAPP cannot be the placeholder 918000000000. Set a real business WhatsApp number.",
+    ),
+  NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY: z.string().optional(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
 });
@@ -46,15 +54,10 @@ function validateEnv() {
   const parsed = envSchema.safeParse(process.env);
 
   if (!parsed.success) {
-    console.error("❌ Invalid environment variables detected at startup:");
+    console.error("❌ Invalid environment variables detected:");
     const issues = parsed.error.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`);
     console.error(issues.join("\n"));
-    if (
-      process.env.NODE_ENV === "production" &&
-      process.env.NEXT_PHASE !== "phase-production-build"
-    ) {
-      throw new Error(`Invalid environment configuration:\n${issues.join("\n")}`);
-    }
+    throw new Error(`Invalid environment configuration:\n${issues.join("\n")}`);
   }
 
   return parsed.data ?? (process.env as unknown as z.infer<typeof envSchema>);

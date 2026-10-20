@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { MapPin, Video } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,10 +11,9 @@ import type { WeddingEventDto } from "@/features/weddings";
 interface EventsSectionProps {
   events: WeddingEventDto[];
   onSelectEventRsvp: (event: WeddingEventDto) => void;
-  onOpenLiveStream?: () => void;
 }
 
-export function EventsSection({ events, onSelectEventRsvp, onOpenLiveStream }: EventsSectionProps) {
+export function EventsSection({ events, onSelectEventRsvp }: EventsSectionProps) {
   // Check if an event is currently "Happening Now"
   const isHappeningNow = (event: WeddingEventDto) => {
     if (!event.startTimeIso) return false;
@@ -46,11 +45,6 @@ export function EventsSection({ events, onSelectEventRsvp, onOpenLiveStream }: E
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {events.map((event, idx) => {
             const active = isHappeningNow(event);
-            const isWeddingEvent =
-              event.tag === "wedding" ||
-              event.title.toLowerCase().includes("vivah") ||
-              event.title.toLowerCase().includes("wedding") ||
-              idx === 1;
 
             return (
               <Card
@@ -81,17 +75,6 @@ export function EventsSection({ events, onSelectEventRsvp, onOpenLiveStream }: E
                       >
                         Ceremony {idx + 1}
                       </Badge>
-                    )}
-
-                    {isWeddingEvent && onOpenLiveStream && (
-                      <button
-                        type="button"
-                        onClick={onOpenLiveStream}
-                        className="flex items-center gap-1 rounded-full bg-red-600/90 px-2.5 py-0.5 text-[10px] font-medium tracking-wide text-white shadow-md transition hover:scale-105 active:scale-95"
-                      >
-                        <Video className="h-3 w-3 animate-pulse" />
-                        <span>LIVE STREAM</span>
-                      </button>
                     )}
                   </div>
 

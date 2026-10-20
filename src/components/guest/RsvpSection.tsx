@@ -6,13 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { TurnstileWidget } from "@/components/ui/turnstile";
 
+import type { WeddingEventDto } from "@/features/weddings";
+
 interface RsvpSectionProps {
   weddingSlug: string;
   defaultEventId?: string;
+  events?: WeddingEventDto[];
   onToast: (msg: string) => void;
 }
 
-export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectionProps) {
+export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: RsvpSectionProps) {
+  const [selectedEventId, setSelectedEventId] = useState(
+    defaultEventId || events?.[0]?.id || "main-wedding",
+  );
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [attending, setAttending] = useState("yes");
@@ -41,7 +47,7 @@ export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectio
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           weddingSlug,
-          eventId: defaultEventId || "main-wedding",
+          eventId: selectedEventId || defaultEventId || "main-wedding",
           guestName: guestName.trim(),
           guestPhone: guestPhone.trim(),
           partySize: Number(partySize),
@@ -201,6 +207,40 @@ export function RsvpSection({ weddingSlug, defaultEventId, onToast }: RsvpSectio
               {/* Party Size & Dietary Preferences if Attending */}
               {attending === "yes" && (
                 <>
+                  {events && events.length > 0 && (
+                    <div>
+                      <label
+                        htmlFor="rsvp-event-select"
+                        className="mb-2 block text-xs font-semibold uppercase tracking-widest text-theme-accent"
+                      >
+                        Ceremony / Event Attending *
+                      </label>
+                      <select
+                        id="rsvp-event-select"
+                        value={selectedEventId}
+                        onChange={(e) => setSelectedEventId(e.target.value)}
+                        style={{
+                          color: "var(--theme-text-primary)",
+                          backgroundColor: "var(--theme-bg)",
+                        }}
+                        className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      >
+                        {events.map((evt) => (
+                          <option
+                            key={evt.id}
+                            value={evt.id}
+                            style={{
+                              backgroundColor: "var(--theme-surface, #1A0D14)",
+                              color: "var(--theme-text-primary, #FDF8F0)",
+                            }}
+                          >
+                            {evt.title} ({evt.date} • {evt.time})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div>
                       <label
