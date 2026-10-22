@@ -42,7 +42,15 @@ export function EventsSection({ events, onSelectEventRsvp }: EventsSectionProps)
         </div>
 
         {/* Ceremony Itinerary Cards using Shadcn Card */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          className={`mx-auto grid justify-center gap-8 ${
+            events.length === 1
+              ? "max-w-md grid-cols-1"
+              : events.length === 2
+                ? "max-w-4xl grid-cols-1 md:grid-cols-2"
+                : "max-w-6xl grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          }`}
+        >
           {events.map((event, idx) => {
             const active = isHappeningNow(event);
 

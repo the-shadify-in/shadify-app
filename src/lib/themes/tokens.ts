@@ -8,9 +8,10 @@ import {
   type ContrastReport,
   FOOTER_OPACITY,
 } from "./contrast";
+import { WeddingAudioConfigSchema, type WeddingAudioConfig } from "@/lib/audio/types";
 
-export { validateContrast, contrast, blend, FOOTER_OPACITY };
-export type { ThemeColors, ContrastReport };
+export { validateContrast, contrast, blend, FOOTER_OPACITY, WeddingAudioConfigSchema };
+export type { ThemeColors, ContrastReport, WeddingAudioConfig };
 
 /**
  * HEX Color validator (e.g. #FFFFFF or #FFF)
@@ -85,6 +86,10 @@ export const ThemeConfigSchema = z.object({
     showShagun: z.boolean().default(true),
     showGallery: z.boolean().default(true),
   }),
+  audio: WeddingAudioConfigSchema.optional().default({
+    enabled: false,
+    mode: "none",
+  }),
 });
 
 export type ThemeConfig = z.infer<typeof ThemeConfigSchema>;
@@ -129,6 +134,10 @@ export const THEME_PRESETS: ThemePresetsRecord = {
       showShagun: true,
       showGallery: true,
     },
+    audio: {
+      enabled: false,
+      mode: "none",
+    },
   },
 
   "emerald-gold": {
@@ -156,6 +165,10 @@ export const THEME_PRESETS: ThemePresetsRecord = {
       showVips: true,
       showShagun: true,
       showGallery: true,
+    },
+    audio: {
+      enabled: false,
+      mode: "none",
     },
   },
 
@@ -185,6 +198,10 @@ export const THEME_PRESETS: ThemePresetsRecord = {
       showShagun: true,
       showGallery: true,
     },
+    audio: {
+      enabled: false,
+      mode: "none",
+    },
   },
 
   "sunset-day": {
@@ -212,6 +229,10 @@ export const THEME_PRESETS: ThemePresetsRecord = {
       showVips: true,
       showShagun: true,
       showGallery: true,
+    },
+    audio: {
+      enabled: false,
+      mode: "none",
     },
   },
 
@@ -241,6 +262,10 @@ export const THEME_PRESETS: ThemePresetsRecord = {
       showShagun: true,
       showGallery: true,
     },
+    audio: {
+      enabled: false,
+      mode: "none",
+    },
   },
 
   "sunset-pastel": {
@@ -268,6 +293,10 @@ export const THEME_PRESETS: ThemePresetsRecord = {
       showVips: true,
       showShagun: true,
       showGallery: true,
+    },
+    audio: {
+      enabled: false,
+      mode: "none",
     },
   },
 };
@@ -359,6 +388,7 @@ export function resolveTheme(
       ...basePreset.sections,
       ...(parsed.data.sections || {}),
     },
+    audio: parsed.data.audio || basePreset.audio || { enabled: false, mode: "none" },
   };
 
   const report = validateContrast(merged.palette);

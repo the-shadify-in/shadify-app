@@ -12,6 +12,7 @@ interface EnvelopeRevealProps {
   slug: string;
   waxSealColor?: string;
   envelopeBg?: string;
+  invocation?: string;
   onOpened: () => void;
 }
 
@@ -24,6 +25,7 @@ export function EnvelopeReveal({
   slug,
   waxSealColor,
   envelopeBg,
+  invocation,
   onOpened,
 }: EnvelopeRevealProps) {
   const [isOpening, setIsOpening] = useState(false);
@@ -65,7 +67,7 @@ export function EnvelopeReveal({
 
         {/* Traditional Auspicious Invocation */}
         <p className="font-serif text-xs font-medium uppercase tracking-[0.35em] text-[#D4AF37]">
-          ॥ श्री गणेशाय नमः ॥
+          {invocation || "॥ श्री गणेशाय नमः ॥"}
         </p>
 
         {/* Ornate Monogram Medallion */}
@@ -97,13 +99,14 @@ export function EnvelopeReveal({
           <button
             type="button"
             onClick={handleOpen}
+            aria-label="Open Invitation"
             style={{
               backgroundColor: waxSealColor || "var(--theme-wax-seal, #8B0000)",
             }}
             className="group relative flex items-center gap-3 rounded-full border-2 border-[#D4AF37] px-8 py-3.5 font-serif text-xs font-semibold uppercase tracking-[0.2em] text-[#FDF8F0] shadow-[0_8px_30px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-105 active:scale-95"
           >
             <Sparkles className="h-4 w-4 text-[#D4AF37] transition-transform duration-500 group-hover:rotate-45" />
-            <span>UNSEAL INVITATION</span>
+            <span>OPEN INVITATION</span>
           </button>
 
           <button
@@ -111,7 +114,7 @@ export function EnvelopeReveal({
             onClick={handleOpen}
             className="mt-4 text-xs uppercase tracking-widest text-[#E8B96B]/60 underline transition-colors hover:text-[#D4AF37]"
           >
-            Skip Reveal (View Details)
+            Skip to Details
           </button>
         </div>
       </div>

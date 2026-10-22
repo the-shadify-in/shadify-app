@@ -29,7 +29,17 @@ export function VipSection({ vips }: VipSectionProps) {
         </div>
 
         {/* VIP Tribute Cards using Shadcn Card */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div
+          className={`mx-auto grid justify-center gap-8 ${
+            vips.length === 1
+              ? "max-w-md grid-cols-1"
+              : vips.length === 2
+                ? "max-w-3xl grid-cols-1 sm:grid-cols-2"
+                : vips.length === 4
+                  ? "max-w-4xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-2"
+                  : "max-w-6xl grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          }`}
+        >
           {vips.map((vip, idx) => (
             <Card
               key={idx}

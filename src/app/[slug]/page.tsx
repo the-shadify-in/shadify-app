@@ -604,19 +604,43 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
   const fallbackDemo = (demoData || DEMO_WEDDINGS["priya-rahul"]) as DemoWeddingRecord;
 
   // Format wedding data using the queries DTO mapper or fallback demo
-  const wedding: WeddingDataDto = dbWedding
+  // Check section toggles configured on the wedding
+  const themeSections = (dbWedding?.themeConfig as Record<string, unknown> | null)?.sections as
+    Record<string, boolean> | undefined;
+  const allowLoveStory =
+    isDemoSlug || (themeSections ? themeSections.showLoveStory !== false : true);
+  const allowGallery = isDemoSlug || (themeSections ? themeSections.showGallery !== false : true);
+  const allowVips = isDemoSlug || (themeSections ? themeSections.showVips !== false : true);
+  const dbDto = dbWedding ? mapWeddingToDto(dbWedding) : null;
+
+  const wedding: WeddingDataDto = dbDto
     ? {
-        ...mapWeddingToDto(dbWedding),
-        venueCity: fallbackDemo.venueCity,
+        ...dbDto,
+        isDemo: isDemoSlug,
+        venueCity: dbDto.venueCity || fallbackDemo.venueCity,
         heroImage: fallbackDemo.heroImage,
-        loveStory: fallbackDemo.loveStory,
-        gallery: fallbackDemo.gallery,
-        showBranding: isDemoSlug ? true : dbWedding.showBranding,
-        events:
-          dbWedding.events.length > 0 ? mapWeddingToDto(dbWedding).events : fallbackDemo.events,
-        vips: fallbackDemo.vips,
+        loveStory: allowLoveStory
+          ? dbDto.loveStory || (isDemoSlug ? fallbackDemo.loveStory : undefined)
+          : undefined,
+        gallery: allowGallery
+          ? dbDto.gallery && dbDto.gallery.length > 0
+            ? dbDto.gallery
+            : isDemoSlug
+              ? fallbackDemo.gallery
+              : []
+          : [],
+        showBranding: isDemoSlug ? true : dbDto.showBranding,
+        events: dbDto.events.length > 0 ? dbDto.events : fallbackDemo.events,
+        vips: allowVips
+          ? dbDto.vips && dbDto.vips.length > 0
+            ? dbDto.vips
+            : fallbackDemo.vips
+          : [],
       }
-    : fallbackDemo;
+    : {
+        ...fallbackDemo,
+        isDemo: true,
+      };
 
   // Resolve the official published wedding theme (preset + verified overrides)
   const presetId = (dbWedding?.themeId as PresetId) || fallbackDemo.themeId || "royal-crimson";

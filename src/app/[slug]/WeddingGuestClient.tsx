@@ -259,6 +259,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
           slug={wedding.slug}
           waxSealColor={c.waxSeal}
           envelopeBg={c.envelopeBg}
+          invocation={wedding.invocation}
           onOpened={() => setIsEnvelopeOpened(true)}
         />
       )}
@@ -272,6 +273,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
         showVips={wedding.vips.length > 0}
         showShagun={true}
         isAfterWedding={isAfterWedding}
+        isDemo={wedding.isDemo}
         onOpenShagun={() => setIsShagunModalOpen(true)}
         onOpenAsk={() => setIsAskDrawerOpen(true)}
         onToggleWeddingMode={() => setIsAfterWedding(!isAfterWedding)}
@@ -339,8 +341,8 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
         groom={wedding.groom}
       />
 
-      {/* 12. Floating Shehnai Traditional Flute Music Player */}
-      <MusicToggle />
+      {/* 12. Floating Auspicious Traditional Instrumentals Music Player */}
+      <MusicToggle audio={theme.audio} isEnvelopeOpened={isEnvelopeOpened} />
 
       {/* 13. Auspicious Neutral Footer */}
       <GuestFooter

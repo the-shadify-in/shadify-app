@@ -64,7 +64,7 @@ export function DigitalShagunModal({
           </div>
 
           <p className="font-serif text-xs font-semibold uppercase tracking-[0.35em] text-theme-accent">
-            ॥ शुभ शगुन ॥
+            ✦ AUSPICIOUS SHAGUN ✦
           </p>
           <DialogTitle className="mt-1 font-serif text-2xl font-normal text-theme-text-primary sm:text-3xl">
             Send Shagun &amp; Blessings

@@ -34,6 +34,33 @@ export const getWeddingBySlug = reactCache(async (slug: string) => {
 export function mapWeddingToDto(
   wedding: NonNullable<Awaited<ReturnType<typeof getWeddingBySlug>>>,
 ): WeddingDataDto {
+  const rawConfig = wedding.themeConfig as Record<string, unknown> | null;
+  const invocation = typeof rawConfig?.invocation === "string" ? rawConfig.invocation : undefined;
+
+  const venueCity = (() => {
+    const addr = wedding.events[0]?.venueAddress;
+    if (!addr) return "Celebration Destination";
+    const parts = addr.split(",").map((s) => s.trim());
+    if (parts.length >= 2) {
+      const cityMatch = parts.find((p) =>
+        /Bodinayakanur|Theni|Madurai|Chennai|Coimbatore|Udaipur|Jaipur|Delhi|Bengaluru|Bangalore|Mumbai|Hyderabad|Goa|Kochi/i.test(
+          p,
+        ),
+      );
+      const stateMatch = parts
+        .find((p) => /Tamil Nadu|Rajasthan|Maharashtra|Karnataka|Kerala|Delhi|Goa/i.test(p))
+        ?.replace(/\s*\d{5,6}.*$/, "")
+        .trim();
+      if (cityMatch && stateMatch) return `${cityMatch}, ${stateMatch}`;
+      if (cityMatch) return cityMatch;
+      const cleaned = parts.map((p) => p.replace(/\s*\d{5,6}.*$/, "").trim()).filter(Boolean);
+      if (cleaned.length >= 2) {
+        return `${cleaned[cleaned.length - 2]}, ${cleaned[cleaned.length - 1]}`;
+      }
+    }
+    return addr;
+  })();
+
   return {
     slug: wedding.slug,
     bride: wedding.brideName,
@@ -52,10 +79,11 @@ export function mapWeddingToDto(
       : wedding.contentExpiresAt
         ? new Date(wedding.contentExpiresAt).toISOString()
         : null,
-    venueCity: wedding.events[0]?.venueAddress || "Celebration Destination",
+    venueCity,
     monogram: wedding.monogramText || `${wedding.brideName[0]} & ${wedding.groomName[0]}`,
     upiVpa: wedding.upiVpa || "",
     showBranding: wedding.showBranding,
+    invocation,
     events:
       wedding.events.length > 0
         ? wedding.events.map((e) => ({

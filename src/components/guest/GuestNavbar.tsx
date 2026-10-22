@@ -12,6 +12,7 @@ interface GuestNavbarProps {
   showVips?: boolean;
   showShagun?: boolean;
   isAfterWedding?: boolean;
+  isDemo?: boolean;
   onOpenShagun: () => void;
   onOpenAsk?: () => void;
   onToggleWeddingMode?: () => void;
@@ -25,6 +26,7 @@ export function GuestNavbar({
   showVips = true,
   showShagun = true,
   isAfterWedding = false,
+  isDemo = false,
   onOpenShagun,
   onOpenAsk,
   onToggleWeddingMode,
@@ -60,11 +62,13 @@ export function GuestNavbar({
             {bride} <span className="font-serif italic text-[#D4AF37]">&amp;</span> {groom}
           </a>
 
-          {/* Platinum Tier Demo Badge */}
-          <span className="hidden items-center gap-1 rounded-full border border-[#D4AF37]/40 bg-black/40 px-2.5 py-0.5 text-[10px] font-medium tracking-wider text-[#E8B96B] backdrop-blur-md lg:inline-flex">
-            <Sparkles className="h-3 w-3 text-[#D4AF37]" />
-            <span>PLATINUM DEMO</span>
-          </span>
+          {/* Platinum Tier Demo Badge - only shown on demo pages */}
+          {isDemo && (
+            <span className="hidden items-center gap-1 rounded-full border border-[#D4AF37]/40 bg-black/40 px-2.5 py-0.5 text-[10px] font-medium tracking-wider text-[#E8B96B] backdrop-blur-md lg:inline-flex">
+              <Sparkles className="h-3 w-3 text-[#D4AF37]" />
+              <span>PLATINUM DEMO</span>
+            </span>
+          )}
         </div>
 
         {/* Desktop Navigation Links */}

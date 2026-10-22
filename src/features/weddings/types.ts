@@ -52,6 +52,8 @@ export interface WeddingDataDto {
   monogram: string;
   upiVpa: string;
   showBranding: boolean;
+  invocation?: string;
+  isDemo?: boolean;
   heroImage?: string;
   loveStory?: LoveStoryDto;
   gallery?: GalleryPhotoDto[];

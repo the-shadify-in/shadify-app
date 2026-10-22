@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { TurnstileWidget } from "@/components/ui/turnstile";
 import type { WeddingEventDto } from "@/features/weddings";
 
@@ -159,7 +160,7 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
               >
                 Party Count
               </label>
-              <select
+              <Select
                 id="modal-party"
                 value={partySize}
                 onChange={(e) => setPartySize(Number(e.target.value))}
@@ -167,7 +168,6 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                   color: "var(--theme-text-primary)",
                   backgroundColor: "var(--theme-bg)",
                 }}
-                className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
               >
                 {[1, 2, 3, 4, 5, 6].map((num) => (
                   <option
@@ -177,12 +177,11 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                       backgroundColor: "var(--theme-surface, #1A0D14)",
                       color: "var(--theme-text-primary, #FDF8F0)",
                     }}
-                    className="bg-theme-surface text-theme-text-primary"
                   >
                     {num} {num === 1 ? "Guest" : "Guests"}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -193,7 +192,7 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
             >
               Meal Preference
             </label>
-            <select
+            <Select
               id="modal-meal"
               value={mealPref}
               onChange={(e) => setMealPref(e.target.value)}
@@ -201,7 +200,6 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                 color: "var(--theme-text-primary)",
                 backgroundColor: "var(--theme-bg)",
               }}
-              className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
             >
               <option
                 value="pure_veg"
@@ -209,7 +207,6 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                   backgroundColor: "var(--theme-surface, #1A0D14)",
                   color: "var(--theme-text-primary, #FDF8F0)",
                 }}
-                className="bg-theme-surface text-theme-text-primary"
               >
                 🥗 Pure Vegetarian
               </option>
@@ -219,7 +216,6 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                   backgroundColor: "var(--theme-surface, #1A0D14)",
                   color: "var(--theme-text-primary, #FDF8F0)",
                 }}
-                className="bg-theme-surface text-theme-text-primary"
               >
                 🌱 Jain Vegetarian
               </option>
@@ -229,11 +225,10 @@ export function EventRsvpModal({ event, weddingSlug, onClose, onSuccess }: Event
                   backgroundColor: "var(--theme-surface, #1A0D14)",
                   color: "var(--theme-text-primary, #FDF8F0)",
                 }}
-                className="bg-theme-surface text-theme-text-primary"
               >
                 🍗 Non-Vegetarian
               </option>
-            </select>
+            </Select>
           </div>
 
           <div

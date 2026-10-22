@@ -297,8 +297,21 @@ async function main() {
     },
   });
 
+  const pilotPromo = await prisma.promoCode.upsert({
+    where: { code: "PILOT100" },
+    update: {},
+    create: {
+      code: "PILOT100",
+      promoType: "campaign",
+      discountPaise: BigInt(799900), // 100% discount on Platinum plan
+      commissionPaise: BigInt(0),
+      minOrderPaise: BigInt(0),
+      isActive: true,
+    },
+  });
+
   console.log(
-    `✅ Seeded promo codes: ${guestPromo.code} (Guest) and ${partnerPromo.code} (Partner)`,
+    `✅ Seeded promo codes: ${guestPromo.code} (Guest), ${partnerPromo.code} (Partner), ${pilotPromo.code} (Pilot 100%)`,
   );
 }
 

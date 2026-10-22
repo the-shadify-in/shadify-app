@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { TurnstileWidget } from "@/components/ui/turnstile";
 
@@ -83,7 +85,7 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
         {/* Section Header */}
         <div className="mb-12 text-center sm:mb-16">
           <span className="text-xs font-semibold uppercase tracking-[0.35em] text-theme-accent">
-            ॥ उपस्थिति संदेश ॥
+            ✦ CELEBRATION ATTENDANCE ✦
           </span>
           <h2 className="mt-2 font-serif text-3xl font-normal text-theme-text-primary sm:text-4xl md:text-5xl">
             Will You <em>Join Us?</em>
@@ -215,7 +217,7 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                       >
                         Ceremony / Event Attending *
                       </label>
-                      <select
+                      <Select
                         id="rsvp-event-select"
                         value={selectedEventId}
                         onChange={(e) => setSelectedEventId(e.target.value)}
@@ -223,7 +225,6 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                           color: "var(--theme-text-primary)",
                           backgroundColor: "var(--theme-bg)",
                         }}
-                        className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                       >
                         {events.map((evt) => (
                           <option
@@ -237,7 +238,7 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                             {evt.title} ({evt.date} • {evt.time})
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
                   )}
 
@@ -249,7 +250,7 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                       >
                         Total Guests in Party
                       </label>
-                      <select
+                      <Select
                         id="rsvp-party-size"
                         value={partySize}
                         onChange={(e) => setPartySize(Number(e.target.value))}
@@ -257,7 +258,6 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                           color: "var(--theme-text-primary)",
                           backgroundColor: "var(--theme-bg)",
                         }}
-                        className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                       >
                         {[1, 2, 3, 4, 5, 6].map((num) => (
                           <option
@@ -267,12 +267,11 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                               backgroundColor: "var(--theme-surface, #1A0D14)",
                               color: "var(--theme-text-primary, #FDF8F0)",
                             }}
-                            className="bg-theme-surface text-theme-text-primary"
                           >
                             {num} {num === 1 ? "Guest" : "Guests"}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </div>
 
                     <div>
@@ -282,7 +281,7 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                       >
                         Dietary Preference
                       </label>
-                      <select
+                      <Select
                         id="rsvp-meal-pref"
                         value={mealPref}
                         onChange={(e) => setMealPref(e.target.value)}
@@ -290,7 +289,6 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                           color: "var(--theme-text-primary)",
                           backgroundColor: "var(--theme-bg)",
                         }}
-                        className="bg-theme-bg/90 flex h-10 w-full rounded-lg border border-[#D4AF37]/50 px-3 py-2 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                       >
                         <option
                           value="pure_veg"
@@ -298,7 +296,6 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                             backgroundColor: "var(--theme-surface, #1A0D14)",
                             color: "var(--theme-text-primary, #FDF8F0)",
                           }}
-                          className="bg-theme-surface text-theme-text-primary"
                         >
                           🥗 Pure Vegetarian
                         </option>
@@ -308,7 +305,6 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                             backgroundColor: "var(--theme-surface, #1A0D14)",
                             color: "var(--theme-text-primary, #FDF8F0)",
                           }}
-                          className="bg-theme-surface text-theme-text-primary"
                         >
                           🌱 Jain Vegetarian
                         </option>
@@ -318,11 +314,10 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                             backgroundColor: "var(--theme-surface, #1A0D14)",
                             color: "var(--theme-text-primary, #FDF8F0)",
                           }}
-                          className="bg-theme-surface text-theme-text-primary"
                         >
                           🍗 Non-Vegetarian
                         </option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
 
@@ -354,17 +349,16 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
                 >
                   Warm Blessings &amp; Message for the Couple
                 </label>
-                <textarea
+                <Textarea
                   id="rsvp-blessing"
                   rows={3}
                   value={blessing}
                   onChange={(e) => setBlessing(e.target.value)}
-                  placeholder="Share a heartfelt blessing, advice, or song request for the Sangeet night..."
+                  placeholder="Share a heartfelt blessing or message for the couple..."
                   style={{
                     color: "var(--theme-text-primary)",
                     backgroundColor: "var(--theme-bg)",
                   }}
-                  className="bg-theme-bg/90 placeholder:text-theme-text-muted/70 w-full rounded-xl border border-[#D4AF37]/50 p-3 text-sm text-theme-text-primary focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
                 />
               </div>
 
