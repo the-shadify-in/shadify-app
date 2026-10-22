@@ -34,11 +34,11 @@
     "seed": "tsx prisma/seed.ts"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,mjs}": [
+    "*.{ts,tsx}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,css,yml,yaml}": [
+    "*.{js,jsx,mjs,json,md,css,yml,yaml}": [
       "prettier --write"
     ]
   },

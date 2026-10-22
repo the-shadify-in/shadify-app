@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Sparkles, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { THEME_PRESETS, validateContrast, type PresetId } from "@/lib/themes/tokens";
 import { PRICING_PLANS } from "@/lib/config/pricing";
+import { IntakePanel } from "./IntakePanel";
+import type { DraftExtraction } from "@/features/intake/schema";
 
 export default function NewWeddingOnboardingPage() {
   // Form State
@@ -25,10 +27,36 @@ export default function NewWeddingOnboardingPage() {
   const [isSlugManual, setIsSlugManual] = useState(false);
   const [isMonogramManual, setIsMonogramManual] = useState(false);
 
+  // Review gate state: true when AI intake draft contains unconfirmed items
+  const [isReviewGated, setIsReviewGated] = useState(false);
+
   // Submission & UI State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createdWedding, setCreatedWedding] = useState<{ slug: string; url: string } | null>(null);
+
+  const handleApplyDraft = (draft: DraftExtraction) => {
+    if (draft.couple) {
+      if (draft.couple.partnerAName) setBrideName(draft.couple.partnerAName);
+      if (draft.couple.partnerBName) setGroomName(draft.couple.partnerBName);
+    }
+    if (draft.weddingDate?.value) {
+      setWeddingDate(draft.weddingDate.value);
+    }
+    if (draft.city?.value) {
+      setVenueCity(draft.city.value);
+    }
+    if (draft.themeFeeling?.suggestedPreset) {
+      setThemeId(draft.themeFeeling.suggestedPreset);
+    }
+    if (draft.upiVpaCandidates && draft.upiVpaCandidates.length > 0 && draft.upiVpaCandidates[0]) {
+      setUpiVpa(draft.upiVpaCandidates[0].value);
+    }
+    if (draft.contacts && draft.contacts.length > 0 && draft.contacts[0]) {
+      const primary = draft.contacts[0];
+      setCouplePhone(primary.phoneE164 || primary.phoneRaw || "");
+    }
+  };
 
   // Auto-generate slug when names change (if slug hasn't been manually edited)
   useEffect(() => {
@@ -111,11 +139,11 @@ export default function NewWeddingOnboardingPage() {
         }),
       });
 
-      const json = await res.json();
+      const json = (await res.json()) as { error?: string; slug?: string; url?: string };
 
       if (!res.ok) {
         setErrorMessage(json.error || "Failed to create wedding.");
-      } else {
+      } else if (json.slug && json.url) {
         setCreatedWedding({ slug: json.slug, url: json.url });
       }
     } catch {
@@ -192,6 +220,11 @@ export default function NewWeddingOnboardingPage() {
             </div>
           </div>
         )}
+
+        {/* AI Intake Assistant Panel for Staff */}
+        <div className="mb-8">
+          <IntakePanel onApplyDraft={handleApplyDraft} onReviewGateChange={setIsReviewGated} />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {errorMessage && (
@@ -558,7 +591,13 @@ export default function NewWeddingOnboardingPage() {
           </section>
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-4 border-t border-[#EADDCF] pt-6">
+          <div className="flex flex-col items-center justify-end gap-4 border-t border-[#EADDCF] pt-6 sm:flex-row">
+            {isReviewGated && (
+              <span className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700">
+                ⚠️ Review Gate: Review and confirm all flagged checklist items in the Intake
+                Assistant above to enable creation.
+              </span>
+            )}
             <Link
               href="/admin"
               className="rounded-full border border-[#EADDCF] bg-white px-6 py-2.5 text-xs font-medium text-[#1F1A2E]/80 hover:bg-gray-50"
@@ -567,9 +606,9 @@ export default function NewWeddingOnboardingPage() {
             </Link>
             <button
               type="submit"
-              disabled={isSubmitting || !contrastReport.ok}
+              disabled={isSubmitting || !contrastReport.ok || isReviewGated}
               className={`rounded-full px-8 py-2.5 text-xs font-semibold text-white shadow transition-all ${
-                isSubmitting || !contrastReport.ok
+                isSubmitting || !contrastReport.ok || isReviewGated
                   ? "cursor-not-allowed bg-gray-400 opacity-60"
                   : "bg-[#D6246E] hover:opacity-95"
               }`}

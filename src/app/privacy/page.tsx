@@ -127,8 +127,11 @@ export default function PrivacyPage() {
               keystroke monitoring tools (such as Hotjar or Microsoft Clarity).
             </li>
             <li>
-              We utilize only first-party aggregate counters (e.g. total page views, RSVP counts)
-              with no guest profiling or cross-site tracking.
+              <strong>First-Party Anonymous Counters Only:</strong> When guests interact with
+              logistics chips in the &quot;Ask&quot; drawer (such as timings, venue maps, dress
+              codes, or digital Shagun), we record strictly anonymous aggregate daily counters. No
+              IP address, no user agent, no cookies, no session IDs, and no timestamps finer than
+              the calendar day are ever stored.
             </li>
           </ul>
         </section>

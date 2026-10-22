@@ -205,6 +205,7 @@ model Wedding {
   auditLogs          AuditLog[]
   promoRedemptions   PromoRedemption[]
   referrals          Referral[]
+  chipCounts         WeddingChipCountDaily[]
 
   @@index([weddingDate], map: "idx_weddings_date")
   @@map("weddings")
@@ -565,4 +566,17 @@ model Referral {
   @@index([status], map: "idx_referrals_status")
   @@index([weddingId], map: "idx_referrals_wedding")
   @@map("referrals")
+}
+
+model WeddingChipCountDaily {
+  weddingId String   @map("wedding_id") @db.Uuid
+  day       DateTime @db.Date
+  topic     String   @db.VarChar(64)
+  count     Int      @default(1)
+
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@id([weddingId, day, topic])
+  @@index([weddingId, day], map: "idx_chip_counts_wedding_day")
+  @@map("wedding_chip_counts_daily")
 }

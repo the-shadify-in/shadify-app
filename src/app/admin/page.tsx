@@ -2,6 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import AdminDashboardClient from "./AdminDashboardClient";
+import { getAllWeddingsChipStats, getPerWeddingChipStats } from "@/features/analytics/chip-counts";
 
 export const dynamic = "force-dynamic";
 
@@ -11,5 +12,15 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login?from=/admin");
   }
 
-  return <AdminDashboardClient />;
+  const [allWeddingsChipStats, perWeddingChipStats] = await Promise.all([
+    getAllWeddingsChipStats(),
+    getPerWeddingChipStats(),
+  ]);
+
+  return (
+    <AdminDashboardClient
+      allChipStats={allWeddingsChipStats}
+      perWeddingChips={perWeddingChipStats}
+    />
+  );
 }

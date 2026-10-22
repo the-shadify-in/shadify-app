@@ -22,6 +22,7 @@ import { LiveStreamModal } from "@/components/guest/LiveStreamModal";
 import { MusicToggle } from "@/components/guest/MusicToggle";
 import { GuestFooter } from "@/components/guest/GuestFooter";
 import { MobileDock } from "@/components/guest/MobileDock";
+import { AskDrawer } from "@/components/guest/AskDrawer";
 
 export type { WeddingData, WeddingEvent, VipEntry };
 
@@ -39,6 +40,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
   const [isEnvelopeOpened, setIsEnvelopeOpened] = useState(false);
   const [activeRsvpEvent, setActiveRsvpEvent] = useState<WeddingEvent | null>(null);
   const [isShagunModalOpen, setIsShagunModalOpen] = useState(false);
+  const [isAskDrawerOpen, setIsAskDrawerOpen] = useState(false);
   const [isLiveStreamOpen, setIsLiveStreamOpen] = useState(false);
   const [isAfterWedding, setIsAfterWedding] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -194,23 +196,23 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
     );
   }
 
+  const themeStyles: React.CSSProperties & Record<string, string> = {
+    "--theme-primary": c.primary,
+    "--theme-on-primary": c.onPrimary,
+    "--theme-accent": c.accent,
+    "--theme-on-accent": c.onAccent,
+    "--theme-bg": c.canvas,
+    "--theme-surface": c.surface,
+    "--theme-text-primary": c.text,
+    "--theme-text-muted": c.textMuted,
+    "--theme-envelope-bg": c.envelopeBg,
+    "--theme-wax-seal": c.waxSeal,
+  };
+
   return (
     <main
       id="wedding-guest-root"
-      style={
-        {
-          "--theme-primary": c.primary,
-          "--theme-on-primary": c.onPrimary,
-          "--theme-accent": c.accent,
-          "--theme-on-accent": c.onAccent,
-          "--theme-bg": c.canvas,
-          "--theme-surface": c.surface,
-          "--theme-text-primary": c.text,
-          "--theme-text-muted": c.textMuted,
-          "--theme-envelope-bg": c.envelopeBg,
-          "--theme-wax-seal": c.waxSeal,
-        } as React.CSSProperties
-      }
+      style={themeStyles}
       className="selection:text-theme-on-accent relative min-h-screen bg-theme-bg pb-20 font-sans text-theme-text-primary transition-colors duration-500 selection:bg-theme-accent md:pb-0"
     >
       <style
@@ -271,6 +273,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
         showShagun={true}
         isAfterWedding={isAfterWedding}
         onOpenShagun={() => setIsShagunModalOpen(true)}
+        onOpenAsk={() => setIsAskDrawerOpen(true)}
         onToggleWeddingMode={() => setIsAfterWedding(!isAfterWedding)}
       />
 
@@ -349,7 +352,22 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
       />
 
       {/* 14. Mobile Bottom Quick Action Dock */}
-      <MobileDock onOpenShagun={() => setIsShagunModalOpen(true)} showShagun={true} />
+      <MobileDock
+        onOpenShagun={() => setIsShagunModalOpen(true)}
+        onOpenAsk={() => setIsAskDrawerOpen(true)}
+        showShagun={true}
+      />
+
+      {/* 15. Guest "Ask" Chips Drawer (Zero AI, Zero LLM, Instant Answers) */}
+      <AskDrawer
+        wedding={wedding}
+        open={isAskDrawerOpen}
+        onOpenChange={setIsAskDrawerOpen}
+        onOpenShagun={() => setIsShagunModalOpen(true)}
+        onOpenRsvp={() => {
+          setActiveRsvpEvent(wedding.events[0] || null);
+        }}
+      />
     </main>
   );
 }

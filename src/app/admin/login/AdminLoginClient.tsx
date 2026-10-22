@@ -32,7 +32,7 @@ export default function AdminLoginClient() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const data = (await res.json()) as { error?: string };
       if (!res.ok) {
         setError(data.error || "Authentication failed.");
         setLoading(false);

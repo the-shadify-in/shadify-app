@@ -4,7 +4,22 @@ import React from "react";
 import Link from "next/link";
 import { Plus, Eye, LogOut } from "lucide-react";
 
-export default function AdminDashboardClient() {
+import type { AllWeddingsChipStats, WeddingChipSummary } from "@/features/analytics/chip-counts";
+
+interface AdminDashboardClientProps {
+  allChipStats?: AllWeddingsChipStats;
+  perWeddingChips?: WeddingChipSummary[];
+}
+
+export default function AdminDashboardClient({
+  allChipStats = {
+    totalTaps: 0,
+    otherSharePercent: 0,
+    topicBreakdown: {},
+    topTopic: null,
+  },
+  perWeddingChips = [],
+}: AdminDashboardClientProps) {
   // Demo weddings for concierge staff
   const weddings = [
     {
@@ -87,7 +102,7 @@ export default function AdminDashboardClient() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-6 py-10">
+      <main className="mx-auto max-w-7xl space-y-10 px-6 py-10">
         {/* Metric Cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-4">
           <div className="rounded-xl border border-[#C9933A]/20 bg-[#14080C] p-5">
@@ -110,8 +125,114 @@ export default function AdminDashboardClient() {
           </div>
         </div>
 
+        {/* Section: Guest Logistics "Ask" Chips Intelligence */}
+        <div className="space-y-6 rounded-xl border border-[#C9933A]/30 bg-[#14080C] p-6">
+          <div className="flex flex-col justify-between gap-2 border-b border-[#C9933A]/20 pb-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="font-serif text-xl font-light text-[#FFF9F2]">
+                Guest &quot;Ask&quot; Chips Intelligence (Zero AI Telemetry)
+              </h2>
+              <p className="text-xs text-[#E2D5C7]/60">
+                Anonymous first-party daily counters measuring which logistics questions guests ask
+                most
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="rounded-full bg-[#C9933A]/20 px-3 py-1 font-mono text-[#C9933A]">
+                Total Taps: {allChipStats.totalTaps}
+              </span>
+              <span className="rounded-full bg-[#DFB15B]/20 px-3 py-1 font-mono text-[#DFB15B]">
+                &quot;Other&quot; Share: {allChipStats.otherSharePercent}%
+              </span>
+            </div>
+          </div>
+
+          {/* Aggregate Topic Breakdown Cards */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
+            {[
+              { key: "timings", label: "Timings" },
+              { key: "venue", label: "Venue & Map" },
+              { key: "dress_code", label: "Dress Code" },
+              { key: "gifts", label: "Gifts" },
+              { key: "rsvp", label: "RSVP" },
+              { key: "other", label: "Something Else" },
+            ].map(({ key, label }) => {
+              const count = allChipStats.topicBreakdown[key] || 0;
+              const isTop = allChipStats.topTopic === key && count > 0;
+              return (
+                <div
+                  key={key}
+                  className={`rounded-lg border p-3 ${
+                    isTop ? "border-[#C9933A] bg-[#1E0E14]" : "border-[#C9933A]/15 bg-[#17090E]"
+                  }`}
+                >
+                  <p className="truncate text-[11px] text-[#E2D5C7]/70">{label}</p>
+                  <p className="mt-1 font-serif text-xl text-[#FFF9F2]">{count}</p>
+                  {isTop && (
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-[#C9933A]">
+                      Most Asked
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Per-Wedding Questions Table */}
+          {perWeddingChips.length > 0 && (
+            <div className="overflow-hidden rounded-lg border border-[#C9933A]/15 bg-[#17090E]">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-[#C9933A]/10 bg-[#1B0B10] text-[#E2D5C7]/70">
+                  <tr>
+                    <th className="px-4 py-2.5 font-medium">Wedding</th>
+                    <th className="px-4 py-2.5 font-medium">Total Inquiries</th>
+                    <th className="px-4 py-2.5 font-medium">Top Question</th>
+                    <th className="px-4 py-2.5 font-medium">Timings</th>
+                    <th className="px-4 py-2.5 font-medium">Venue</th>
+                    <th className="px-4 py-2.5 font-medium">Dress</th>
+                    <th className="px-4 py-2.5 font-medium">Gifts</th>
+                    <th className="px-4 py-2.5 font-medium">RSVP</th>
+                    <th className="px-4 py-2.5 font-medium">Other</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#C9933A]/10">
+                  {perWeddingChips.map((w) => (
+                    <tr key={w.id} className="hover:bg-[#1B0B10]/40">
+                      <td className="px-4 py-3 font-medium text-[#FFF9F2]">
+                        {w.couple} <span className="font-mono text-[#E2D5C7]/40">({w.slug})</span>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[#C9933A]">{w.totalTaps}</td>
+                      <td className="px-4 py-3 capitalize text-[#E2D5C7]/80">
+                        {w.topQuestion?.replace(/_/g, " ") || "—"}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[#E2D5C7]/60">
+                        {w.breakdown.timings || 0}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[#E2D5C7]/60">
+                        {w.breakdown.venue || 0}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[#E2D5C7]/60">
+                        {w.breakdown.dress_code || 0}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[#E2D5C7]/60">
+                        {w.breakdown.gifts || 0}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[#E2D5C7]/60">
+                        {w.breakdown.rsvp || 0}
+                      </td>
+                      <td className="px-4 py-3 font-mono text-[#E2D5C7]/60">
+                        {(w.breakdown.other || 0) + (w.breakdown.other_contact_tapped || 0)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {/* Action Header */}
-        <div className="mt-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 className="font-serif text-2xl font-light text-[#FFF9F2]">Managed Weddings</h2>
             <p className="text-xs text-[#E2D5C7]/60">
@@ -138,7 +259,7 @@ export default function AdminDashboardClient() {
         </div>
 
         {/* Weddings Table */}
-        <div className="mt-6 overflow-hidden rounded-xl border border-[#C9933A]/20 bg-[#14080C]">
+        <div className="overflow-hidden rounded-xl border border-[#C9933A]/20 bg-[#14080C]">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-[#C9933A]/10 bg-[#1B0B10] text-[#E2D5C7]/70">
               <tr>

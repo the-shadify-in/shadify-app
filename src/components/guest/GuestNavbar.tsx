@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Gift, Menu, X, Sparkles } from "lucide-react";
+import { Gift, Menu, X, Sparkles, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface GuestNavbarProps {
@@ -13,6 +13,7 @@ interface GuestNavbarProps {
   showShagun?: boolean;
   isAfterWedding?: boolean;
   onOpenShagun: () => void;
+  onOpenAsk?: () => void;
   onToggleWeddingMode?: () => void;
 }
 
@@ -25,6 +26,7 @@ export function GuestNavbar({
   showShagun = true,
   isAfterWedding = false,
   onOpenShagun,
+  onOpenAsk,
   onToggleWeddingMode,
 }: GuestNavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -128,6 +130,23 @@ export function GuestNavbar({
             </button>
           )}
 
+          {onOpenAsk && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onOpenAsk}
+              className={`font-serif text-xs tracking-wider shadow-sm transition-all duration-300 ${
+                isScrolled
+                  ? "border-[#D4AF37]/50 bg-theme-surface text-theme-text-primary hover:border-[#D4AF37]"
+                  : "border-[#D4AF37]/60 bg-black/45 text-white hover:border-[#D4AF37] hover:bg-black/60"
+              }`}
+            >
+              <HelpCircle className="mr-1.5 h-3.5 w-3.5 text-theme-accent" />
+              <span>Ask</span>
+            </Button>
+          )}
+
           {showShagun && (
             <Button
               type="button"
@@ -212,6 +231,20 @@ export function GuestNavbar({
             >
               {isAfterWedding ? "Guestbook & Wishes" : "RSVP"}
             </a>
+
+            {onOpenAsk && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenAsk();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-1.5 py-1.5 text-left transition-colors hover:text-[#D4AF37]"
+              >
+                <HelpCircle className="h-3.5 w-3.5 text-theme-accent" />
+                <span>Ask Questions</span>
+              </button>
+            )}
 
             {onToggleWeddingMode && (
               <button

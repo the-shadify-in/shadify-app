@@ -311,3 +311,19 @@
 
 - [ ] **G16 `[LATER]` `@lead-eng` — Photo Handover Expiry Reminders (Day 60, Day 80, Year 5).**
       **Done when:** automated cron triggers reminder notifications prior to original photo deletion (Day 90) and site archive (Year 5).
+
+- [ ] **G17 `[BEFORE-LAUNCH]` `@lead-eng` — Ask chips drawer built and tested (Part A).**
+      Non-AI logistics Q&A drawer answering timings, venue, dress code, gifts, RSVP, and something else straight from `WeddingDataDto`. Deep linked via URL hashes (`#ask=venue`), zero extra network fetches, brand-isolated tokens only, fully accessible, and anonymous daily counter telemetry via `navigator.sendBeacon`. Unit and integration test suite passing.
+      **Done when:** A10 passes in CI and the deployed page still serves from cache on a staging/preview deployment.
+
+- [x] **G18 `[BEFORE-LAUNCH]` `@legal` — Privacy notice mentions anonymous first-party chip counters.**
+      Updated `/privacy` explaining first-party, privacy-safe, non-identifying daily aggregate counters with zero cookies and zero third-party trackers.
+      **Done when:** reviewed text is live.
+
+- [ ] **G19 `[LATER]` `@lead-eng` `@ops` — Staff intake assistant v1 (Part B).**
+      Staff-only AI intake assistant parsing pasted WhatsApp text/chains into prefilled drafts for `/admin/weddings/new`. Zod schema validation, confidence badges, source snippet verification, phone/UPI/map link sanitization, local PII masking, and per-field human review gating locking creation until verified. Validation pipeline tested against 25 fixtures with MockExtractionProvider (scoring 97% on scripted outputs) and prompt-injection defense.
+      **Done when:** real-model evaluation is manually executed against fixtures, founder threshold is approved, provider data-terms review is completed, vendor list updated, and kill switch verified on a deployed environment.
+
+- [ ] **G20 `[LATER]` `@ops` — Measure setup minutes before and after.**
+      Measure staff time to draft and create a wedding using the intake assistant vs manual data entry.
+      **Done when:** a recorded comparison on at least five pilot weddings.
