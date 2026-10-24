@@ -143,7 +143,7 @@ export default function AdminDashboardClient({
         <div className="flex items-center gap-3">
           <Link
             href="/admin/theme-preview"
-            className="text-studio-primary inline-flex items-center gap-1.5 rounded-lg border border-studio-border bg-studio-surface px-3.5 py-2 text-xs font-medium transition hover:border-studio-champagne/40 hover:bg-studio-surfaceElevated"
+            className="text-studio-primary hover:border-studio-champagne/40 inline-flex items-center gap-1.5 rounded-lg border border-studio-border bg-studio-surface px-3.5 py-2 text-xs font-medium transition hover:bg-studio-surfaceElevated"
           >
             <Eye className="h-3.5 w-3.5 text-studio-champagne" />
             <span>Theme Studio</span>
@@ -274,7 +274,7 @@ export default function AdminDashboardClient({
       <div className="overflow-hidden rounded-xl border border-studio-border bg-studio-surface shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="text-studio-muted border-b border-studio-border bg-studio-surfaceElevated/60">
+            <thead className="text-studio-muted bg-studio-surfaceElevated/60 border-b border-studio-border">
               <tr>
                 <th className="px-5 py-3 font-medium">Couple &amp; Slug</th>
                 <th className="px-5 py-3 font-medium">Wedding Date</th>
@@ -289,7 +289,7 @@ export default function AdminDashboardClient({
               {paginatedWeddings.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-12 text-center">
-                    <AlertCircle className="mx-auto h-8 w-8 text-studio-champagne/50" />
+                    <AlertCircle className="text-studio-champagne/50 mx-auto h-8 w-8" />
                     <div className="text-studio-primary mt-3 font-serif text-base">
                       No celebrations found
                     </div>
@@ -302,7 +302,7 @@ export default function AdminDashboardClient({
                       <button
                         type="button"
                         onClick={handleResetFilters}
-                        className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-studio-champagne/40 bg-studio-champagne/10 px-3 py-1.5 text-xs text-studio-champagne hover:bg-studio-champagne/20"
+                        className="border-studio-champagne/40 bg-studio-champagne/10 hover:bg-studio-champagne/20 mt-3 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs text-studio-champagne"
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
                         <span>Clear All Filters</span>
@@ -321,12 +321,12 @@ export default function AdminDashboardClient({
                   return (
                     <tr
                       key={w.id}
-                      className="group transition-colors hover:bg-studio-surfaceElevated/40"
+                      className="hover:bg-studio-surfaceElevated/40 group transition-colors"
                     >
                       {/* Couple & Slug */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-studio-champagne/30 bg-studio-champagne/10 font-serif text-sm font-semibold text-studio-champagne">
+                          <div className="border-studio-champagne/30 bg-studio-champagne/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border font-serif text-sm font-semibold text-studio-champagne">
                             {w.brideName.charAt(0)}
                             {w.groomName.charAt(0)}
                           </div>
@@ -340,7 +340,7 @@ export default function AdminDashboardClient({
                             <div className="text-studio-muted flex items-center gap-2 text-[11px]">
                               <span className="font-mono">/{w.slug}</span>
                               {w.hasCustomDomain && (
-                                <span className="rounded bg-studio-champagne/20 px-1 py-0.5 text-[9px] text-studio-champagne">
+                                <span className="bg-studio-champagne/20 rounded px-1 py-0.5 text-[9px] text-studio-champagne">
                                   Custom Domain
                                 </span>
                               )}
@@ -352,7 +352,7 @@ export default function AdminDashboardClient({
                       {/* Wedding Date */}
                       <td className="text-studio-muted px-5 py-4">
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5 text-studio-champagne/60" />
+                          <Calendar className="text-studio-champagne/60 h-3.5 w-3.5" />
                           <span>{w.weddingDate}</span>
                         </div>
                       </td>
@@ -366,7 +366,7 @@ export default function AdminDashboardClient({
                           {w.hasOverride && (
                             <span
                               title="Active staff entitlement override"
-                              className="py-0.2 rounded-full border border-studio-champagne/50 bg-studio-champagne/20 px-1.5 text-[9px] font-semibold text-studio-champagne"
+                              className="py-0.2 border-studio-champagne/50 bg-studio-champagne/20 rounded-full border px-1.5 text-[9px] font-semibold text-studio-champagne"
                             >
                               OVERRIDE
                             </span>
@@ -394,7 +394,7 @@ export default function AdminDashboardClient({
                       {/* RSVPs */}
                       <td className="px-5 py-4">
                         <div className="text-studio-muted flex items-center gap-1.5">
-                          <Users className="h-3.5 w-3.5 text-studio-champagne/50" />
+                          <Users className="text-studio-champagne/50 h-3.5 w-3.5" />
                           <span>{w.rsvpCount}</span>
                         </div>
                       </td>
@@ -402,7 +402,7 @@ export default function AdminDashboardClient({
                       {/* Photos */}
                       <td className="px-5 py-4">
                         <div className="text-studio-muted flex items-center gap-1.5">
-                          <ImageIcon className="h-3.5 w-3.5 text-studio-champagne/50" />
+                          <ImageIcon className="text-studio-champagne/50 h-3.5 w-3.5" />
                           <span>{w.photoCount}</span>
                         </div>
                       </td>
@@ -412,7 +412,7 @@ export default function AdminDashboardClient({
                         <div className="inline-flex items-center gap-2">
                           <Link
                             href={`/admin/weddings/${w.id}`}
-                            className="inline-flex items-center gap-1 rounded-md border border-studio-champagne/40 bg-studio-champagne/10 px-2.5 py-1 text-[11px] font-medium text-studio-champagne transition hover:bg-studio-champagne/20"
+                            className="border-studio-champagne/40 bg-studio-champagne/10 hover:bg-studio-champagne/20 inline-flex items-center gap-1 rounded-md border px-2.5 py-1 text-[11px] font-medium text-studio-champagne transition"
                           >
                             <Sliders className="h-3 w-3" />
                             <span>Studio</span>
@@ -438,7 +438,7 @@ export default function AdminDashboardClient({
 
         {/* Pagination Bar */}
         {filteredWeddings.length > PAGE_SIZE && (
-          <div className="text-studio-muted flex items-center justify-between border-t border-studio-border bg-studio-surfaceElevated/40 px-5 py-3 text-xs">
+          <div className="text-studio-muted bg-studio-surfaceElevated/40 flex items-center justify-between border-t border-studio-border px-5 py-3 text-xs">
             <div>
               Showing{" "}
               <span className="text-studio-primary font-medium">
@@ -482,14 +482,14 @@ export default function AdminDashboardClient({
         <button
           type="button"
           onClick={() => setIsChipsExpanded(!isChipsExpanded)}
-          className="flex w-full items-center justify-between p-5 text-left transition hover:bg-studio-surfaceElevated/40"
+          className="hover:bg-studio-surfaceElevated/40 flex w-full items-center justify-between p-5 text-left transition"
         >
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-studio-primary font-serif text-lg font-light">
                 Guest &quot;Ask&quot; Chips Intelligence (Zero AI Telemetry)
               </h2>
-              <span className="rounded-full bg-studio-champagne/20 px-2.5 py-0.5 font-mono text-[10px] text-studio-champagne">
+              <span className="bg-studio-champagne/20 rounded-full px-2.5 py-0.5 font-mono text-[10px] text-studio-champagne">
                 {allChipStats.totalTaps} Taps
               </span>
             </div>
@@ -520,7 +520,7 @@ export default function AdminDashboardClient({
                     key={key}
                     className={`rounded-lg border p-3 ${
                       isTop
-                        ? "border-studio-champagne bg-studio-champagne/10"
+                        ? "bg-studio-champagne/10 border-studio-champagne"
                         : "border-studio-border bg-studio-surfaceElevated"
                     }`}
                   >
@@ -537,7 +537,7 @@ export default function AdminDashboardClient({
             </div>
 
             {perWeddingChips.length > 0 && (
-              <div className="overflow-hidden rounded-lg border border-studio-border bg-studio-surfaceElevated/40">
+              <div className="bg-studio-surfaceElevated/40 overflow-hidden rounded-lg border border-studio-border">
                 <table className="w-full text-left text-xs">
                   <thead className="text-studio-muted border-b border-studio-border bg-studio-surfaceElevated">
                     <tr>

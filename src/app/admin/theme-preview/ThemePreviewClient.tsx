@@ -25,7 +25,7 @@ export default function ThemePreviewAndSwatchPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-studio-champagne/40 bg-studio-champagne/15 px-3 py-1 text-xs font-medium text-studio-champagne">
+            <span className="border-studio-champagne/40 bg-studio-champagne/15 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-studio-champagne">
               <Sparkles className="h-3.5 w-3.5" />
               Dual Namespace Active
             </span>
@@ -139,8 +139,8 @@ export default function ThemePreviewAndSwatchPage() {
                     onClick={() => setSelectedPresetKey(key)}
                     className={`rounded-lg px-4 py-2 text-xs font-medium capitalize transition-all ${
                       selectedPresetKey === key
-                        ? "border border-studio-champagne bg-studio-champagne/20 text-studio-champagne shadow-md"
-                        : "text-studio-muted hover:text-studio-primary border border-studio-border bg-studio-surface hover:border-studio-champagne/40"
+                        ? "bg-studio-champagne/20 border border-studio-champagne text-studio-champagne shadow-md"
+                        : "text-studio-muted hover:text-studio-primary hover:border-studio-champagne/40 border border-studio-border bg-studio-surface"
                     }`}
                   >
                     {key.replace("-", " ")}

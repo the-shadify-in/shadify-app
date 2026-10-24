@@ -110,7 +110,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
   ];
 
   return (
-    <div className="text-studio-primary selection:text-studio-primary min-h-screen bg-studio-canvas selection:bg-studio-champagne/30">
+    <div className="admin-studio text-studio-primary selection:text-studio-primary selection:bg-studio-champagne/30 min-h-screen bg-studio-canvas">
       {/* Quick Provision Modal available globally in the shell */}
       <QuickProvisionModal
         open={isProvisionOpen}
@@ -135,7 +135,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             className="flex items-center gap-3 overflow-hidden text-left"
             title="Shadify Concierge"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-studio-champagne/30 bg-studio-champagne/10 text-studio-champagne shadow-inner">
+            <div className="border-studio-champagne/30 bg-studio-champagne/10 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-studio-champagne shadow-inner">
               <Sparkles className="h-4 w-4" />
             </div>
             {!isCollapsed && (
@@ -143,7 +143,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                 <span className="text-studio-primary block font-serif text-sm font-semibold tracking-wider">
                   SHADIFY
                 </span>
-                <span className="block text-[10px] uppercase tracking-widest text-studio-champagne/80">
+                <span className="text-studio-champagne/80 block text-[10px] uppercase tracking-widest">
                   Concierge Studio
                 </span>
               </div>
@@ -169,7 +169,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             type="button"
             onClick={() => setIsProvisionOpen(true)}
             title="Quick Provision Celebration"
-            className={`flex w-full items-center justify-center gap-2 rounded-lg border border-studio-champagne/30 bg-studio-champagne/10 px-3 py-2 text-xs font-medium text-studio-champagne transition hover:border-studio-champagne/60 hover:bg-studio-champagne/20 focus:outline-none focus:ring-1 focus:ring-studio-champagne ${
+            className={`border-studio-champagne/30 bg-studio-champagne/10 hover:border-studio-champagne/60 hover:bg-studio-champagne/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium text-studio-champagne transition focus:outline-none focus:ring-1 focus:ring-studio-champagne ${
               isCollapsed ? "px-0" : ""
             }`}
           >
@@ -189,7 +189,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                 title={item.label}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition ${
                   item.isActive
-                    ? "border border-studio-champagne/40 bg-studio-champagne/15 text-studio-champagne shadow-sm"
+                    ? "border-studio-champagne/40 bg-studio-champagne/15 border text-studio-champagne shadow-sm"
                     : "text-studio-muted hover:text-studio-primary hover:bg-studio-surfaceHighlight"
                 } ${isCollapsed ? "justify-center px-0" : ""}`}
               >
@@ -202,10 +202,10 @@ export function AdminShell({ children, staff }: AdminShellProps) {
           {/* Contextual link when inside a wedding */}
           {isWeddingDetail && !isCollapsed && (
             <div className="pt-4">
-              <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-studio-champagne/80">
+              <div className="text-studio-champagne/80 mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider">
                 Active Celebration
               </div>
-              <div className="rounded-lg border border-studio-border bg-studio-canvas/60 p-2.5 text-xs">
+              <div className="bg-studio-canvas/60 rounded-lg border border-studio-border p-2.5 text-xs">
                 <div className="text-studio-primary font-medium">Wedding Studio</div>
                 <div className="text-studio-muted mt-0.5 text-[10px]">
                   Inspecting live operational state
@@ -223,10 +223,10 @@ export function AdminShell({ children, staff }: AdminShellProps) {
         </nav>
 
         {/* Staff Profile & Sign Out Footer */}
-        <div className="border-t border-studio-border bg-studio-canvas/40 p-3">
+        <div className="bg-studio-canvas/40 border-t border-studio-border p-3">
           <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
             <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-studio-champagne/30 bg-studio-champagne/15 text-xs font-semibold text-studio-champagne"
+              className="border-studio-champagne/30 bg-studio-champagne/15 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold text-studio-champagne"
               title={staff.fullName || staff.email}
             >
               {(staff.fullName || staff.email || "S").charAt(0).toUpperCase()}
@@ -252,7 +252,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             onClick={handleLogout}
             disabled={isLoggingOut}
             title="Sign out"
-            className={`text-studio-muted mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-studio-border bg-studio-surfaceElevated px-2.5 py-1.5 text-xs transition hover:border-studio-ruby/50 hover:bg-studio-ruby/15 hover:text-red-300 focus:outline-none focus:ring-1 focus:ring-studio-ruby ${
+            className={`text-studio-muted hover:border-studio-ruby/50 hover:bg-studio-ruby/15 mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-studio-border bg-studio-surfaceElevated px-2.5 py-1.5 text-xs transition hover:text-red-300 focus:outline-none focus:ring-1 focus:ring-studio-ruby ${
               isCollapsed ? "px-0" : ""
             }`}
           >
@@ -276,14 +276,14 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             {/* Drawer Header */}
             <div className="flex items-center justify-between border-b border-studio-border pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-studio-champagne/30 bg-studio-champagne/15 text-studio-champagne">
+                <div className="border-studio-champagne/30 bg-studio-champagne/15 flex h-8 w-8 items-center justify-center rounded-lg border text-studio-champagne">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
                   <div className="text-studio-primary font-serif text-sm font-semibold tracking-wider">
                     SHADIFY
                   </div>
-                  <div className="text-[10px] uppercase tracking-widest text-studio-champagne/80">
+                  <div className="text-studio-champagne/80 text-[10px] uppercase tracking-widest">
                     Concierge Studio
                   </div>
                 </div>
@@ -306,7 +306,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                   setIsMobileOpen(false);
                   setIsProvisionOpen(true);
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-studio-champagne/30 bg-studio-champagne/10 px-3 py-2.5 text-xs font-medium text-studio-champagne"
+                className="border-studio-champagne/30 bg-studio-champagne/10 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium text-studio-champagne"
               >
                 <Plus className="h-4 w-4" />
                 <span>Quick Provision Celebration</span>
@@ -323,7 +323,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                     href={item.href}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                       item.isActive
-                        ? "border border-studio-champagne/40 bg-studio-champagne/15 text-studio-champagne"
+                        ? "border-studio-champagne/40 bg-studio-champagne/15 border text-studio-champagne"
                         : "text-studio-muted hover:text-studio-primary hover:bg-studio-surfaceHighlight"
                     }`}
                   >
@@ -337,7 +337,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             {/* Staff profile & sign out */}
             <div className="border-t border-studio-border pt-4">
               <div className="mb-3 flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-studio-champagne/30 bg-studio-champagne/15 text-xs font-semibold text-studio-champagne">
+                <div className="border-studio-champagne/30 bg-studio-champagne/15 flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold text-studio-champagne">
                   {(staff.fullName || staff.email || "S").charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -351,7 +351,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="text-studio-muted flex w-full items-center justify-center gap-2 rounded-md border border-studio-border bg-studio-surfaceElevated py-2 text-xs hover:border-studio-ruby/50 hover:bg-studio-ruby/15 hover:text-red-300"
+                className="text-studio-muted hover:border-studio-ruby/50 hover:bg-studio-ruby/15 flex w-full items-center justify-center gap-2 rounded-md border border-studio-border bg-studio-surfaceElevated py-2 text-xs hover:text-red-300"
               >
                 <LogOut className="h-4 w-4" />
                 <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
@@ -368,7 +368,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
         }`}
       >
         {/* Global Top Bar */}
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-studio-border bg-studio-surface/90 px-4 backdrop-blur-md sm:px-6">
+        <header className="bg-studio-surface/90 sticky top-0 z-20 flex h-14 items-center justify-between border-b border-studio-border px-4 backdrop-blur-md sm:px-6">
           <div className="flex items-center gap-3">
             {/* Mobile menu trigger */}
             <button
@@ -407,7 +407,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             <button
               type="button"
               onClick={() => setIsProvisionOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-md border border-studio-champagne/40 bg-studio-champagne/10 px-2.5 py-1 text-xs font-medium text-studio-champagne transition hover:bg-studio-champagne/20"
+              className="border-studio-champagne/40 bg-studio-champagne/10 hover:bg-studio-champagne/20 inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium text-studio-champagne transition"
             >
               <Plus className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Provision</span>

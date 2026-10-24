@@ -168,7 +168,7 @@ export default function NewWeddingOnboardingPage() {
             </p>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-studio-champagne/40 bg-studio-champagne/15 px-3 py-1 text-xs font-medium text-studio-champagne">
+          <span className="border-studio-champagne/40 bg-studio-champagne/15 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium text-studio-champagne">
             <Sparkles className="h-3.5 w-3.5" />
             Full Provisioning Suite
           </span>
@@ -344,8 +344,8 @@ export default function NewWeddingOnboardingPage() {
                     onClick={() => setPlan(tierKey)}
                     className={`cursor-pointer rounded-xl border p-4 transition-all ${
                       plan === tierKey
-                        ? "border-studio-champagne bg-studio-champagne/15 shadow-sm"
-                        : "border-studio-border bg-studio-surfaceElevated hover:border-studio-champagne/40"
+                        ? "bg-studio-champagne/15 border-studio-champagne shadow-sm"
+                        : "hover:border-studio-champagne/40 border-studio-border bg-studio-surfaceElevated"
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -399,8 +399,8 @@ export default function NewWeddingOnboardingPage() {
                       }}
                       className={`rounded-xl border p-3 text-left transition-all ${
                         themeId === presetKey
-                          ? "border-studio-champagne bg-studio-champagne/15 shadow ring-1 ring-studio-champagne"
-                          : "border-studio-border bg-studio-surfaceElevated hover:border-studio-champagne/40"
+                          ? "bg-studio-champagne/15 border-studio-champagne shadow ring-1 ring-studio-champagne"
+                          : "hover:border-studio-champagne/40 border-studio-border bg-studio-surfaceElevated"
                       }`}
                     >
                       <div className="mb-2 flex h-6 w-full overflow-hidden rounded border border-white/10">

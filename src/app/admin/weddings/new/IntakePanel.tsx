@@ -218,7 +218,7 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
         >
           <Sparkles className="h-5 w-5 text-studio-champagne" />
           <span>Paste WhatsApp Message (AI Intake Draft Assistant)</span>
-          <span className="rounded-full bg-studio-champagne/15 px-2 py-0.5 font-mono text-[10px] text-studio-champagne">
+          <span className="bg-studio-champagne/15 rounded-full px-2 py-0.5 font-mono text-[10px] text-studio-champagne">
             Staff Only
           </span>
         </button>

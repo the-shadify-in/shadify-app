@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
   const session = await getAdminSession();
 
-  // If unauthenticated (e.g. /admin/login), render children without shell
+  // If unauthenticated (e.g. /admin/login), render children within studio scope
   if (!session) {
-    return <>{children}</>;
+    return <div className="admin-studio min-h-screen">{children}</div>;
   }
 
   // Retrieve authenticated staff profile

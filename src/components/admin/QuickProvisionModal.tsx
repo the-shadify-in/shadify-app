@@ -281,7 +281,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
         <DialogHeader className="border-b border-studio-border pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-studio-champagne/15 text-studio-champagne">
+              <span className="bg-studio-champagne/15 flex h-7 w-7 items-center justify-center rounded-lg text-studio-champagne">
                 <Sparkles className="h-4 w-4" />
               </span>
               <DialogTitle className="text-studio-primary font-serif text-xl font-normal">
@@ -449,8 +449,8 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                     onClick={() => setPlan(p.id as "lite" | "premium" | "platinum")}
                     className={`flex flex-col items-start rounded-lg border p-2.5 text-left transition ${
                       plan === p.id
-                        ? "border-studio-champagne bg-studio-champagne/15 shadow-sm"
-                        : "border-studio-border bg-studio-canvas hover:border-studio-champagne/40"
+                        ? "bg-studio-champagne/15 border-studio-champagne shadow-sm"
+                        : "hover:border-studio-champagne/40 border-studio-border bg-studio-canvas"
                     }`}
                   >
                     <div className="flex w-full items-center justify-between">
@@ -483,8 +483,8 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                     onClick={() => setThemeId(t.id)}
                     className={`flex flex-col items-center rounded-lg border p-2 text-center transition ${
                       themeId === t.id
-                        ? "border-studio-champagne bg-studio-champagne/15"
-                        : "border-studio-border bg-studio-canvas hover:border-studio-champagne/40"
+                        ? "bg-studio-champagne/15 border-studio-champagne"
+                        : "hover:border-studio-champagne/40 border-studio-border bg-studio-canvas"
                     }`}
                   >
                     <span
@@ -552,7 +552,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                           setIsSlugManuallyEdited(true);
                           setSlug(s);
                         }}
-                        className="rounded bg-studio-champagne/15 px-2 py-0.5 font-mono text-[10px] text-studio-champagne hover:bg-studio-champagne/25"
+                        className="bg-studio-champagne/15 hover:bg-studio-champagne/25 rounded px-2 py-0.5 font-mono text-[10px] text-studio-champagne"
                       >
                         +{s}
                       </button>
@@ -648,7 +648,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                 <Link
                   href={createdWedding.url}
                   target="_blank"
-                  className="text-studio-primary inline-flex items-center justify-center rounded-lg border border-studio-border bg-studio-surface px-4 py-2 font-medium hover:border-studio-champagne/40"
+                  className="text-studio-primary hover:border-studio-champagne/40 inline-flex items-center justify-center rounded-lg border border-studio-border bg-studio-surface px-4 py-2 font-medium"
                 >
                   Live Preview <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                 </Link>

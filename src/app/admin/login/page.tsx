@@ -12,7 +12,7 @@ export default async function AdminLoginPage() {
   }
 
   return (
-    <main className="text-studio-primary selection:text-studio-primary flex min-h-screen items-center justify-center bg-studio-canvas px-4 selection:bg-studio-champagne/30">
+    <main className="text-studio-primary selection:text-studio-primary selection:bg-studio-champagne/30 flex min-h-screen items-center justify-center bg-studio-canvas px-4">
       <Suspense fallback={<div className="text-studio-muted text-xs">Loading...</div>}>
         <AdminLoginClient />
       </Suspense>

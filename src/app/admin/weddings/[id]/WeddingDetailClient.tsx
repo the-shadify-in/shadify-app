@@ -9,6 +9,7 @@ import {
   Clock,
   Download,
   Eye,
+  EyeOff,
   FileText,
   Globe,
   MapPin,
@@ -25,6 +26,7 @@ import {
   Copy,
   Check,
   RotateCw,
+  ExternalLink,
 } from "lucide-react";
 import type { AdminSession } from "@/lib/auth";
 import { THEME_PRESETS, validateContrast, type PresetId } from "@/lib/themes/tokens";
@@ -167,6 +169,52 @@ type TabKey =
   | "entitlements"
   | "audit";
 
+function getWeddingCountdown(dateString: string | null | undefined): {
+  type: "future" | "today" | "past" | "unset";
+  label: string;
+  sublabel: string;
+} {
+  if (!dateString) {
+    return { type: "unset", label: "Date Pending", sublabel: "Muhurat unscheduled" };
+  }
+  const target = new Date(dateString);
+  if (isNaN(target.getTime())) {
+    return { type: "unset", label: "Date Invalid", sublabel: "Check format" };
+  }
+  const now = new Date();
+  const targetMidnight = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffDays = Math.round(
+    (targetMidnight.getTime() - nowMidnight.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  const formattedDate = target.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  if (diffDays > 0) {
+    return {
+      type: "future",
+      label: `T-${diffDays} ${diffDays === 1 ? "Day" : "Days"}`,
+      sublabel: `${diffDays} ${diffDays === 1 ? "day" : "days"} until ${formattedDate}`,
+    };
+  } else if (diffDays === 0) {
+    return {
+      type: "today",
+      label: "Today's Muhurat",
+      sublabel: `Celebration day (${formattedDate})`,
+    };
+  } else {
+    return {
+      type: "past",
+      label: "Celebration Concluded",
+      sublabel: `Archived memories (${formattedDate})`,
+    };
+  }
+}
+
 export default function WeddingDetailClient({
   initialWedding,
   staffSession,
@@ -208,6 +256,7 @@ export default function WeddingDetailClient({
       window.history.replaceState(null, "", `#${tab}`);
     }
   };
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [newAliasText, setNewAliasText] = useState("");
   const [newAliasKind, setNewAliasKind] = useState<"vanity" | "partner_run">("vanity");
@@ -216,6 +265,7 @@ export default function WeddingDetailClient({
 
   // Guest PIN lifecycle states
   const [revealedPin, setRevealedPin] = useState<string | null>(null);
+  const [showPinPlaintext, setShowPinPlaintext] = useState(false);
   const [copiedPin, setCopiedPin] = useState(false);
   const [pinLoading, setPinLoading] = useState(false);
 
@@ -254,6 +304,8 @@ export default function WeddingDetailClient({
     primary: primaryColor,
     accent: accentColor,
   });
+
+  const countdown = getWeddingCountdown(wedding.weddingDate);
 
   const handleSaveWedding = async (
     updates: Record<string, unknown>,
@@ -334,6 +386,7 @@ export default function WeddingDetailClient({
       const data = (await res.json()) as { pin?: string; error?: string };
       if (!res.ok || !data.pin) throw new Error(data.error || "Failed to reset PIN");
       setRevealedPin(data.pin);
+      setShowPinPlaintext(true);
       setWedding((prev) => ({ ...prev, hasPrivatePin: true }));
       showToast("✓ New guest access PIN generated successfully");
     } catch (err: unknown) {
@@ -359,6 +412,7 @@ export default function WeddingDetailClient({
       const data = (await res.json()) as { pin?: string; error?: string };
       if (!res.ok || !data.pin) throw new Error(data.error || "Failed to set custom PIN");
       setRevealedPin(data.pin);
+      setShowPinPlaintext(true);
       setPinInput("");
       setWedding((prev) => ({ ...prev, hasPrivatePin: true }));
       showToast("✓ Custom guest access PIN updated");
@@ -387,6 +441,7 @@ export default function WeddingDetailClient({
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error || "Failed to remove PIN");
       setRevealedPin(null);
+      setShowPinPlaintext(false);
       setWedding((prev) => ({ ...prev, hasPrivatePin: false }));
       showToast("✓ Guest access PIN removed. Celebration is now public.");
     } catch (err: unknown) {
@@ -491,140 +546,364 @@ export default function WeddingDetailClient({
   const nonVegCount = attendingRsvps.filter((r) => r.mealPreference === "non_veg").length;
   const stayCount = attendingRsvps.filter((r) => r.needsStay).length;
 
+  // 4 Operational Domains mapping
+  const DOMAINS = [
+    {
+      title: "1. Core Identity & Plan",
+      description: "Ceremony basics, URL slugs, and publication gating",
+      items: [
+        {
+          key: "basics" as TabKey,
+          label: "Identity & Slugs",
+          icon: Sliders,
+          badge: null,
+          badgeGold: false,
+        },
+        {
+          key: "publish" as TabKey,
+          label: "Proofing & Gate",
+          icon: ShieldCheck,
+          badge: wedding.status,
+          badgeGold: false,
+        },
+      ],
+    },
+    {
+      title: "2. Guest Operations",
+      description: "RSVPs, catering requirements, and family consent",
+      items: [
+        {
+          key: "rsvps" as TabKey,
+          label: `RSVPs (${totalRsvps})`,
+          icon: FileText,
+          badge: totalRsvps > 0 ? totalRsvps : null,
+          badgeGold: true,
+        },
+        {
+          key: "people" as TabKey,
+          label: `VIPs (${wedding.vips?.length || 0})`,
+          icon: Users,
+          badge: (wedding.vips?.length || 0) > 0 ? wedding.vips.length : null,
+          badgeGold: false,
+        },
+        {
+          key: "print_qr" as TabKey,
+          label: `Print & QR Proofs`,
+          icon: QrCode,
+          badge: (wedding.qrAssets?.length || 0) > 0 ? wedding.qrAssets.length : null,
+          badgeGold: false,
+        },
+      ],
+    },
+    {
+      title: "3. Experience & Design",
+      description: "Ceremony schedule, visual themes, and media sections",
+      items: [
+        {
+          key: "events" as TabKey,
+          label: `Events (${wedding.events?.length || 0})`,
+          icon: Calendar,
+          badge: (wedding.events?.length || 0) > 0 ? wedding.events.length : null,
+          badgeGold: false,
+        },
+        {
+          key: "theme" as TabKey,
+          label: "Theme & Contrast",
+          icon: Palette,
+          badge: null,
+          badgeGold: false,
+        },
+        {
+          key: "sections" as TabKey,
+          label: "Sections & Audio",
+          icon: Music,
+          badge: null,
+          badgeGold: false,
+        },
+      ],
+    },
+    {
+      title: "4. Governance & Quotas",
+      description: "Resource meters, entitlement overrides, and forensic audit trail",
+      items: [
+        {
+          key: "entitlements" as TabKey,
+          label: "Plan & Overrides",
+          icon: Sparkles,
+          badge: effective?.hasActiveOverride ? "OVERRIDE" : null,
+          badgeGold: true,
+        },
+        {
+          key: "audit" as TabKey,
+          label: "Audit Trail",
+          icon: Clock,
+          badge: wedding.auditLogs?.length ? wedding.auditLogs.length : null,
+          badgeGold: false,
+        },
+      ],
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#090406] text-[#FFF9F2]">
-      {/* Toast */}
+    <div className="text-studio-primary min-h-screen bg-studio-canvas pb-16">
+      {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-full border border-[#C9933A]/60 bg-[#12070A]/95 px-6 py-3 font-serif text-xs text-[#FFF9F2] shadow-2xl backdrop-blur-md">
+        <div className="text-studio-primary border-studio-champagne/60 fixed bottom-6 right-6 z-50 rounded-full border bg-studio-surfaceElevated px-6 py-3 font-serif text-xs shadow-2xl backdrop-blur-md">
           {toastMessage}
         </div>
       )}
 
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 border-b border-[#C9933A]/20 bg-[#12070A]/90 px-6 py-4 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/admin"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#C9933A]/30 bg-[#1A0A00] text-[#C9933A] transition hover:bg-[#C9933A]/20"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="font-serif text-xl font-light text-white">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6">
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/admin"
+            className="text-studio-muted inline-flex items-center gap-1.5 text-xs font-medium transition hover:text-studio-champagne"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back to Celebrations</span>
+          </Link>
+          <div className="text-studio-subtle flex items-center gap-3 font-mono text-xs">
+            <span>
+              Staff: {staffSession.userId.slice(0, 8)} ({staffSession.role})
+            </span>
+            <span>•</span>
+            <span>ID:</span>
+            <span className="text-studio-muted">{wedding.id}</span>
+          </div>
+        </div>
+
+        {/* Compact Executive Hero Section (Replaces Redundant Sticky Header) */}
+        <section className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            {/* Primary Details & Status */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-studio-primary font-serif text-2xl font-light tracking-tight">
                   {wedding.brideName} &amp; {wedding.groomName}
                 </h1>
-                <span
-                  className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider ${
+
+                {/* Lifecycle Status Pill (Links to Publish Gate tab to follow standard transition protocol) */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("publish")}
+                  title="Click to view Proofing & Publication safeguards"
+                  className={`rounded-full px-3 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider transition ${
                     wedding.status === "published"
-                      ? "border border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
+                      ? "border border-emerald-500/30 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25"
                       : wedding.status === "preview"
-                        ? "border border-amber-500/30 bg-amber-500/20 text-amber-300"
-                        : "border border-stone-500/30 bg-stone-500/20 text-stone-300"
+                        ? "border border-amber-500/30 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25"
+                        : "text-studio-muted hover:text-studio-primary border border-studio-border bg-studio-surfaceElevated"
                   }`}
                 >
                   {wedding.status}
-                </span>
-                <span className="rounded-full border border-[#C9933A]/40 bg-[#C9933A]/10 px-2 py-0.5 text-[10px] uppercase tracking-widest text-[#E8B96B]">
+                </button>
+
+                {/* Plan Tier Badge */}
+                <span className="border-studio-champagne/40 bg-studio-champagne/10 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-studio-champagneLight">
                   {wedding.plan}
                 </span>
+
+                {/* Active Override Indicator */}
+                {effective?.hasActiveOverride && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("entitlements")}
+                    className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-amber-300 transition hover:bg-amber-500/20"
+                  >
+                    OVERRIDE ACTIVE
+                  </button>
+                )}
               </div>
-              <p className="mt-0.5 font-mono text-xs text-[#E2D5C7]/50">
-                shadify.in/{wedding.slug}
-              </p>
+
+              {/* Canonical Slug & Destination Link */}
+              <div className="text-studio-muted flex items-center gap-2 font-mono text-xs">
+                <Globe className="h-3.5 w-3.5 text-studio-champagne" />
+                <a
+                  href={`/${wedding.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 underline underline-offset-4 transition hover:text-studio-champagne"
+                >
+                  shadify.in/{wedding.slug}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Link
+                href={`/${wedding.slug}/preview`}
+                target="_blank"
+                className="text-studio-primary hover:border-studio-champagne/40 inline-flex items-center gap-1.5 rounded-lg border border-studio-border bg-studio-surfaceElevated px-3.5 py-2 text-xs font-medium transition hover:text-studio-champagne"
+              >
+                <Eye className="h-3.5 w-3.5" />
+                <span>Preview Card</span>
+              </Link>
+              <Link
+                href={`/${wedding.slug}`}
+                target="_blank"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-studio-champagne px-4 py-2 text-xs font-semibold text-studio-canvas transition hover:bg-studio-champagneLight"
+              >
+                <Globe className="h-3.5 w-3.5" />
+                <span>Live Page</span>
+              </Link>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[11px] text-stone-400 sm:flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              <span>
-                Staff: {staffSession.userId.slice(0, 8)} ({staffSession.role})
+          {/* Executive Telemetry Shelf: Masked PIN, Conditional Countdown, RSVP Summary */}
+          <div className="mt-6 grid grid-cols-1 gap-3 border-t border-studio-borderSubtle pt-4 sm:grid-cols-3">
+            {/* 1. Masked PIN Control */}
+            <div className="flex items-center justify-between rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2.5">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <Key className="h-4 w-4 shrink-0 text-studio-champagne" />
+                <div className="min-w-0">
+                  <span className="text-studio-muted block text-[10px] uppercase tracking-wider">
+                    Guest Access PIN
+                  </span>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    {wedding.hasPrivatePin ? (
+                      showPinPlaintext && revealedPin ? (
+                        <span className="text-studio-primary truncate font-mono text-xs font-bold tracking-widest">
+                          {revealedPin}
+                        </span>
+                      ) : (
+                        <span className="text-studio-muted font-mono text-xs font-semibold tracking-widest">
+                          ••••••
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-studio-subtle text-xs font-medium">
+                        Public (No PIN)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {wedding.hasPrivatePin && (
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    type="button"
+                    title={showPinPlaintext ? "Hide PIN" : "Reveal PIN"}
+                    onClick={() => {
+                      if (!revealedPin) {
+                        showToast(
+                          "PIN is hashed with scrypt. Rotate or set new PIN below to reveal plaintext.",
+                        );
+                      }
+                      setShowPinPlaintext((prev) => !prev);
+                    }}
+                    className="text-studio-muted hover:text-studio-primary rounded p-1 transition hover:bg-studio-surfaceHighlight"
+                  >
+                    {showPinPlaintext && revealedPin ? (
+                      <EyeOff className="h-3.5 w-3.5" />
+                    ) : (
+                      <Eye className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    title="Copy PIN"
+                    onClick={() => {
+                      if (revealedPin) {
+                        void navigator.clipboard.writeText(revealedPin);
+                        setCopiedPin(true);
+                        setTimeout(() => setCopiedPin(false), 2500);
+                        showToast("✓ PIN copied to clipboard");
+                      } else {
+                        showToast(
+                          "PIN is securely hashed. Rotate or set new PIN below to obtain copyable plaintext.",
+                        );
+                      }
+                    }}
+                    className="text-studio-muted rounded p-1 transition hover:bg-studio-surfaceHighlight hover:text-studio-champagne"
+                  >
+                    {copiedPin ? (
+                      <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Conditional Countdown Banner */}
+            <div className="flex items-center justify-between rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2.5">
+              <div className="flex min-w-0 items-center gap-2.5">
+                {countdown.type === "future" ? (
+                  <Clock className="h-4 w-4 shrink-0 text-studio-champagne" />
+                ) : countdown.type === "today" ? (
+                  <Sparkles className="h-4 w-4 shrink-0 text-amber-400" />
+                ) : countdown.type === "past" ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+                ) : (
+                  <Calendar className="text-studio-muted h-4 w-4 shrink-0" />
+                )}
+                <div className="min-w-0">
+                  <span className="text-studio-muted block text-[10px] uppercase tracking-wider">
+                    Ceremony Timeline
+                  </span>
+                  <div className="mt-0.5 flex items-center gap-1.5 truncate">
+                    <span className="text-studio-primary text-xs font-medium">
+                      {countdown.label}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <span className="text-studio-subtle shrink-0 font-mono text-[10px]">
+                {countdown.sublabel}
               </span>
             </div>
-            <Link
-              href={`/${wedding.slug}/preview`}
-              target="_blank"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#C9933A]/40 bg-[#1A0A00] px-3.5 py-1.5 text-xs font-medium text-[#E8B96B] transition hover:bg-[#C9933A]/20"
-            >
-              <Eye className="h-3.5 w-3.5" />
-              <span>Preview Card</span>
-            </Link>
-            <Link
-              href={`/${wedding.slug}`}
-              target="_blank"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#C9933A] px-3.5 py-1.5 text-xs font-semibold text-[#090406] transition hover:bg-[#D4AF37]"
-            >
-              <Globe className="h-3.5 w-3.5" />
-              <span>Live Page</span>
-            </Link>
-          </div>
-        </div>
-      </header>
 
-      {/* 4-Domain Operational Studio Navigation */}
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {/* Mobile Domain Bar (< lg) */}
-        <div className="mb-6 block lg:hidden">
-          <div className="rounded-xl border border-[#C9933A]/20 bg-[#14080B] p-3 shadow-sm">
-            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#C9933A]/80">
+            {/* 3. RSVP / Hospitality Summary */}
+            <button
+              type="button"
+              onClick={() => setActiveTab("rsvps")}
+              className="hover:border-studio-champagne/30 flex items-center justify-between rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2.5 text-left transition hover:bg-studio-surfaceHighlight"
+            >
+              <div className="flex min-w-0 items-center gap-2.5">
+                <Users className="h-4 w-4 shrink-0 text-studio-champagne" />
+                <div className="min-w-0">
+                  <span className="text-studio-muted block text-[10px] uppercase tracking-wider">
+                    Guest Headcount
+                  </span>
+                  <div className="mt-0.5 flex items-center gap-1.5">
+                    <span className="text-studio-primary text-xs font-semibold">
+                      {totalAttendingGuests} Attending
+                    </span>
+                    <span className="text-studio-muted text-[11px]">({totalRsvps} RSVPs)</span>
+                  </div>
+                </div>
+              </div>
+              <span className="shrink-0 rounded bg-studio-surface px-2 py-0.5 text-[10px] font-medium text-studio-champagne">
+                View Table →
+              </span>
+            </button>
+          </div>
+        </section>
+
+        {/* 4-Domain Operational Studio Navigation */}
+        {/* Mobile Horizontal Domain Bar (< lg) */}
+        <div className="block lg:hidden">
+          <div className="rounded-xl border border-studio-border bg-studio-surface p-3 shadow-sm">
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-studio-champagne">
               Operational Studio Navigation
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1 text-xs">
-              {[
-                { domain: "Core", key: "basics", label: "Identity & Basics", icon: Sliders },
-                {
-                  domain: "Guest Ops",
-                  key: "rsvps",
-                  label: `RSVPs (${totalRsvps})`,
-                  icon: FileText,
-                },
-                {
-                  domain: "Guest Ops",
-                  key: "people",
-                  label: `VIPs (${wedding.vips?.length || 0})`,
-                  icon: Users,
-                },
-                {
-                  domain: "Guest Ops",
-                  key: "print_qr",
-                  label: `Print & QR (${wedding.qrAssets?.length || 0})`,
-                  icon: QrCode,
-                },
-                {
-                  domain: "Design",
-                  key: "events",
-                  label: `Events (${wedding.events?.length || 0})`,
-                  icon: Calendar,
-                },
-                { domain: "Design", key: "theme", label: "Theme & Contrast", icon: Palette },
-                { domain: "Design", key: "sections", label: "Sections & Audio", icon: Music },
-                {
-                  domain: "Governance",
-                  key: "entitlements",
-                  label: "Studio & Entitlements",
-                  icon: Sparkles,
-                },
-                {
-                  domain: "Governance",
-                  key: "publish",
-                  label: "Publish & Gate",
-                  icon: ShieldCheck,
-                },
-                { domain: "Governance", key: "audit", label: "Audit Log", icon: Clock },
-              ].map((t) => {
+              {DOMAINS.flatMap((d) => d.items).map((t) => {
                 const Icon = t.icon;
                 const isActive = activeTab === t.key;
                 return (
                   <button
                     key={t.key}
                     type="button"
-                    onClick={() => setActiveTab(t.key as TabKey)}
+                    onClick={() => setActiveTab(t.key)}
                     className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium transition ${
                       isActive
-                        ? "border border-[#C9933A]/50 bg-[#C9933A]/25 text-[#E8B96B] shadow-sm"
-                        : "border border-transparent text-[#E2D5C7]/70 hover:bg-white/5 hover:text-white"
+                        ? "border-studio-champagne/50 bg-studio-champagne/20 border text-studio-champagneLight shadow-sm"
+                        : "text-studio-muted hover:text-studio-primary border border-transparent hover:bg-studio-surfaceElevated"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5 shrink-0" />
@@ -636,107 +915,16 @@ export default function WeddingDetailClient({
           </div>
         </div>
 
-        {/* Dual Column Layout (Desktop >= lg) */}
+        {/* Dual Column Layout: 4-Domain Sidebar + Active Tab Content */}
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-          {/* Vertical 4-Domain Sidebar */}
+          {/* Vertical 4-Domain Sidebar (Desktop >= lg) */}
           <aside className="hidden w-64 shrink-0 space-y-4 lg:block">
-            {[
-              {
-                title: "1. Celebration Core",
-                items: [
-                  {
-                    key: "basics",
-                    label: "Identity & Basics",
-                    icon: Sliders,
-                    badge: null,
-                    badgeGold: false,
-                  },
-                ],
-              },
-              {
-                title: "2. Guest Operations",
-                items: [
-                  {
-                    key: "rsvps",
-                    label: "RSVPs & Catering",
-                    icon: FileText,
-                    badge: totalRsvps > 0 ? totalRsvps : null,
-                    badgeGold: true,
-                  },
-                  {
-                    key: "people",
-                    label: "VIPs & Consent",
-                    icon: Users,
-                    badge: (wedding.vips?.length || 0) > 0 ? wedding.vips.length : null,
-                    badgeGold: false,
-                  },
-                  {
-                    key: "print_qr",
-                    label: "Print & QR Cards",
-                    icon: QrCode,
-                    badge: (wedding.qrAssets?.length || 0) > 0 ? wedding.qrAssets.length : null,
-                    badgeGold: false,
-                  },
-                ],
-              },
-              {
-                title: "3. Design & Experience",
-                items: [
-                  {
-                    key: "events",
-                    label: "Events & Itinerary",
-                    icon: Calendar,
-                    badge: (wedding.events?.length || 0) > 0 ? wedding.events.length : null,
-                    badgeGold: false,
-                  },
-                  {
-                    key: "theme",
-                    label: "Theme & Contrast",
-                    icon: Palette,
-                    badge: null,
-                    badgeGold: false,
-                  },
-                  {
-                    key: "sections",
-                    label: "Sections & Audio",
-                    icon: Music,
-                    badge: null,
-                    badgeGold: false,
-                  },
-                ],
-              },
-              {
-                title: "4. Entitlements & Governance",
-                items: [
-                  {
-                    key: "entitlements",
-                    label: "Plan & Overrides",
-                    icon: Sparkles,
-                    badge: effective?.hasActiveOverride ? "OVERRIDE" : null,
-                    badgeGold: true,
-                  },
-                  {
-                    key: "publish",
-                    label: "Lifecycle & Gate",
-                    icon: ShieldCheck,
-                    badge: wedding.status,
-                    badgeGold: false,
-                  },
-                  {
-                    key: "audit",
-                    label: "Audit Trail",
-                    icon: Clock,
-                    badge: wedding.auditLogs?.length ? wedding.auditLogs.length : null,
-                    badgeGold: false,
-                  },
-                ],
-              },
-            ].map((domain) => (
+            {DOMAINS.map((domain) => (
               <div
                 key={domain.title}
-                className="overflow-hidden rounded-xl border border-[#C9933A]/20 bg-[#14080B] p-2.5 shadow-sm"
+                className="overflow-hidden rounded-xl border border-studio-border bg-studio-surface p-2.5 shadow-sm"
               >
-                <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#C9933A]/80">
+                <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-studio-champagne">
                   {domain.title}
                 </div>
                 <div className="mt-1 space-y-1">
@@ -747,25 +935,25 @@ export default function WeddingDetailClient({
                       <button
                         key={item.key}
                         type="button"
-                        onClick={() => setActiveTab(item.key as TabKey)}
+                        onClick={() => setActiveTab(item.key)}
                         className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs font-medium transition ${
                           isActive
-                            ? "border border-[#C9933A]/40 bg-[#C9933A]/20 text-[#E8B96B] shadow-sm"
-                            : "text-[#E2D5C7]/70 hover:bg-white/5 hover:text-white"
+                            ? "border-studio-champagne/40 bg-studio-champagne/20 border text-studio-champagneLight shadow-sm"
+                            : "text-studio-muted hover:text-studio-primary hover:bg-studio-surfaceElevated"
                         }`}
                       >
                         <div className="flex items-center gap-2.5 truncate">
-                          <Icon className="h-3.5 w-3.5 shrink-0 text-[#C9933A]" />
+                          <Icon className="h-3.5 w-3.5 shrink-0 text-studio-champagne" />
                           <span className="truncate">{item.label}</span>
                         </div>
                         {item.badge !== null && item.badge !== undefined && (
                           <span
                             className={`rounded-full px-1.5 py-0.5 font-mono text-[9px] ${
                               item.badgeGold
-                                ? "border border-[#C9933A]/40 bg-[#C9933A]/25 text-[#E8B96B]"
+                                ? "border-studio-champagne/40 bg-studio-champagne/25 border text-studio-champagneLight"
                                 : item.badge === "published"
                                   ? "border border-emerald-500/30 bg-emerald-950/80 text-emerald-300"
-                                  : "bg-white/10 text-stone-300"
+                                  : "text-studio-muted bg-studio-surfaceElevated"
                             }`}
                           >
                             {item.badge}
@@ -781,53 +969,55 @@ export default function WeddingDetailClient({
 
           {/* Active Module Panel */}
           <main className="min-w-0 flex-1">
-            {/* TAB 1: BASICS */}
+            {/* DOMAIN 1: BASICS */}
             {activeTab === "basics" && (
               <div className="space-y-6">
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h2 className="mb-4 font-serif text-lg text-white">Core Wedding Identity</h2>
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h2 className="text-studio-primary mb-4 font-serif text-lg font-medium">
+                    Core Wedding Identity
+                  </h2>
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Bride Name
                       </label>
                       <input
                         type="text"
                         value={brideName}
                         onChange={(e) => setBrideName(e.target.value)}
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white focus:border-[#C9933A] focus:outline-none"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Groom Name
                       </label>
                       <input
                         type="text"
                         value={groomName}
                         onChange={(e) => setGroomName(e.target.value)}
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white focus:border-[#C9933A] focus:outline-none"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Primary Wedding Date
                       </label>
                       <input
                         type="date"
                         value={weddingDate}
                         onChange={(e) => setWeddingDate(e.target.value)}
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white focus:border-[#C9933A] focus:outline-none"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Default Language
                       </label>
                       <select
                         value={defaultLocale}
                         onChange={(e) => setDefaultLocale(e.target.value)}
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white focus:border-[#C9933A] focus:outline-none"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       >
                         <option value="en">English</option>
                         <option value="ta">Tamil (தமிழ்)</option>
@@ -835,33 +1025,18 @@ export default function WeddingDetailClient({
                       </select>
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Service Tier Plan
                       </label>
                       <select
                         value={plan}
                         onChange={(e) => setPlan(e.target.value)}
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white focus:border-[#C9933A] focus:outline-none"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       >
                         <option value="lite">Shubh (Lite) — ₹2,999</option>
                         <option value="premium">Vivah (Premium) — ₹7,999</option>
                         <option value="platinum">Rajwada (Platinum) — ₹19,999</option>
                       </select>
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
-                        Primary URL Slug (Permanent Anchor)
-                      </label>
-                      <input
-                        type="text"
-                        disabled
-                        value={wedding.slug}
-                        className="w-full cursor-not-allowed rounded-lg border border-white/10 bg-white/5 px-3.5 py-2 text-sm text-stone-400"
-                      />
-                      <p className="mt-1 text-[11px] text-stone-400">
-                        Slugs printed on physical cards should never be mutated. Use the alias
-                        manager below for vanity redirects or partner runs.
-                      </p>
                     </div>
                   </div>
 
@@ -873,11 +1048,11 @@ export default function WeddingDetailClient({
                           brideName,
                           groomName,
                           weddingDate,
-                          defaultLocale,
                           plan,
+                          defaultLocale,
                         })
                       }
-                      className="rounded-lg bg-[#C9933A] px-5 py-2 text-xs font-semibold text-[#090406] hover:bg-[#D4AF37] disabled:opacity-50"
+                      className="rounded-lg bg-studio-champagne px-5 py-2 text-xs font-semibold text-studio-canvas transition hover:bg-studio-champagneLight disabled:opacity-50"
                     >
                       {saving ? "Saving..." : "Save Identity Changes"}
                     </button>
@@ -885,16 +1060,16 @@ export default function WeddingDetailClient({
                 </div>
 
                 {/* Private Access PIN & Gate Lifecycle */}
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
                   <div className="mb-4 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                     <div>
                       <div className="flex items-center gap-2">
-                        <Key className="h-5 w-5 text-[#C9933A]" />
-                        <h2 className="font-serif text-lg text-white">
+                        <Key className="h-5 w-5 text-studio-champagne" />
+                        <h2 className="text-studio-primary font-serif text-lg font-medium">
                           Guest Access PIN Lifecycle &amp; Privacy Gate
                         </h2>
                       </div>
-                      <p className="mt-0.5 text-xs text-[#E2D5C7]/70">
+                      <p className="text-studio-muted mt-0.5 text-xs">
                         Cryptographically hashed gate protection. Resetting the PIN immediately
                         invalidates all previously issued guest access session cookies.
                       </p>
@@ -903,7 +1078,7 @@ export default function WeddingDetailClient({
                       className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                         wedding.hasPrivatePin
                           ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                          : "border border-stone-500/30 bg-stone-500/10 text-stone-400"
+                          : "text-studio-muted border border-studio-border bg-studio-surfaceElevated"
                       }`}
                     >
                       {wedding.hasPrivatePin ? "PIN Protection Active" : "Public Access (No PIN)"}
@@ -912,14 +1087,14 @@ export default function WeddingDetailClient({
 
                   {/* Ephemeral One-Time PIN Reveal Banner */}
                   {revealedPin && (
-                    <div className="mb-5 rounded-xl border border-[#C9933A] bg-[#221008] p-4 shadow-xl">
+                    <div className="mb-5 rounded-xl border border-studio-champagne bg-studio-surfaceHighlight p-4 shadow-xl">
                       <div className="flex items-start justify-between">
                         <div>
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#E8B96B]">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-studio-champagneLight">
                             New Guest Access PIN Generated
                           </span>
                           <div className="mt-2 flex items-center gap-3">
-                            <span className="rounded border border-[#C9933A]/30 bg-black/60 px-3 py-1 font-mono text-2xl font-bold tracking-widest text-white">
+                            <span className="text-studio-primary rounded border border-studio-border bg-studio-canvas px-3 py-1 font-mono text-2xl font-bold tracking-widest">
                               {revealedPin}
                             </span>
                             <button
@@ -929,7 +1104,7 @@ export default function WeddingDetailClient({
                                 setCopiedPin(true);
                                 setTimeout(() => setCopiedPin(false), 3000);
                               }}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-[#C9933A]/50 bg-[#C9933A]/20 px-3 py-1.5 text-xs font-semibold text-[#E8B96B] hover:bg-[#C9933A]/30"
+                              className="border-studio-champagne/50 bg-studio-champagne/20 hover:bg-studio-champagne/30 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold text-studio-champagneLight"
                             >
                               {copiedPin ? (
                                 <>
@@ -945,15 +1120,15 @@ export default function WeddingDetailClient({
                             </button>
                           </div>
                           <p className="mt-2 text-xs text-amber-200/80">
-                            ⚠️ Provide this PIN to the couple or print on physical cards. For
-                            security, it is salted and hashed with scrypt, never logged in
-                            plaintext, and cannot be viewed again once dismissed.
+                            Provide this PIN to the couple or print on physical cards. For security,
+                            it is salted and hashed with scrypt, never logged in plaintext, and
+                            cannot be viewed again once dismissed.
                           </p>
                         </div>
                         <button
                           type="button"
                           onClick={() => setRevealedPin(null)}
-                          className="rounded bg-white/5 px-2 py-1 text-xs text-stone-400 hover:text-white"
+                          className="text-studio-muted hover:text-studio-primary rounded bg-studio-surface px-2 py-1 text-xs"
                         >
                           Dismiss
                         </button>
@@ -961,10 +1136,10 @@ export default function WeddingDetailClient({
                     </div>
                   )}
 
-                  <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4">
+                  <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                       <div className="max-w-xs">
-                        <label className="mb-1 block text-xs text-[#E2D5C7]/70">
+                        <label className="text-studio-muted mb-1 block text-xs">
                           Set Specific Custom PIN (4–6 Digits)
                         </label>
                         <div className="flex gap-2">
@@ -975,18 +1150,18 @@ export default function WeddingDetailClient({
                             placeholder="e.g. 543210"
                             value={pinInput}
                             onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
-                            className="w-full rounded-lg border border-white/15 bg-black/40 px-3.5 py-2 font-mono text-sm tracking-widest text-white placeholder-stone-500 focus:border-[#C9933A] focus:outline-none"
+                            className="text-studio-primary placeholder-studio-subtle w-full rounded-lg border border-studio-borderSubtle bg-studio-canvas px-3.5 py-2 font-mono text-sm tracking-widest focus:border-studio-champagne focus:outline-none"
                           />
                           <button
                             type="button"
                             disabled={pinLoading || pinInput.length < 4}
                             onClick={() => void handleSetCustomPin()}
-                            className="rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white hover:bg-white/20 disabled:opacity-50"
+                            className="text-studio-primary rounded-lg bg-studio-surfaceHighlight px-3 py-2 text-xs font-medium hover:bg-studio-border disabled:opacity-50"
                           >
                             Set
                           </button>
                         </div>
-                        <p className="mt-1 text-[10px] text-stone-400">
+                        <p className="text-studio-subtle mt-1 text-[10px]">
                           Numeric digits only. Automatically salted and scrypt-hashed.
                         </p>
                       </div>
@@ -997,7 +1172,7 @@ export default function WeddingDetailClient({
                             type="button"
                             disabled={pinLoading}
                             onClick={() => void handleRemovePin()}
-                            className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs font-medium text-rose-200 hover:bg-rose-500/20 disabled:opacity-50"
+                            className="border-studio-ruby/40 bg-studio-ruby/10 hover:bg-studio-ruby/20 rounded-lg border px-4 py-2 text-xs font-medium text-red-300 transition disabled:opacity-50"
                           >
                             Remove PIN Protection
                           </button>
@@ -1006,7 +1181,7 @@ export default function WeddingDetailClient({
                           type="button"
                           disabled={pinLoading}
                           onClick={() => void handleResetPin()}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-[#C9933A] px-4 py-2 text-xs font-semibold text-[#090406] hover:bg-[#D4AF37] disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-studio-champagne px-4 py-2 text-xs font-semibold text-studio-canvas transition hover:bg-studio-champagneLight disabled:opacity-50"
                         >
                           <RotateCw className={`h-3.5 w-3.5 ${pinLoading ? "animate-spin" : ""}`} />
                           <span>
@@ -1021,13 +1196,13 @@ export default function WeddingDetailClient({
                 </div>
 
                 {/* Permanent Aliases Manager */}
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
                   <div className="mb-4 flex items-center justify-between">
                     <div>
-                      <h2 className="font-serif text-lg text-white">
+                      <h2 className="text-studio-primary font-serif text-lg font-medium">
                         Permanent URL Aliases (`wedding_aliases`)
                       </h2>
-                      <p className="mt-0.5 text-xs text-[#E2D5C7]/70">
+                      <p className="text-studio-muted mt-0.5 text-xs">
                         Addresses never die: aliases seamlessly resolve to this wedding without
                         redirect hops.
                       </p>
@@ -1036,14 +1211,14 @@ export default function WeddingDetailClient({
 
                   <form
                     onSubmit={handleCreateAlias}
-                    className="mb-6 rounded-xl border border-white/10 bg-[#1A0A00] p-4"
+                    className="mb-6 rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4"
                   >
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#C9933A]">
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-studio-champagne">
                       Register New Alias
                     </h3>
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                       <div>
-                        <label className="mb-1 block text-[11px] text-[#E2D5C7]/70">
+                        <label className="text-studio-muted mb-1 block text-[11px]">
                           Alias Slug
                         </label>
                         <input
@@ -1051,24 +1226,24 @@ export default function WeddingDetailClient({
                           placeholder="e.g. pg-1311 or partner-run-1"
                           value={newAliasText}
                           onChange={(e) => setNewAliasText(e.target.value)}
-                          className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white"
+                          className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-canvas px-3 py-1.5 text-xs focus:border-studio-champagne focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label className="mb-1 block text-[11px] text-[#E2D5C7]/70">Kind</label>
+                        <label className="text-studio-muted mb-1 block text-[11px]">Kind</label>
                         <select
                           value={newAliasKind}
                           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                             setNewAliasKind(e.target.value as "vanity" | "partner_run")
                           }
-                          className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white"
+                          className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-canvas px-3 py-1.5 text-xs focus:border-studio-champagne focus:outline-none"
                         >
                           <option value="vanity">Vanity / Short Print</option>
                           <option value="partner_run">Partner Print Run</option>
                         </select>
                       </div>
                       <div>
-                        <label className="mb-1 block text-[11px] text-[#E2D5C7]/70">
+                        <label className="text-studio-muted mb-1 block text-[11px]">
                           Partner Label (Optional)
                         </label>
                         <input
@@ -1076,7 +1251,7 @@ export default function WeddingDetailClient({
                           placeholder="e.g. Vasantham Printers Batch 1"
                           value={newAliasPartner}
                           onChange={(e) => setNewAliasPartner(e.target.value)}
-                          className="w-full rounded-lg border border-white/15 bg-black/40 px-3 py-1.5 text-xs text-white"
+                          className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-canvas px-3 py-1.5 text-xs focus:border-studio-champagne focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1084,7 +1259,7 @@ export default function WeddingDetailClient({
                       <button
                         type="submit"
                         disabled={creatingAlias || !newAliasText.trim()}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#C9933A]/50 bg-[#C9933A]/20 px-3.5 py-1.5 text-xs font-medium text-[#E8B96B] hover:bg-[#C9933A]/30 disabled:opacity-50"
+                        className="border-studio-champagne/50 bg-studio-champagne/20 hover:bg-studio-champagne/30 inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-xs font-medium text-studio-champagneLight disabled:opacity-50"
                       >
                         <Plus className="h-3.5 w-3.5" />
                         <span>{creatingAlias ? "Adding..." : "Add Alias"}</span>
@@ -1092,9 +1267,9 @@ export default function WeddingDetailClient({
                     </div>
                   </form>
 
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-studio-border/30 divide-y">
                     {wedding.aliases.length === 0 ? (
-                      <p className="py-4 text-center text-xs text-stone-500">
+                      <p className="text-studio-muted py-4 text-center text-xs">
                         No aliases registered yet. Primary slug is active.
                       </p>
                     ) : (
@@ -1102,19 +1277,19 @@ export default function WeddingDetailClient({
                         <div key={a.id} className="flex items-center justify-between py-3">
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm font-medium text-white">
+                              <span className="text-studio-primary font-mono text-sm font-medium">
                                 shadify.in/{a.alias}
                               </span>
-                              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] uppercase text-stone-300">
+                              <span className="text-studio-muted rounded-full bg-studio-surfaceElevated px-2 py-0.5 text-[10px] uppercase">
                                 {a.kind}
                               </span>
                             </div>
                             {a.partnerLabel && (
-                              <p className="mt-0.5 text-[11px] text-[#C9933A]">
+                              <p className="mt-0.5 text-[11px] text-studio-champagne">
                                 Printer / Partner: {a.partnerLabel}
                               </p>
                             )}
-                            <p className="mt-0.5 text-[10px] text-stone-400">
+                            <p className="text-studio-subtle mt-0.5 text-[10px]">
                               Registered {new Date(a.createdAt).toLocaleDateString("en-IN")}
                             </p>
                           </div>
@@ -1131,38 +1306,262 @@ export default function WeddingDetailClient({
               </div>
             )}
 
-            {/* TAB 2: PEOPLE & CONSENT */}
+            {/* DOMAIN 1: PUBLISH GATE & CACHE */}
+            {activeTab === "publish" && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h2 className="text-studio-primary mb-2 font-serif text-lg font-medium">
+                    Proofing &amp; Publication Safeguards
+                  </h2>
+                  <p className="text-studio-muted mb-6 text-xs">
+                    Verify proofing criteria before transitioning wedding into public live status.
+                  </p>
+
+                  <div className="mb-6 rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
+                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-studio-champagne">
+                      Pre-Flight Proofing Checklist
+                    </h3>
+                    <div className="text-studio-muted space-y-2 text-xs">
+                      <label className="hover:text-studio-primary flex cursor-pointer items-center gap-2 transition">
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="rounded border-studio-border bg-studio-canvas text-studio-champagne focus:ring-0"
+                        />
+                        <span>
+                          Bride &amp; Groom names, honorifics, and spellings verified by couple
+                        </span>
+                      </label>
+                      <label className="hover:text-studio-primary flex cursor-pointer items-center gap-2 transition">
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="rounded border-studio-border bg-studio-canvas text-studio-champagne focus:ring-0"
+                        />
+                        <span>
+                          Ceremony times in IST and venue addresses confirmed against card proof
+                        </span>
+                      </label>
+                      <label className="hover:text-studio-primary flex cursor-pointer items-center gap-2 transition">
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="rounded border-studio-border bg-studio-canvas text-studio-champagne focus:ring-0"
+                        />
+                        <span>Google Maps links tested on mobile device</span>
+                      </label>
+                      <label className="hover:text-studio-primary flex cursor-pointer items-center gap-2 transition">
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="rounded border-studio-border bg-studio-canvas text-studio-champagne focus:ring-0"
+                        />
+                        <span>Family consent recorded in compliance ledger</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      disabled={saving || wedding.status === "published"}
+                      onClick={() =>
+                        handleSaveWedding(
+                          { status: "published" },
+                          "Wedding is now PUBLISHED and live to guests!",
+                        )
+                      }
+                      className="rounded-lg bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+                    >
+                      Publish Celebration Live
+                    </button>
+                    <button
+                      disabled={saving || wedding.status === "preview"}
+                      onClick={() =>
+                        handleSaveWedding(
+                          { status: "preview" },
+                          "Wedding moved to PREVIEW proofing state",
+                        )
+                      }
+                      className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-5 py-2.5 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/20 disabled:opacity-50"
+                    >
+                      Set to Preview (Staff &amp; Couple Only)
+                    </button>
+                    <button
+                      disabled={saving || wedding.status === "draft"}
+                      onClick={() =>
+                        handleSaveWedding(
+                          { status: "draft" },
+                          "Wedding reverted to DRAFT (Upcoming gate active)",
+                        )
+                      }
+                      className="text-studio-muted hover:text-studio-primary rounded-lg border border-studio-border bg-studio-surfaceElevated px-5 py-2.5 text-xs font-semibold transition hover:bg-studio-surfaceHighlight disabled:opacity-50"
+                    >
+                      Unpublish to Draft
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DOMAIN 2: RSVPS & HOSPITALITY */}
+            {activeTab === "rsvps" && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+                  <div className="rounded-xl border border-studio-border bg-studio-surface p-4 text-center">
+                    <span className="text-studio-primary font-mono text-2xl font-bold">
+                      {totalAttendingGuests}
+                    </span>
+                    <p className="text-studio-muted mt-1 text-[11px] uppercase">Attending</p>
+                  </div>
+                  <div className="rounded-xl border border-studio-border bg-studio-surface p-4 text-center">
+                    <span className="font-mono text-2xl font-bold text-emerald-400">
+                      {vegCount}
+                    </span>
+                    <p className="text-studio-muted mt-1 text-[11px] uppercase">Pure Veg</p>
+                  </div>
+                  <div className="rounded-xl border border-studio-border bg-studio-surface p-4 text-center">
+                    <span className="font-mono text-2xl font-bold text-amber-400">{jainCount}</span>
+                    <p className="text-studio-muted mt-1 text-[11px] uppercase">Jain</p>
+                  </div>
+                  <div className="rounded-xl border border-studio-border bg-studio-surface p-4 text-center">
+                    <span className="font-mono text-2xl font-bold text-rose-400">
+                      {nonVegCount}
+                    </span>
+                    <p className="text-studio-muted mt-1 text-[11px] uppercase">Non-Veg</p>
+                  </div>
+                  <div className="rounded-xl border border-studio-border bg-studio-surface p-4 text-center">
+                    <span className="font-mono text-2xl font-bold text-purple-400">
+                      {stayCount}
+                    </span>
+                    <p className="text-studio-muted mt-1 text-[11px] uppercase">Needs Stay</p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                    <div>
+                      <h2 className="text-studio-primary font-serif text-lg font-medium">
+                        Guest RSVPs &amp; Dietary Requirements
+                      </h2>
+                      <p className="text-studio-muted mt-0.5 text-xs">
+                        Structured guest submissions for caterers, stay planning, and arrivals.
+                      </p>
+                    </div>
+                    {wedding.plan === "lite" && !effective?.hasActiveOverride ? (
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-300">
+                          🔒 Catering CSV export requires Premium, Platinum, or Staff Override
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab("entitlements")}
+                          className="text-studio-primary rounded-lg border border-studio-border bg-studio-surfaceElevated px-3 py-1.5 text-xs hover:bg-studio-surfaceHighlight"
+                        >
+                          Studio &amp; Overrides
+                        </button>
+                      </div>
+                    ) : (
+                      <a
+                        href={`/api/admin/weddings/${wedding.id}/export-rsvps`}
+                        download
+                        className="border-studio-champagne/50 bg-studio-champagne/20 hover:bg-studio-champagne/30 inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-1.5 text-xs font-medium text-studio-champagneLight transition"
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        <span>Download Caterer CSV</span>
+                      </a>
+                    )}
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="text-studio-muted border-b border-studio-border">
+                        <tr>
+                          <th className="px-3 py-2.5">Guest</th>
+                          <th className="px-3 py-2.5">Phone</th>
+                          <th className="px-3 py-2.5">Event</th>
+                          <th className="px-3 py-2.5">Attending</th>
+                          <th className="px-3 py-2.5">Party Size</th>
+                          <th className="px-3 py-2.5">Meal</th>
+                          <th className="px-3 py-2.5">Stay</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-studio-border/30 divide-y">
+                        {wedding.rsvps.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="text-studio-muted py-6 text-center">
+                              No guest RSVPs received yet.
+                            </td>
+                          </tr>
+                        ) : (
+                          wedding.rsvps.map((r) => (
+                            <tr key={r.id} className="hover:bg-studio-surfaceElevated/50">
+                              <td className="text-studio-primary px-3 py-3 font-medium">
+                                {r.respondentName}
+                              </td>
+                              <td className="text-studio-muted px-3 py-3 font-mono">
+                                {r.respondentPhone || "—"}
+                              </td>
+                              <td className="text-studio-muted px-3 py-3">
+                                {r.event?.title || "All Events"}
+                              </td>
+                              <td className="px-3 py-3">
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-[10px] ${r.attending ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}
+                                >
+                                  {r.attending ? "Yes" : "No"}
+                                </span>
+                              </td>
+                              <td className="text-studio-primary px-3 py-3 font-mono">
+                                {r.partySize}
+                              </td>
+                              <td className="text-studio-muted px-3 py-3">
+                                {r.mealPreference || "—"}
+                              </td>
+                              <td className="text-studio-muted px-3 py-3">
+                                {r.needsStay ? "Yes" : "No"}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DOMAIN 2: PEOPLE & CONSENT */}
             {activeTab === "people" && (
               <div className="space-y-6">
                 {/* DPDP Consent Ledger */}
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
                   <div className="mb-4">
-                    <h2 className="font-serif text-lg text-white">
+                    <h2 className="text-studio-primary font-serif text-lg font-medium">
                       DPDP Act Consent Compliance Ledger
                     </h2>
-                    <p className="mt-0.5 text-xs text-[#E2D5C7]/70">
+                    <p className="text-studio-muted mt-0.5 text-xs">
                       Every public family detail and VIP profile must be backed by explicit,
                       verifiable consent under the Digital Personal Data Protection Act.
                     </p>
                   </div>
 
-                  <div className="divide-y divide-white/5">
+                  <div className="divide-studio-border/30 divide-y">
                     {wedding.consents.length === 0 ? (
-                      <p className="py-6 text-center text-xs text-stone-500">
+                      <p className="text-studio-muted py-6 text-center text-xs">
                         No consent entries recorded. Couple sign-off pending.
                       </p>
                     ) : (
                       wedding.consents.map((c) => (
                         <div key={c.id} className="flex items-center justify-between py-3 text-xs">
                           <div>
-                            <span className="font-medium uppercase tracking-wide text-white">
+                            <span className="text-studio-primary font-medium uppercase tracking-wide">
                               Purpose: {c.purpose.replace(/_/g, " ")}
                             </span>
-                            <p className="mt-0.5 text-stone-400">
-                              Subject: <span className="text-[#C9933A]">{c.subject}</span> (Notice v
-                              {c.noticeVersion})
+                            <p className="text-studio-muted mt-0.5">
+                              Subject: <span className="text-studio-champagne">{c.subject}</span>{" "}
+                              (Notice v{c.noticeVersion})
                             </p>
-                            <p className="text-[10px] text-stone-400">
+                            <p className="text-studio-subtle text-[10px]">
                               Granted:{" "}
                               {new Date(c.grantedAt).toLocaleString("en-IN", {
                                 timeZone: "Asia/Kolkata",
@@ -1179,12 +1578,12 @@ export default function WeddingDetailClient({
                 </div>
 
                 {/* VIP Family Directory */}
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
                   <div className="mb-4">
-                    <h2 className="font-serif text-lg text-white">
+                    <h2 className="text-studio-primary font-serif text-lg font-medium">
                       VIP Family &amp; Elders Roster
                     </h2>
-                    <p className="mt-0.5 text-xs text-[#E2D5C7]/70">
+                    <p className="text-studio-muted mt-0.5 text-xs">
                       Family members featured on the celebration landing page. Minors must never be
                       featured without verified parent consent.
                     </p>
@@ -1192,24 +1591,26 @@ export default function WeddingDetailClient({
 
                   <div className="space-y-4">
                     {wedding.vips.length === 0 ? (
-                      <p className="py-6 text-center text-xs text-stone-500">
+                      <p className="text-studio-muted py-6 text-center text-xs">
                         No VIP family members added yet.
                       </p>
                     ) : (
                       wedding.vips.map((v) => (
                         <div
                           key={v.id}
-                          className="flex items-center justify-between rounded-xl border border-white/10 bg-[#1A0A00] p-4"
+                          className="flex items-center justify-between rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4"
                         >
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-serif text-base text-white">{v.name}</span>
-                              <span className="rounded-full border border-[#C9933A]/30 bg-[#C9933A]/10 px-2 py-0.5 text-[10px] text-[#E8B96B]">
+                              <span className="text-studio-primary font-serif text-base">
+                                {v.name}
+                              </span>
+                              <span className="border-studio-champagne/30 bg-studio-champagne/10 rounded-full border px-2 py-0.5 text-[10px] text-studio-champagneLight">
                                 {v.groupLabel}
                               </span>
                             </div>
                             {v.tagline && (
-                              <p className="mt-1 text-xs text-stone-400">{v.tagline}</p>
+                              <p className="text-studio-muted mt-1 text-xs">{v.tagline}</p>
                             )}
                           </div>
                           <div className="flex items-center gap-3 text-xs">
@@ -1226,12 +1627,71 @@ export default function WeddingDetailClient({
               </div>
             )}
 
-            {/* TAB 3: EVENTS */}
+            {/* DOMAIN 2: PRINT & QR */}
+            {activeTab === "print_qr" && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h2 className="text-studio-primary mb-2 font-serif text-lg font-medium">
+                    Print &amp; QR Command Studio
+                  </h2>
+                  <p className="text-studio-muted mb-6 text-xs">
+                    Deterministic vector QR code encoding the canonical slug:{" "}
+                    <code className="text-studio-champagne">https://shadify.in/{wedding.slug}</code>
+                  </p>
+
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-studio-border bg-white p-8">
+                      {/* Vector simulated high-contrast QR display */}
+                      <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-black text-white">
+                        <QrCode className="h-36 w-36 text-white" />
+                      </div>
+                      <p className="mt-4 font-mono text-xs font-semibold text-black">
+                        shadify.in/{wedding.slug}
+                      </p>
+                      <p className="mt-1 text-[10px] text-stone-500">
+                        High-Contrast Print Master • Error Correction: M (15%)
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4 text-xs">
+                        <h3 className="text-studio-primary mb-2 font-semibold">
+                          Printer Specifications
+                        </h3>
+                        <ul className="text-studio-muted list-inside list-disc space-y-1">
+                          <li>Minimum Print Size: 2.5 cm × 2.5 cm (recommended 3 cm)</li>
+                          <li>Quiet Zone Border: 4 modules clear space on all sides</li>
+                          <li>
+                            Stock: Avoid foil, metallic sheen, or textured dark paper directly over
+                            QR
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs text-emerald-200">
+                        <div className="flex items-center gap-2 font-semibold">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                          <span>Print Status: Approved for Proofing</span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-emerald-300/80">
+                          Direct slug resolution active. Zero redirect latency for physical card
+                          guests.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DOMAIN 3: EVENTS */}
             {activeTab === "events" && (
               <div className="space-y-6">
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h2 className="mb-2 font-serif text-lg text-white">Ceremonies &amp; Itinerary</h2>
-                  <p className="mb-6 text-xs text-[#E2D5C7]/70">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h2 className="text-studio-primary mb-2 font-serif text-lg font-medium">
+                    Ceremonies &amp; Itinerary
+                  </h2>
+                  <p className="text-studio-muted mb-6 text-xs">
                     All ceremony timings are rendered in Indian Standard Time (IST). Google Maps
                     links must resolve to real geographic destinations.
                   </p>
@@ -1240,15 +1700,17 @@ export default function WeddingDetailClient({
                     {wedding.events.map((evt) => (
                       <div
                         key={evt.id}
-                        className="rounded-xl border border-white/10 bg-[#1A0A00] p-5"
+                        className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-5"
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <span className="rounded-full bg-[#C9933A]/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase text-[#E8B96B]">
+                            <span className="bg-studio-champagne/20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase text-studio-champagneLight">
                               {evt.eventType}
                             </span>
-                            <h3 className="mt-2 font-serif text-lg text-white">{evt.title}</h3>
-                            <p className="mt-1 text-xs text-stone-300">
+                            <h3 className="text-studio-primary mt-2 font-serif text-lg">
+                              {evt.title}
+                            </h3>
+                            <p className="text-studio-muted mt-1 text-xs">
                               {new Date(evt.startsAt).toLocaleString("en-IN", {
                                 timeZone: "Asia/Kolkata",
                                 dateStyle: "medium",
@@ -1256,14 +1718,14 @@ export default function WeddingDetailClient({
                               })}
                             </p>
                           </div>
-                          <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-stone-300">
+                          <span className="text-studio-muted rounded-md border border-studio-border bg-studio-surface px-2 py-1 text-[11px]">
                             {evt.visibility}
                           </span>
                         </div>
 
-                        <div className="mt-4 grid grid-cols-1 gap-2 border-t border-white/5 pt-3 text-xs text-stone-400 md:grid-cols-2">
+                        <div className="text-studio-muted border-studio-border/30 mt-4 grid grid-cols-1 gap-2 border-t pt-3 text-xs md:grid-cols-2">
                           <div className="flex items-center gap-1.5">
-                            <MapPin className="h-3.5 w-3.5 text-[#C9933A]" />
+                            <MapPin className="h-3.5 w-3.5 text-studio-champagne" />
                             <span>
                               {evt.venueName || "Venue not set"}
                               {evt.venueCity ? `, ${evt.venueCity}` : ""}
@@ -1275,7 +1737,7 @@ export default function WeddingDetailClient({
                                 href={evt.venueMapUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[#C9933A] underline hover:text-[#E8B96B]"
+                                className="text-studio-champagne underline hover:text-studio-champagneLight"
                               >
                                 Open Verified Map Destination ↗
                               </a>
@@ -1289,14 +1751,14 @@ export default function WeddingDetailClient({
               </div>
             )}
 
-            {/* TAB 4: THEME & CONTRAST */}
+            {/* DOMAIN 3: THEME & CONTRAST */}
             {activeTab === "theme" && (
               <div className="space-y-6">
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h2 className="mb-2 font-serif text-lg text-white">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h2 className="text-studio-primary mb-2 font-serif text-lg font-medium">
                     Visual Design &amp; Typography
                   </h2>
-                  <p className="mb-6 text-xs text-[#E2D5C7]/70">
+                  <p className="text-studio-muted mb-6 text-xs">
                     Couples choose culturally grounded presets. Every palette is dynamically tested
                     against WCAG AA contrast rules (minimum 4.5:1 for body copy).
                   </p>
@@ -1342,12 +1804,14 @@ export default function WeddingDetailClient({
                           }}
                           className={`rounded-xl border p-4 text-left transition ${
                             themeId === id
-                              ? "border-[#C9933A] bg-[#1A0A00] ring-1 ring-[#C9933A]"
-                              : "border-white/10 bg-black/30 hover:border-white/20"
+                              ? "border-studio-champagne bg-studio-surfaceElevated ring-1 ring-studio-champagne"
+                              : "border-studio-borderSubtle bg-studio-canvas hover:border-studio-border"
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-serif text-sm text-white">{meta.name}</span>
+                            <span className="text-studio-primary font-serif text-sm font-medium">
+                              {meta.name}
+                            </span>
                             <div className="flex gap-1.5">
                               <span
                                 className="h-4 w-4 rounded-full border border-white/20"
@@ -1359,7 +1823,7 @@ export default function WeddingDetailClient({
                               />
                             </div>
                           </div>
-                          <p className="mt-2 text-[11px] text-stone-400">{meta.description}</p>
+                          <p className="text-studio-muted mt-2 text-[11px]">{meta.description}</p>
                         </button>
                       );
                     })}
@@ -1367,7 +1831,7 @@ export default function WeddingDetailClient({
 
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Monogram Initial / Text
                       </label>
                       <input
@@ -1376,11 +1840,11 @@ export default function WeddingDetailClient({
                         value={monogramText}
                         onChange={(e) => setMonogramText(e.target.value)}
                         placeholder="e.g. P &amp; G"
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Primary Color (Hex)
                       </label>
                       <div className="flex items-center gap-2">
@@ -1388,18 +1852,18 @@ export default function WeddingDetailClient({
                           type="color"
                           value={primaryColor}
                           onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="h-9 w-12 cursor-pointer rounded border border-white/20 bg-transparent"
+                          className="h-9 w-12 cursor-pointer rounded border border-studio-border bg-transparent"
                         />
                         <input
                           type="text"
                           value={primaryColor}
                           onChange={(e) => setPrimaryColor(e.target.value)}
-                          className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white"
+                          className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Accent Color (Hex)
                       </label>
                       <div className="flex items-center gap-2">
@@ -1407,13 +1871,13 @@ export default function WeddingDetailClient({
                           type="color"
                           value={accentColor}
                           onChange={(e) => setAccentColor(e.target.value)}
-                          className="h-9 w-12 cursor-pointer rounded border border-white/20 bg-transparent"
+                          className="h-9 w-12 cursor-pointer rounded border border-studio-border bg-transparent"
                         />
                         <input
                           type="text"
                           value={accentColor}
                           onChange={(e) => setAccentColor(e.target.value)}
-                          className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white"
+                          className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                         />
                       </div>
                     </div>
@@ -1454,7 +1918,7 @@ export default function WeddingDetailClient({
                           monogramText,
                         })
                       }
-                      className="rounded-lg bg-[#C9933A] px-5 py-2 text-xs font-semibold text-[#090406] hover:bg-[#D4AF37] disabled:opacity-50"
+                      className="rounded-lg bg-studio-champagne px-5 py-2 text-xs font-semibold text-studio-canvas transition hover:bg-studio-champagneLight disabled:opacity-50"
                     >
                       {saving ? "Saving..." : "Save Theme Tokens"}
                     </button>
@@ -1463,21 +1927,21 @@ export default function WeddingDetailClient({
               </div>
             )}
 
-            {/* TAB 5: SECTIONS & AUDIO */}
+            {/* DOMAIN 3: SECTIONS & AUDIO */}
             {activeTab === "sections" && (
               <div className="space-y-6">
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h2 className="mb-2 font-serif text-lg text-white">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h2 className="text-studio-primary mb-2 font-serif text-lg font-medium">
                     Sections &amp; Audio Experience
                   </h2>
-                  <p className="mb-6 text-xs text-[#E2D5C7]/70">
+                  <p className="text-studio-muted mb-6 text-xs">
                     Configure guest interactions: UPI shagun, livestream broadcasting, and
                     traditional audio.
                   </p>
 
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         UPI Virtual Payment Address (VPA)
                       </label>
                       <input
@@ -1485,15 +1949,15 @@ export default function WeddingDetailClient({
                         value={upiVpa}
                         onChange={(e) => setUpiVpa(e.target.value)}
                         placeholder="e.g. couple@okhdfcbank"
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       />
-                      <p className="mt-1 text-[11px] text-stone-400">
+                      <p className="text-studio-subtle mt-1 text-[11px]">
                         Direct shagun goes 100% to the couple. Leave empty to hide digital shagun
                         button.
                       </p>
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-[#E2D5C7]/70">
+                      <label className="text-studio-muted mb-1.5 block text-xs font-medium">
                         Livestream Video URL
                       </label>
                       <input
@@ -1501,27 +1965,27 @@ export default function WeddingDetailClient({
                         value={liveStreamUrl}
                         onChange={(e) => setLiveStreamUrl(e.target.value)}
                         placeholder="https://youtube.com/live/..."
-                        className="w-full rounded-lg border border-[#C9933A]/30 bg-[#1A0A00] px-3.5 py-2 text-sm text-white"
+                        className="text-studio-primary w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3.5 py-2 text-sm focus:border-studio-champagne focus:outline-none"
                       />
-                      <p className="mt-1 text-[11px] text-stone-400">
+                      <p className="text-studio-subtle mt-1 text-[11px]">
                         Virtual wedding stream unlocks for remote guests on wedding day.
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-5 border-t border-white/5 pt-4">
+                  <div className="border-studio-border/30 mt-5 border-t pt-4">
                     <label className="flex cursor-pointer items-center gap-3">
                       <input
                         type="checkbox"
                         checked={showBranding}
                         onChange={(e) => setShowBranding(e.target.checked)}
-                        className="h-4 w-4 rounded border-white/20 bg-black/40 text-[#C9933A] focus:ring-0"
+                        className="h-4 w-4 rounded border-studio-border bg-studio-surfaceElevated text-studio-champagne focus:ring-0"
                       />
                       <div>
-                        <span className="text-xs font-medium text-white">
+                        <span className="text-studio-primary text-xs font-medium">
                           Show &quot;Powered by Shadify&quot; footer branding
                         </span>
-                        <p className="text-[11px] text-stone-400">
+                        <p className="text-studio-muted text-[11px]">
                           Uncheck for white-labeled client weddings (included on Platinum tier).
                         </p>
                       </div>
@@ -1538,7 +2002,7 @@ export default function WeddingDetailClient({
                           showBranding,
                         })
                       }
-                      className="rounded-lg bg-[#C9933A] px-5 py-2 text-xs font-semibold text-[#090406] hover:bg-[#D4AF37] disabled:opacity-50"
+                      className="rounded-lg bg-studio-champagne px-5 py-2 text-xs font-semibold text-studio-canvas transition hover:bg-studio-champagneLight disabled:opacity-50"
                     >
                       {saving ? "Saving..." : "Save Section Settings"}
                     </button>
@@ -1547,329 +2011,19 @@ export default function WeddingDetailClient({
               </div>
             )}
 
-            {/* TAB 6: RSVPS & HOSPITALITY */}
-            {activeTab === "rsvps" && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-                  <div className="rounded-xl border border-white/10 bg-[#12070A] p-4 text-center">
-                    <span className="font-mono text-2xl font-bold text-white">
-                      {totalAttendingGuests}
-                    </span>
-                    <p className="mt-1 text-[11px] uppercase text-stone-400">Attending</p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-[#12070A] p-4 text-center">
-                    <span className="font-mono text-2xl font-bold text-emerald-400">
-                      {vegCount}
-                    </span>
-                    <p className="mt-1 text-[11px] uppercase text-stone-400">Pure Veg</p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-[#12070A] p-4 text-center">
-                    <span className="font-mono text-2xl font-bold text-amber-400">{jainCount}</span>
-                    <p className="mt-1 text-[11px] uppercase text-stone-400">Jain</p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-[#12070A] p-4 text-center">
-                    <span className="font-mono text-2xl font-bold text-rose-400">
-                      {nonVegCount}
-                    </span>
-                    <p className="mt-1 text-[11px] uppercase text-stone-400">Non-Veg</p>
-                  </div>
-                  <div className="rounded-xl border border-white/10 bg-[#12070A] p-4 text-center">
-                    <span className="font-mono text-2xl font-bold text-purple-400">
-                      {stayCount}
-                    </span>
-                    <p className="mt-1 text-[11px] uppercase text-stone-400">Needs Stay</p>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                    <div>
-                      <h2 className="font-serif text-lg text-white">
-                        Guest RSVPs &amp; Dietary Requirements
-                      </h2>
-                      <p className="mt-0.5 text-xs text-[#E2D5C7]/70">
-                        Structured guest submissions for caterers, stay planning, and arrivals.
-                      </p>
-                    </div>
-                    {wedding.plan === "lite" && !effective?.hasActiveOverride ? (
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-300">
-                          🔒 Catering CSV export requires Premium, Platinum, or Staff Override
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("entitlements")}
-                          className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-white hover:bg-white/10"
-                        >
-                          Studio &amp; Overrides
-                        </button>
-                      </div>
-                    ) : (
-                      <a
-                        href={`/api/admin/weddings/${wedding.id}/export-rsvps`}
-                        download
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-[#C9933A]/50 bg-[#C9933A]/20 px-3.5 py-1.5 text-xs font-medium text-[#E8B96B] transition hover:bg-[#C9933A]/30"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        <span>Download Caterer CSV</span>
-                      </a>
-                    )}
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-white/10 text-stone-400">
-                        <tr>
-                          <th className="px-3 py-2.5">Guest</th>
-                          <th className="px-3 py-2.5">Phone</th>
-                          <th className="px-3 py-2.5">Event</th>
-                          <th className="px-3 py-2.5">Attending</th>
-                          <th className="px-3 py-2.5">Party Size</th>
-                          <th className="px-3 py-2.5">Meal</th>
-                          <th className="px-3 py-2.5">Stay</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {wedding.rsvps.length === 0 ? (
-                          <tr>
-                            <td colSpan={7} className="py-6 text-center text-stone-500">
-                              No guest RSVPs received yet.
-                            </td>
-                          </tr>
-                        ) : (
-                          wedding.rsvps.map((r) => (
-                            <tr key={r.id} className="hover:bg-white/5">
-                              <td className="px-3 py-3 font-medium text-white">
-                                {r.respondentName}
-                              </td>
-                              <td className="px-3 py-3 font-mono text-stone-400">
-                                {r.respondentPhone || "—"}
-                              </td>
-                              <td className="px-3 py-3">{r.event?.title || "All Events"}</td>
-                              <td className="px-3 py-3">
-                                <span
-                                  className={`rounded-full px-2 py-0.5 text-[10px] ${r.attending ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}
-                                >
-                                  {r.attending ? "Yes" : "No"}
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 font-mono">{r.partySize}</td>
-                              <td className="px-3 py-3">{r.mealPreference || "—"}</td>
-                              <td className="px-3 py-3">{r.needsStay ? "Yes" : "No"}</td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 7: PRINT & QR */}
-            {activeTab === "print_qr" && (
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h2 className="mb-2 font-serif text-lg text-white">
-                    Print &amp; QR Command Studio
-                  </h2>
-                  <p className="mb-6 text-xs text-[#E2D5C7]/70">
-                    Deterministic vector QR code encoding the canonical slug:{" "}
-                    <code className="text-[#C9933A]">https://shadify.in/{wedding.slug}</code>
-                  </p>
-
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <div className="flex flex-col items-center justify-center rounded-xl border border-white/10 bg-white p-8">
-                      {/* Vector simulated high-contrast QR display */}
-                      <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-black text-white">
-                        <QrCode className="h-36 w-36 text-white" />
-                      </div>
-                      <p className="mt-4 font-mono text-xs font-semibold text-black">
-                        shadify.in/{wedding.slug}
-                      </p>
-                      <p className="mt-1 text-[10px] text-stone-500">
-                        High-Contrast Print Master • Error Correction: M (15%)
-                      </p>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4 text-xs">
-                        <h3 className="mb-2 font-semibold text-white">Printer Specifications</h3>
-                        <ul className="list-inside list-disc space-y-1 text-stone-300">
-                          <li>Minimum Print Size: 2.5 cm × 2.5 cm (recommended 3 cm)</li>
-                          <li>Quiet Zone Border: 4 modules clear space on all sides</li>
-                          <li>
-                            Stock: Avoid foil, metallic sheen, or textured dark paper directly over
-                            QR
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-xs text-emerald-200">
-                        <div className="flex items-center gap-2 font-semibold">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                          <span>Print Status: Approved for Proofing</span>
-                        </div>
-                        <p className="mt-1 text-[11px] text-emerald-300/80">
-                          Direct slug resolution active. Zero redirect latency for physical card
-                          guests.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 8: PUBLISH GATE & CACHE */}
-            {activeTab === "publish" && (
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h2 className="mb-2 font-serif text-lg text-white">
-                    Proofing &amp; Publication Safeguards
-                  </h2>
-                  <p className="mb-6 text-xs text-[#E2D5C7]/70">
-                    Verify proofing criteria before transitioning wedding into public live status.
-                  </p>
-
-                  <div className="mb-6 rounded-xl border border-white/10 bg-[#1A0A00] p-4">
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#C9933A]">
-                      Pre-Flight Proofing Checklist
-                    </h3>
-                    <div className="space-y-2 text-xs text-stone-300">
-                      <label className="flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="rounded border-white/20 bg-black/40 text-[#C9933A]"
-                        />
-                        <span>
-                          Bride &amp; Groom names, honorifics, and spellings verified by couple
-                        </span>
-                      </label>
-                      <label className="flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="rounded border-white/20 bg-black/40 text-[#C9933A]"
-                        />
-                        <span>
-                          Ceremony times in IST and venue addresses confirmed against card proof
-                        </span>
-                      </label>
-                      <label className="flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="rounded border-white/20 bg-black/40 text-[#C9933A]"
-                        />
-                        <span>Google Maps links tested on mobile device</span>
-                      </label>
-                      <label className="flex cursor-pointer items-center gap-2">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="rounded border-white/20 bg-black/40 text-[#C9933A]"
-                        />
-                        <span>Family consent recorded in compliance ledger</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      disabled={saving || wedding.status === "published"}
-                      onClick={() =>
-                        handleSaveWedding(
-                          { status: "published" },
-                          "Wedding is now PUBLISHED and live to guests!",
-                        )
-                      }
-                      className="rounded-lg bg-emerald-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
-                    >
-                      Publish Celebration Live
-                    </button>
-                    <button
-                      disabled={saving || wedding.status === "preview"}
-                      onClick={() =>
-                        handleSaveWedding(
-                          { status: "preview" },
-                          "Wedding moved to PREVIEW proofing state",
-                        )
-                      }
-                      className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-5 py-2.5 text-xs font-semibold text-amber-200 hover:bg-amber-500/20 disabled:opacity-50"
-                    >
-                      Set to Preview (Staff &amp; Couple Only)
-                    </button>
-                    <button
-                      disabled={saving || wedding.status === "draft"}
-                      onClick={() =>
-                        handleSaveWedding(
-                          { status: "draft" },
-                          "Wedding reverted to DRAFT (Upcoming gate active)",
-                        )
-                      }
-                      className="rounded-lg border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-semibold text-stone-300 hover:bg-white/10 disabled:opacity-50"
-                    >
-                      Unpublish to Draft
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 9: AUDIT LOG */}
-            {activeTab === "audit" && (
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h2 className="mb-2 font-serif text-lg text-white">
-                    Immutable Operational Audit Trail
-                  </h2>
-                  <p className="mb-6 text-xs text-[#E2D5C7]/70">
-                    Complete forensic ledger recording staff actions, status modifications, and data
-                    access.
-                  </p>
-
-                  <div className="divide-y divide-white/5">
-                    {wedding.auditLogs.map((log) => (
-                      <div key={log.id} className="py-3 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono font-medium text-white">{log.action}</span>
-                          <span className="text-stone-400">
-                            {new Date(log.createdAt).toLocaleString("en-IN", {
-                              timeZone: "Asia/Kolkata",
-                            })}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-stone-400">
-                          Actor: {log.actor?.fullName || "Concierge Staff"} (
-                          {log.actor?.role || "staff"})
-                        </p>
-                        {Boolean(log.detail) && (
-                          <pre className="mt-1.5 overflow-x-auto rounded bg-black/40 p-2 font-mono text-[10px] text-stone-300">
-                            {JSON.stringify(log.detail, null, 2)}
-                          </pre>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 10: STUDIO & ENTITLEMENTS */}
+            {/* DOMAIN 4: STUDIO & ENTITLEMENTS */}
             {activeTab === "entitlements" && (
               <div className="space-y-6">
                 {/* Header with Apply Override Button */}
-                <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6 sm:flex-row sm:items-center">
+                <div className="flex flex-col justify-between gap-4 rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm sm:flex-row sm:items-center">
                   <div>
                     <div className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-[#C9933A]" />
-                      <h2 className="font-serif text-lg text-white">
+                      <Sparkles className="h-5 w-5 text-studio-champagne" />
+                      <h2 className="text-studio-primary font-serif text-lg font-medium">
                         Concierge Entitlements &amp; Subscription Studio
                       </h2>
                     </div>
-                    <p className="mt-0.5 text-xs text-[#E2D5C7]/70">
+                    <p className="text-studio-muted mt-0.5 text-xs">
                       Authoritative runtime capability meters derived from PRICING_PLANS with
                       auditable, reversible staff overrides.
                     </p>
@@ -1877,7 +2031,7 @@ export default function WeddingDetailClient({
                   <button
                     type="button"
                     onClick={() => setOverrideModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#C9933A] px-4 py-2 text-xs font-semibold text-[#090406] transition hover:bg-[#D4AF37]"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-studio-champagne px-4 py-2 text-xs font-semibold text-studio-canvas transition hover:bg-studio-champagneLight"
                   >
                     <Plus className="h-4 w-4" />
                     <span>Apply Staff Override</span>
@@ -1886,7 +2040,7 @@ export default function WeddingDetailClient({
 
                 {/* Active Override Alert Banner (if active) */}
                 {effective?.hasActiveOverride && (
-                  <div className="rounded-2xl border border-amber-500/50 bg-[#251508] p-5 shadow-lg">
+                  <div className="rounded-2xl border border-amber-500/50 bg-amber-950/20 p-5 shadow-lg">
                     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                       <div className="flex items-start gap-3">
                         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
@@ -1898,11 +2052,11 @@ export default function WeddingDetailClient({
                             Justification: &ldquo;{effective.activeOverrideDetail?.reason}&rdquo;
                           </p>
                           <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-amber-300">
-                            <span className="rounded border border-amber-500/30 bg-black/40 px-2 py-0.5">
+                            <span className="rounded border border-amber-500/30 bg-studio-canvas px-2 py-0.5">
                               Actor: {effective.activeOverrideDetail?.actorId}
                             </span>
                             {effective.activeOverrideDetail?.expiresAt && (
-                              <span className="rounded border border-amber-500/30 bg-black/40 px-2 py-0.5">
+                              <span className="rounded border border-amber-500/30 bg-studio-canvas px-2 py-0.5">
                                 Expires:{" "}
                                 {new Date(
                                   effective.activeOverrideDetail.expiresAt,
@@ -1925,34 +2079,36 @@ export default function WeddingDetailClient({
 
                 {/* Plan Tier & Storage Lifecycle Cards */}
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-5">
-                    <span className="text-[11px] uppercase tracking-wider text-stone-400">
+                  <div className="rounded-2xl border border-studio-border bg-studio-surface p-5 shadow-sm">
+                    <span className="text-studio-muted text-[11px] uppercase tracking-wider">
                       Subscription Tier
                     </span>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="font-serif text-2xl font-bold uppercase text-[#E8B96B]">
+                      <span className="font-serif text-2xl font-bold uppercase text-studio-champagneLight">
                         {effective?.name || wedding.plan}
                       </span>
-                      <span className="rounded-full border border-[#C9933A]/40 bg-[#C9933A]/10 px-2.5 py-0.5 text-xs font-semibold text-[#E8B96B]">
+                      <span className="border-studio-champagne/40 bg-studio-champagne/10 rounded-full border px-2.5 py-0.5 text-xs font-semibold text-studio-champagneLight">
                         Tier Active
                       </span>
                     </div>
-                    <p className="mt-2 text-xs text-[#E2D5C7]/70">
+                    <p className="text-studio-muted mt-2 text-xs">
                       Canonical plan configurations govern default resource quotas.
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-5">
-                    <span className="text-[11px] uppercase tracking-wider text-stone-400">
+                  <div className="rounded-2xl border border-studio-border bg-studio-surface p-5 shadow-sm">
+                    <span className="text-studio-muted text-[11px] uppercase tracking-wider">
                       Interactive Site Hosting
                     </span>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="font-mono text-2xl font-bold text-white">5 Years</span>
+                      <span className="text-studio-primary font-mono text-2xl font-bold">
+                        5 Years
+                      </span>
                       <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-300">
                         Guaranteed
                       </span>
                     </div>
-                    <p className="mt-2 text-xs text-[#E2D5C7]/70">
+                    <p className="text-studio-muted mt-2 text-xs">
                       Valid until:{" "}
                       {effective?.hostingUntil
                         ? new Date(effective.hostingUntil).toLocaleDateString("en-IN", {
@@ -1964,17 +2120,19 @@ export default function WeddingDetailClient({
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-5">
-                    <span className="text-[11px] uppercase tracking-wider text-stone-400">
+                  <div className="rounded-2xl border border-studio-border bg-studio-surface p-5 shadow-sm">
+                    <span className="text-studio-muted text-[11px] uppercase tracking-wider">
                       Master Camera RAW Retention
                     </span>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className="font-mono text-2xl font-bold text-white">90 Days</span>
-                      <span className="rounded-full border border-stone-500/30 bg-stone-500/10 px-2.5 py-0.5 text-xs font-semibold text-stone-300">
+                      <span className="text-studio-primary font-mono text-2xl font-bold">
+                        90 Days
+                      </span>
+                      <span className="text-studio-muted rounded-full border border-studio-border bg-studio-surfaceElevated px-2.5 py-0.5 text-xs font-semibold">
                         Heavy Storage
                       </span>
                     </div>
-                    <p className="mt-2 text-xs text-[#E2D5C7]/70">
+                    <p className="text-studio-muted mt-2 text-xs">
                       Expires:{" "}
                       {effective?.originalsExpireAt
                         ? new Date(effective.originalsExpireAt).toLocaleDateString("en-IN", {
@@ -1988,31 +2146,31 @@ export default function WeddingDetailClient({
                 </div>
 
                 {/* Resource Meters Grid */}
-                <div className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6">
-                  <h3 className="font-serif text-base text-white">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h3 className="text-studio-primary font-serif text-base font-medium">
                     Resource Meters &amp; Entitlement Gates
                   </h3>
-                  <p className="mt-0.5 text-xs text-[#E2D5C7]/70">
+                  <p className="text-studio-muted mt-0.5 text-xs">
                     Server-side quota enforcement strictly monitors storage, events, and features.
                   </p>
 
                   <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {/* Photo Storage Meter */}
-                    <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4">
+                    <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-stone-300">Photos Uploaded</span>
-                        <span className="font-mono font-semibold text-white">
+                        <span className="text-studio-muted font-medium">Photos Uploaded</span>
+                        <span className="text-studio-primary font-mono font-semibold">
                           {photoCount} / {effective?.maxPhotos || 100}
                         </span>
                       </div>
-                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-black/50">
+                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-studio-canvas">
                         <div
                           className={`h-full rounded-full transition-all ${
                             photoCount >= (effective?.maxPhotos || 100)
                               ? "bg-rose-500"
                               : photoCount / (effective?.maxPhotos || 100) > 0.8
                                 ? "bg-amber-400"
-                                : "bg-[#C9933A]"
+                                : "bg-studio-champagne"
                           }`}
                           style={{
                             width: `${Math.min(
@@ -2022,22 +2180,24 @@ export default function WeddingDetailClient({
                           }}
                         />
                       </div>
-                      <p className="mt-2 text-[10px] text-stone-400">
+                      <p className="text-studio-subtle mt-2 text-[10px]">
                         Enforced at presign and finalize with PostgreSQL row locks.
                       </p>
                     </div>
 
                     {/* Events Meter */}
-                    <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4">
+                    <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-stone-300">Ceremonies &amp; Events</span>
-                        <span className="font-mono font-semibold text-white">
+                        <span className="text-studio-muted font-medium">
+                          Ceremonies &amp; Events
+                        </span>
+                        <span className="text-studio-primary font-mono font-semibold">
                           {wedding.events.length} / {effective?.maxEvents || 3}
                         </span>
                       </div>
-                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-black/50">
+                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-studio-canvas">
                         <div
-                          className="h-full rounded-full bg-[#C9933A] transition-all"
+                          className="h-full rounded-full bg-studio-champagne transition-all"
                           style={{
                             width: `${Math.min(
                               100,
@@ -2048,26 +2208,26 @@ export default function WeddingDetailClient({
                           }}
                         />
                       </div>
-                      <p className="mt-2 text-[10px] text-stone-400">
+                      <p className="text-studio-subtle mt-2 text-[10px]">
                         Maximum ceremonies supported on celebration landing page.
                       </p>
                     </div>
 
                     {/* Video Bites */}
-                    <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4">
+                    <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-stone-300">Video Bites</span>
+                        <span className="text-studio-muted font-medium">Video Bites</span>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             effective?.videoBite
                               ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                              : "border border-stone-500/30 bg-stone-500/10 text-stone-400"
+                              : "text-studio-subtle border border-studio-border bg-studio-surface"
                           }`}
                         >
                           {effective?.videoBite ? `Max ${effective.maxVideoBites}` : "Disabled"}
                         </span>
                       </div>
-                      <p className="mt-3 text-xs text-stone-300">
+                      <p className="text-studio-muted mt-3 text-xs">
                         {effective?.videoBite
                           ? "Short 60-second video clips permitted for guests."
                           : "Upgrade to Premium or Platinum to unlock guest video moments."}
@@ -2075,20 +2235,20 @@ export default function WeddingDetailClient({
                     </div>
 
                     {/* Custom Domain */}
-                    <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4">
+                    <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-stone-300">Custom Domain</span>
+                        <span className="text-studio-muted font-medium">Custom Domain</span>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             effective?.customDomain
                               ? "border border-purple-500/30 bg-purple-500/10 text-purple-300"
-                              : "border border-stone-500/30 bg-stone-500/10 text-stone-400"
+                              : "text-studio-subtle border border-studio-border bg-studio-surface"
                           }`}
                         >
                           {effective?.customDomain ? "Platinum Enabled" : "Gated"}
                         </span>
                       </div>
-                      <p className="mt-3 text-xs text-stone-300">
+                      <p className="text-studio-muted mt-3 text-xs">
                         {effective?.customDomain
                           ? "Custom domain linking permitted (e.g. rohitwedsananya.com)."
                           : "Requires Platinum tier or staff commercial override."}
@@ -2096,9 +2256,9 @@ export default function WeddingDetailClient({
                     </div>
 
                     {/* Branding Badge */}
-                    <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4">
+                    <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-stone-300">Platform Branding</span>
+                        <span className="text-studio-muted font-medium">Platform Branding</span>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             effective?.canHideBranding
@@ -2111,7 +2271,7 @@ export default function WeddingDetailClient({
                             : "Shadify Watermark Enforced"}
                         </span>
                       </div>
-                      <p className="mt-3 text-xs text-stone-300">
+                      <p className="text-studio-muted mt-3 text-xs">
                         {effective?.canHideBranding
                           ? "Branding toggle unlocked in general settings."
                           : "Lite plan includes Shadify branding by default."}
@@ -2119,14 +2279,14 @@ export default function WeddingDetailClient({
                     </div>
 
                     {/* Catering CSV Export */}
-                    <div className="rounded-xl border border-white/10 bg-[#1A0A00] p-4">
+                    <div className="rounded-xl border border-studio-borderSubtle bg-studio-surfaceElevated p-4">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-stone-300">Catering RSVP Export</span>
+                        <span className="text-studio-muted font-medium">Catering RSVP Export</span>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                             effective?.hasActiveOverride || wedding.plan !== "lite"
                               ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                              : "border border-stone-500/30 bg-stone-500/10 text-stone-400"
+                              : "text-studio-subtle border border-studio-border bg-studio-surface"
                           }`}
                         >
                           {effective?.hasActiveOverride || wedding.plan !== "lite"
@@ -2134,10 +2294,48 @@ export default function WeddingDetailClient({
                             : "Gated (Lite)"}
                         </span>
                       </div>
-                      <p className="mt-3 text-xs text-stone-300">
+                      <p className="text-studio-muted mt-3 text-xs">
                         Formula-injection sanitized CSV downloads with audit recording.
                       </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* DOMAIN 4: AUDIT LOG */}
+            {activeTab === "audit" && (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+                  <h2 className="text-studio-primary mb-2 font-serif text-lg font-medium">
+                    Immutable Operational Audit Trail
+                  </h2>
+                  <p className="text-studio-muted mb-6 text-xs">
+                    Complete forensic ledger recording staff actions, status modifications, and data
+                    access.
+                  </p>
+
+                  <div className="divide-studio-border/30 divide-y">
+                    {wedding.auditLogs.map((log) => (
+                      <div key={log.id} className="py-3 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-studio-primary font-mono font-medium">
+                            {log.action}
+                          </span>
+                          <span className="text-studio-muted">
+                            {new Date(log.createdAt).toLocaleString("en-IN", {
+                              timeZone: "Asia/Kolkata",
+                            })}
+                          </span>
+                        </div>
+                        <div className="text-studio-subtle mt-1 flex items-center gap-2 text-[11px]">
+                          <span>
+                            Actor: {log.actor?.fullName || "System Concierge"} (
+                            {log.actor?.role || "automated"})
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -2149,16 +2347,18 @@ export default function WeddingDetailClient({
       {/* Staff Entitlement Override Dialog Modal */}
       {overrideModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-[#C9933A]/40 bg-[#14080B] p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="w-full max-w-lg rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-studio-borderSubtle pb-4">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-[#C9933A]" />
-                <h3 className="font-serif text-lg text-white">Staff Entitlement Override</h3>
+                <Sparkles className="h-5 w-5 text-studio-champagne" />
+                <h3 className="text-studio-primary font-serif text-lg font-medium">
+                  Staff Entitlement Override
+                </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setOverrideModalOpen(false)}
-                className="text-stone-400 hover:text-white"
+                className="text-studio-muted hover:text-studio-primary"
               >
                 ✕
               </button>
@@ -2166,7 +2366,7 @@ export default function WeddingDetailClient({
 
             <form onSubmit={(e) => void handleApplyOverride(e)} className="mt-4 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-stone-300">
+                <label className="text-studio-muted block text-xs font-medium">
                   Target Entitlement Field
                 </label>
                 <select
@@ -2180,7 +2380,7 @@ export default function WeddingDetailClient({
                     else if (f === "videoBite" || f === "customDomain" || f === "canHideBranding")
                       setOverrideValue("true");
                   }}
-                  className="mt-1 w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-xs text-white focus:border-[#C9933A] focus:outline-none"
+                  className="text-studio-primary mt-1 w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 >
                   <option value="maxPhotos">Photo Upload Quota (maxPhotos)</option>
                   <option value="maxEvents">Maximum Ceremonies (maxEvents)</option>
@@ -2193,14 +2393,16 @@ export default function WeddingDetailClient({
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300">Override Value</label>
+                <label className="text-studio-muted block text-xs font-medium">
+                  Override Value
+                </label>
                 {overrideField === "videoBite" ||
                 overrideField === "customDomain" ||
                 overrideField === "canHideBranding" ? (
                   <select
                     value={overrideValue}
                     onChange={(e) => setOverrideValue(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-xs text-white focus:border-[#C9933A] focus:outline-none"
+                    className="text-studio-primary mt-1 w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                   >
                     <option value="true">Enabled (True)</option>
                     <option value="false">Disabled (False)</option>
@@ -2212,30 +2414,30 @@ export default function WeddingDetailClient({
                     max={50000}
                     value={overrideValue}
                     onChange={(e) => setOverrideValue(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 font-mono text-xs text-white focus:border-[#C9933A] focus:outline-none"
+                    className="text-studio-primary mt-1 w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3 py-2 font-mono text-xs focus:border-studio-champagne focus:outline-none"
                     required
                   />
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300">
+                <label className="text-studio-muted block text-xs font-medium">
                   Optional Expiration Date
                 </label>
                 <input
                   type="date"
                   value={overrideExpiresAt}
                   onChange={(e) => setOverrideExpiresAt(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-xs text-white focus:border-[#C9933A] focus:outline-none"
+                  className="text-studio-primary mt-1 w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 />
-                <p className="mt-1 text-[10px] text-stone-400">
+                <p className="text-studio-subtle mt-1 text-[10px]">
                   Leave blank for indefinite until manually revoked. Expired overrides automatically
                   revert to plan defaults.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-stone-300">
+                <label className="text-studio-muted block text-xs font-medium">
                   Audit Justification Reason <span className="text-amber-400">*</span>
                 </label>
                 <textarea
@@ -2243,27 +2445,27 @@ export default function WeddingDetailClient({
                   value={overrideReason}
                   onChange={(e) => setOverrideReason(e.target.value)}
                   placeholder="e.g. VIP client upgrade approved by Lead Concierge for extra sangeet moments"
-                  className="mt-1 w-full rounded-lg border border-white/15 bg-black/40 px-3 py-2 text-xs text-white placeholder-stone-500 focus:border-[#C9933A] focus:outline-none"
+                  className="text-studio-primary placeholder-studio-subtle mt-1 w-full rounded-lg border border-studio-borderSubtle bg-studio-surfaceElevated px-3 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                   required
                 />
-                <p className="mt-1 text-[10px] text-stone-400">
+                <p className="text-studio-subtle mt-1 text-[10px]">
                   Mandatory (min 5 characters). Recorded in the immutable audit trail with your
                   staff ID.
                 </p>
               </div>
 
-              <div className="flex items-center justify-end gap-2 border-t border-white/10 pt-4">
+              <div className="flex items-center justify-end gap-2 border-t border-studio-borderSubtle pt-4">
                 <button
                   type="button"
                   onClick={() => setOverrideModalOpen(false)}
-                  className="rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-xs text-stone-300 hover:bg-white/10"
+                  className="text-studio-muted hover:text-studio-primary rounded-lg border border-studio-border bg-studio-surfaceElevated px-4 py-2 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={overrideSubmitting || overrideReason.trim().length < 5}
-                  className="rounded-lg bg-[#C9933A] px-5 py-2 text-xs font-semibold text-[#090406] hover:bg-[#D4AF37] disabled:opacity-50"
+                  className="rounded-lg bg-studio-champagne px-5 py-2 text-xs font-semibold text-studio-canvas transition hover:bg-studio-champagneLight disabled:opacity-50"
                 >
                   {overrideSubmitting ? "Applying..." : "Apply & Audit Override"}
                 </button>

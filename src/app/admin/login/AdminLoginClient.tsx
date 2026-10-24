@@ -48,7 +48,7 @@ export default function AdminLoginClient() {
 
   return (
     <div className="w-full max-w-sm rounded-2xl border border-studio-border bg-studio-surfaceElevated p-8 shadow-2xl">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-studio-champagne/30 bg-studio-champagne/10 text-studio-champagne">
+      <div className="border-studio-champagne/30 bg-studio-champagne/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border text-studio-champagne">
         <Shield className="h-6 w-6" />
       </div>
 

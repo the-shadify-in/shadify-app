@@ -99,7 +99,7 @@ export default async function AdminHealthDashboardPage() {
               </span>
               <span className="text-xs text-studio-text-subtle">({dbLatency}ms roundtrip)</span>
             </div>
-            <p className="mt-1 text-[11px] text-studio-text-muted/70">
+            <p className="text-studio-text-muted/70 mt-1 text-[11px]">
               Heartbeat query SELECT 1 passing
             </p>
           </div>
@@ -121,7 +121,7 @@ export default async function AdminHealthDashboardPage() {
                 {r2Configured ? "(90-Day Lifecycle)" : "(Mock / Local)"}
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-studio-text-muted/70">
+            <p className="text-studio-text-muted/70 mt-1 text-[11px]">
               {r2Configured
                 ? "Zero egress fee media pipeline"
                 : "R2 bucket credentials not set in env"}
@@ -145,7 +145,7 @@ export default async function AdminHealthDashboardPage() {
                 {errorTrackingConfigured ? "(Sentry DSN Set)" : "(Pending Sentry)"}
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-studio-text-muted/70">
+            <p className="text-studio-text-muted/70 mt-1 text-[11px]">
               {errorTrackingConfigured
                 ? "Exception stream active"
                 : "Sentry DSN not configured in env"}
@@ -161,7 +161,7 @@ export default async function AdminHealthDashboardPage() {
               <span className="text-2xl font-semibold text-emerald-400">0 Pending</span>
               <span className="text-xs text-studio-text-subtle">(DPDP SLA: 30d)</span>
             </div>
-            <p className="mt-1 text-[11px] text-studio-text-muted/70">
+            <p className="text-studio-text-muted/70 mt-1 text-[11px]">
               All erasure requests cleared
             </p>
           </div>
@@ -179,7 +179,7 @@ export default async function AdminHealthDashboardPage() {
                 with missing photos, unconfigured UPI, or empty events.
               </p>
             </div>
-            <span className="rounded-full border border-studio-champagne/30 bg-studio-champagne/10 px-3 py-1 text-xs font-medium text-studio-champagne">
+            <span className="border-studio-champagne/30 bg-studio-champagne/10 rounded-full border px-3 py-1 text-xs font-medium text-studio-champagne">
               {upcomingWeddings.length} weddings in window
             </span>
           </div>
@@ -209,7 +209,7 @@ export default async function AdminHealthDashboardPage() {
                     return (
                       <tr
                         key={w.id}
-                        className="transition-colors hover:bg-studio-surfaceElevated/50"
+                        className="hover:bg-studio-surfaceElevated/50 transition-colors"
                       >
                         <td className="py-4 font-medium text-studio-text-primary">
                           {w.brideName} &amp; {w.groomName}

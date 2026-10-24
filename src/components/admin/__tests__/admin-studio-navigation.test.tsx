@@ -6,6 +6,8 @@ import AdminDashboardClient, {
   type DashboardWeddingItem,
   type DashboardCounts,
 } from "@/app/admin/AdminDashboardClient";
+import type { AdminSession } from "@/lib/auth";
+import type { SerializedEffectiveEntitlements } from "@/features/entitlements/types";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -142,6 +144,231 @@ describe("Phase 4 Concierge Studio Redesign & Navigation", () => {
 
       expect(html).toContain("No celebrations found");
       expect(html).toContain("There are currently no active celebrations in the database.");
+    });
+  });
+
+  describe("Phase 3: Wedding Studio 4-Domain Architecture & Executive Hero", () => {
+    // Dynamic import / component test
+    it("renders compact executive hero with couple, masked PIN, and 4 operational domains", async () => {
+      const WeddingDetailClient = (await import("@/app/admin/weddings/[id]/WeddingDetailClient"))
+        .default;
+
+      const mockWedding = {
+        id: "w-detail-1",
+        slug: "ananya-kabir",
+        brideName: "Ananya",
+        groomName: "Kabir",
+        weddingDate: "2028-11-20", // Far future
+        status: "published",
+        plan: "platinum",
+        defaultLocale: "en",
+        themeId: "royal-crimson",
+        primaryColor: "#8B0000",
+        accentColor: "#C5A059",
+        monogramText: "A & K",
+        upiVpa: "ananya@upi",
+        liveStreamUrl: "https://youtube.com/live/demo",
+        showBranding: false,
+        hasPrivatePin: true,
+        events: [
+          {
+            id: "evt-1",
+            eventType: "sangeet",
+            title: "Sangeet & Cocktail Night",
+            startsAt: "2028-11-19T18:00:00Z",
+            endsAt: null,
+            venueName: "Udaivilas Palace",
+            venueAddress: "Haridas Ji Ki Magri",
+            venueCity: "Udaipur",
+            venueMapUrl: "https://maps.google.com",
+            dressCode: "Festive Glamour",
+            description: "Music and celebration",
+            visibility: "public",
+            sortOrder: 1,
+          },
+        ],
+        vips: [
+          {
+            id: "vip-1",
+            name: "Rajesh Sharma",
+            relationship: "Father of the Bride",
+            groupLabel: "Bride's Family",
+            tagline: "Patriarch",
+            sortOrder: 1,
+          },
+        ],
+        aliases: [
+          {
+            id: "al-1",
+            alias: "ak-celebration",
+            kind: "vanity" as const,
+            partnerLabel: null,
+            createdAt: "2026-10-01T00:00:00Z",
+            retiredAt: null,
+          },
+        ],
+        qrAssets: [
+          {
+            id: "qr-1",
+            encodedUrl: "https://shadify.in/ananya-kabir",
+            format: "svg",
+            sizeMm: 30,
+            errorCorrection: "M",
+            storageKey: "qrs/ak.svg",
+            status: "approved",
+            approvedAt: "2026-10-02T00:00:00Z",
+            printedAt: null,
+            createdAt: "2026-10-01T00:00:00Z",
+          },
+        ],
+        consents: [
+          {
+            id: "c-1",
+            subject: "Rajesh Sharma",
+            purpose: "vip_display",
+            noticeVersion: "1.0",
+            grantedAt: "2026-10-01T00:00:00Z",
+            withdrawnAt: null,
+          },
+        ],
+        rsvps: [
+          {
+            id: "rsvp-1",
+            respondentName: "Devendra Mehta",
+            respondentPhone: "+919876543210",
+            attending: true,
+            partySize: 2,
+            mealPreference: "pure_veg",
+            needsStay: true,
+            createdAt: "2026-10-05T00:00:00Z",
+          },
+        ],
+        auditLogs: [
+          {
+            id: "aud-1",
+            action: "wedding.status_change",
+            createdAt: "2026-10-01T12:00:00Z",
+            detail: { from: "draft", to: "published" },
+            actor: { fullName: "Aarav Mehta", role: "staff" },
+          },
+        ],
+      };
+
+      const mockSession: AdminSession = {
+        userId: "usr-staff-1",
+        role: "staff",
+        exp: 1770000000,
+      };
+
+      const mockEffective: SerializedEffectiveEntitlements = {
+        weddingId: "w-detail-1",
+        plan: "platinum",
+        name: "Rajwada (Platinum)",
+        hostingUntil: "2031-10-01T00:00:00Z",
+        originalsExpireAt: "2027-01-01T00:00:00Z",
+        hasActiveOverride: true,
+        activeOverrideDetail: {
+          reason: "VIP Partner Upgrade",
+          actorId: "usr-staff-1",
+          oldValues: {},
+          newValues: { maxPhotos: 500 },
+          createdAt: "2026-10-01T00:00:00Z",
+        },
+        maxPhotos: 500,
+        maxEvents: 8,
+        maxVideoBites: 10,
+        videoBite: true,
+        customDomain: true,
+        canHideBranding: true,
+        hostingDurationYears: 5,
+        rawOriginalsRetentionDays: 90,
+        faceSearch: true,
+        maxGuests: 5000,
+        maxOriginalsGb: 50,
+        allowedPresets: ["royal-crimson"],
+        features: ["custom-domain", "video-bites"],
+      };
+
+      const html = renderToStaticMarkup(
+        <WeddingDetailClient
+          initialWedding={mockWedding}
+          staffSession={mockSession}
+          initialEffectiveEntitlements={mockEffective}
+          initialPhotoCount={12}
+        />,
+      );
+
+      // Compact Executive Hero Assertions
+      expect(html).toContain("Ananya &amp; Kabir");
+      expect(html).toContain("shadify.in/ananya-kabir");
+      expect(html).toContain("published");
+      expect(html).toContain("platinum");
+      expect(html).toContain("OVERRIDE ACTIVE");
+
+      // Masked PIN & Countdown assertions
+      expect(html).toContain("••••••");
+      expect(html).toContain("T-");
+      expect(html).toContain("Day");
+
+      // 4 Operational Domains assertions
+      expect(html).toContain("1. Core Identity &amp; Plan");
+      expect(html).toContain("2. Guest Operations");
+      expect(html).toContain("3. Experience &amp; Design");
+      expect(html).toContain("4. Governance &amp; Quotas");
+
+      // Sub-modules assertions
+      expect(html).toContain("Identity &amp; Slugs");
+      expect(html).toContain("RSVPs (1)");
+      expect(html).toContain("VIPs (1)");
+      expect(html).toContain("Print &amp; QR Proofs");
+      expect(html).toContain("Events (1)");
+      expect(html).toContain("Plan &amp; Overrides");
+      expect(html).toContain("Audit Trail");
+    });
+
+    it("renders celebration concluded memories state for past weddings", async () => {
+      const WeddingDetailClient = (await import("@/app/admin/weddings/[id]/WeddingDetailClient"))
+        .default;
+
+      const pastWedding = {
+        id: "w-past-1",
+        slug: "meera-aditya",
+        brideName: "Meera",
+        groomName: "Aditya",
+        weddingDate: "2024-01-15", // Past date
+        status: "archived",
+        plan: "lite",
+        defaultLocale: "en",
+        themeId: "sunset-day",
+        primaryColor: "#E07A5F",
+        accentColor: "#F4A261",
+        monogramText: "M & A",
+        upiVpa: null,
+        liveStreamUrl: null,
+        showBranding: true,
+        hasPrivatePin: false,
+        events: [],
+        vips: [],
+        aliases: [],
+        qrAssets: [],
+        consents: [],
+        rsvps: [],
+        auditLogs: [],
+      };
+
+      const mockSession: AdminSession = {
+        userId: "usr-staff-1",
+        role: "staff",
+        exp: 1770000000,
+      };
+
+      const html = renderToStaticMarkup(
+        <WeddingDetailClient initialWedding={pastWedding} staffSession={mockSession} />,
+      );
+
+      expect(html).toContain("Celebration Concluded");
+      expect(html).toContain("Archived memories");
+      expect(html).toContain("Public (No PIN)");
     });
   });
 });
