@@ -239,6 +239,38 @@ describe("Central Entitlement Engine - Effective Resolution & Overrides", () => 
     expect(effective.hasActiveOverride).toBe(false);
     expect(effective.maxPhotos).toBe(100);
   });
+
+  it("disregards overrides when latest audit log is an entitlement.override_revoked event", async () => {
+    mockPrisma.wedding.findUnique.mockResolvedValue({
+      id: weddingId,
+      plan: "lite",
+      createdAt: refDate,
+      originalsExpireAt: new Date("2027-01-22T12:00:00Z"),
+      entitlement: {
+        maxPhotos: 100,
+        videoBite: false,
+        customDomain: false,
+        faceSearch: false,
+        maxGuests: null,
+        maxOriginalsGb: null,
+        hostingUntil: new Date("2031-10-24T12:00:00Z"),
+      },
+    });
+
+    mockPrisma.auditLog.findFirst.mockResolvedValue({
+      action: "entitlement.override_revoked",
+      detail: {
+        actorId: "staff-usr-1",
+        reason: "Override revoked by admin",
+        revokedAt: "2026-10-22T12:00:00Z",
+      },
+    });
+
+    const effective = await getEffectiveEntitlements(weddingId, { now: refDate });
+
+    expect(effective.hasActiveOverride).toBe(false);
+    expect(effective.maxPhotos).toBe(100);
+  });
 });
 
 describe("Central Entitlement Engine - Apply & Revoke Mutations", () => {

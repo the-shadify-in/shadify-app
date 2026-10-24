@@ -334,6 +334,13 @@ async function preflightSafetyGate(): Promise<void> {
       !/(prod|production)/i.test(key),
       `Storage key '${key}' appears to target a production storage namespace`,
     );
+    assert(
+      key.includes("/disposable-") ||
+        key.includes("/test-") ||
+        key.includes("/gate-") ||
+        key.includes("/concurrency-"),
+      `Media fixture storage key '${key}' must explicitly contain a disposable identifier ('/disposable-', '/test-', '/gate-', or '/concurrency-') to guarantee isolated test objects.`,
+    );
   }
 
   // Pre-condition assertion: verify the disposable wedding has exactly 1 photo slot remaining
@@ -361,12 +368,53 @@ async function preflightSafetyGate(): Promise<void> {
   );
   const effectiveMaxPhotos = effective.maxPhotos;
 
+  // Confirm actual deployed application storage configuration points to expected bucket via presign probe
+  const presignProbe = await request("/api/media/presign", {
+    method: "POST",
+    headers: adminHeaders,
+    body: JSON.stringify({
+      weddingSlug: targetSlug,
+      filename: "disposable-storage-verification-probe.jpg",
+      contentType: "image/jpeg",
+      tier: "preview",
+    }),
+  });
+  assert(
+    presignProbe.status === 200 && presignProbe.body && typeof presignProbe.body === "object",
+    `Failed to generate upload presigned URL from deployed API (HTTP ${presignProbe.status})`,
+  );
+  const presignBody =
+    typeof presignProbe.body === "object" && presignProbe.body !== null ? presignProbe.body : {};
+  const presignUploadUrl = typeof presignBody.uploadUrl === "string" ? presignBody.uploadUrl : "";
+  assert(presignUploadUrl.length > 0, "Deployed API presign probe missing 'uploadUrl'");
+  assert(
+    !/(prod|production)/i.test(presignUploadUrl),
+    `Deployed application presigned URL target appears to reference production storage: ${presignUploadUrl}`,
+  );
+  const parsedStorageUrl = new URL(presignUploadUrl);
+  const deployedBucketMatches =
+    parsedStorageUrl.hostname.toLowerCase().includes(expectedStorageBucket.toLowerCase()) ||
+    parsedStorageUrl.pathname.toLowerCase().startsWith(`/${expectedStorageBucket.toLowerCase()}/`);
+  assert(
+    deployedBucketMatches,
+    `Deployed application storage bucket in presigned URL (${parsedStorageUrl.host}${parsedStorageUrl.pathname}) does not match required STAGING_EXPECTED_STORAGE_BUCKET '${expectedStorageBucket}'`,
+  );
+
   // Direct SQL audit check: independently verify zero active overrides exist in audit_log
+  // Matches getEffectiveEntitlements resolution: finds the latest override/revocation event,
+  // and asserts that no active, unrevoked, unexpired override is in effect.
   const dbOverrideRows = await queryStagingDb<{ count: number }>(
-    `SELECT count(*)::int AS count 
-     FROM audit_log 
-     WHERE wedding_id = (SELECT id FROM weddings WHERE slug = $1 LIMIT 1)
-       AND action = 'entitlement.override'
+    `WITH latest_audit AS (
+       SELECT action, detail
+       FROM audit_log
+       WHERE wedding_id = (SELECT id FROM weddings WHERE slug = $1 LIMIT 1)
+         AND action IN ('entitlement.override', 'entitlement.override_revoked')
+       ORDER BY created_at DESC
+       LIMIT 1
+     )
+     SELECT count(*)::int AS count 
+     FROM latest_audit 
+     WHERE action = 'entitlement.override'
        AND (detail->>'revokedAt') IS NULL
        AND (detail->>'expiresAt' IS NULL OR (detail->>'expiresAt')::timestamptz > NOW())`,
     [targetSlug],
@@ -398,7 +446,7 @@ async function preflightSafetyGate(): Promise<void> {
   record(
     "0. Safety preflight",
     true,
-    `Host '${base.host}' healthy; DB '${dbName}' on '${expectedDbHost}' verified; bucket '${expectedStorageBucket}' isolated; 0 overrides; exactly 1 photo slot remaining`,
+    `Host '${base.host}' healthy; DB '${dbName}' on '${expectedDbHost}' verified; bucket '${expectedStorageBucket}' confirmed on deployed API; 0 overrides; exactly 1 photo slot remaining`,
   );
 }
 
@@ -457,8 +505,8 @@ async function provisioningRace(): Promise<void> {
     [weddingId],
   );
   const dbAudits = await queryStagingDb<{ count: number }>(
-    "SELECT count(*)::int AS count FROM audit_log WHERE action = 'wedding.provision' AND detail->>'idempotencyKey' = $1",
-    [effectiveKey],
+    "SELECT count(*)::int AS count FROM audit_log WHERE wedding_id = $1::uuid AND action = 'wedding.provision' AND detail->>'idempotencyKey' = $2",
+    [weddingId, effectiveKey],
   );
 
   const weddingCount = Number(dbWeddings[0]?.count ?? 0);

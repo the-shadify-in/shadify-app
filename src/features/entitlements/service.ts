@@ -84,13 +84,13 @@ export async function getEffectiveEntitlements(
   const plan = wedding.plan || "lite";
   const defaults = getPlanDefaults(plan, wedding.createdAt);
 
-  // 2. Fetch the latest entitlement override from audit_log
+  // 2. Fetch the latest entitlement override or revocation from audit_log
   let latestOverrideLog = null;
   if (db.auditLog?.findFirst) {
     latestOverrideLog = await db.auditLog.findFirst({
       where: {
         weddingId,
-        action: "entitlement.override",
+        action: { in: ["entitlement.override", "entitlement.override_revoked"] },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -98,7 +98,11 @@ export async function getEffectiveEntitlements(
 
   let activeOverride: EntitlementOverrideAuditDetail | null = null;
 
-  if (latestOverrideLog && latestOverrideLog.detail) {
+  if (
+    latestOverrideLog &&
+    latestOverrideLog.action === "entitlement.override" &&
+    latestOverrideLog.detail
+  ) {
     const detail = latestOverrideLog.detail as unknown as EntitlementOverrideAuditDetail;
 
     // Check if revoked
