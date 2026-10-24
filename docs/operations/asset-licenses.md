@@ -10,7 +10,7 @@ Designed for social previews on WhatsApp, iMessage, Instagram, and Twitter (16:9
 
 | Asset Path                           | Cultural Theme / Stage                                                                                                  | Generation Tool        | Creation Date | Status         |
 | :----------------------------------- | :---------------------------------------------------------------------------------------------------------------------- | :--------------------- | :------------ | :------------- |
-| `public/og-image.jpg`                | **Royal Lake Palace Sunset** (Udaipur Lake Pichola lakeside mandap, marigolds & lanterns)                               | Google Imagen (in-IDE) | Oct 2026      | Active Default |
+| `public/og/og-default.jpg`           | **Royal Lake Palace Sunset** (Udaipur Lake Pichola lakeside mandap, marigolds & lanterns)                               | Google Imagen (in-IDE) | Oct 2026      | Active Default |
 | `public/og/og-temple-mandap.jpg`     | **South Indian Traditional Temple** (Chettinad courtyard, jasmine mallipoo, lotus, brass kuthu vilakku)                 | Google Imagen (in-IDE) | Oct 2026      | Available      |
 | `public/og/og-palace-mandap.jpg`     | **Rajasthan Heritage Courtyard** (Sandstone arches, reflecting pool, emerald & crimson velvet, candlelight)             | Google Imagen (in-IDE) | Oct 2026      | Available      |
 | `public/og/og-coastal-mandap.jpg`    | **Coastal Ocean Sunset** (Goa/Alibaug minimalist beach mandap, ivory organza, orchids, pampas grass)                    | Google Imagen (in-IDE) | Oct 2026      | Available      |

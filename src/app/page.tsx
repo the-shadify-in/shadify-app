@@ -34,7 +34,7 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/og/og-default.jpg",
         width: 1200,
         height: 630,
         alt: "Celebrate with Shadify — Digital Wedding Invitations & RSVPs",
@@ -46,7 +46,7 @@ export const metadata = {
     title: "Celebrate with Shadify — Digital Wedding Invitations & RSVPs",
     description:
       "Every ceremony, direction, family RSVP, and direct UPI shagun in one link. Handcrafted for your family.",
-    images: ["/og-image.jpg"],
+    images: ["/og/og-default.jpg"],
   },
 };
 
