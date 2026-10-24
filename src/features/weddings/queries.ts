@@ -21,7 +21,27 @@ export const getWeddingBySlug = reactCache(async (slug: string) => {
         entitlement: true,
       },
     });
-    return wedding;
+    if (wedding) return wedding;
+
+    // Check permanent alias table if slug was renamed, vanity, or partner print run
+    const aliasRecord = await prisma.weddingAlias.findUnique({
+      where: { alias: slug },
+      include: {
+        wedding: {
+          include: {
+            events: { orderBy: { sortOrder: "asc" } },
+            vips: { orderBy: { sortOrder: "asc" } },
+            entitlement: true,
+          },
+        },
+      },
+    });
+
+    if (aliasRecord?.wedding && !aliasRecord.retiredAt) {
+      return aliasRecord.wedding;
+    }
+
+    return null;
   } catch (err) {
     console.error(`[queries.getWeddingBySlug] Error fetching slug '${slug}':`, err);
     return null;

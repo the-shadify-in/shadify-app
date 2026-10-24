@@ -129,6 +129,20 @@ enum ReferralStatus {
   void
 }
 
+enum AliasKind {
+  slug_history
+  vanity
+  partner_run
+}
+
+enum QrStatus {
+  draft
+  proofed
+  approved_for_print
+  printed
+  superseded
+}
+
 // ---------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------
@@ -146,6 +160,8 @@ model User {
   memberships    WeddingMember[]
   uploadedPhotos Photo[]         @relation("PhotoUploader")
   auditActions   AuditLog[]
+  approvedQrAssets QrAsset[]     @relation("QrAssetApprover")
+  testedQrScans    QrScanTest[]  @relation("QrScanTester")
 
   @@map("users")
 }
@@ -206,6 +222,8 @@ model Wedding {
   promoRedemptions   PromoRedemption[]
   referrals          Referral[]
   chipCounts         WeddingChipCountDaily[]
+  aliases            WeddingAlias[]
+  qrAssets           QrAsset[]
 
   @@index([weddingDate], map: "idx_weddings_date")
   @@map("weddings")
@@ -579,4 +597,68 @@ model WeddingChipCountDaily {
   @@id([weddingId, day, topic])
   @@index([weddingId, day], map: "idx_chip_counts_wedding_day")
   @@map("wedding_chip_counts_daily")
+}
+
+model WeddingAlias {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  alias        String        @unique
+  weddingId    String        @map("wedding_id") @db.Uuid
+  kind         AliasKind
+  partnerLabel String?       @map("partner_label")
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  retiredAt    DateTime?     @map("retired_at") @db.Timestamptz(6)
+
+  wedding      Wedding       @relation(fields: [weddingId], references: [id], onDelete: Restrict)
+  qrAssets     QrAsset[]
+
+  @@index([weddingId], map: "idx_aliases_wedding")
+  @@map("wedding_aliases")
+}
+
+model QrAsset {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  weddingId       String        @map("wedding_id") @db.Uuid
+  aliasId         String?       @map("alias_id") @db.Uuid
+  encodedUrl      String        @map("encoded_url")
+  format          String
+  sizeMm          Int           @map("size_mm")
+  errorCorrection String        @default("M") @map("error_correction") @db.Char(1)
+  generator       String
+  fileHash        String        @map("file_hash") @db.Char(64)
+  storageKey      String        @map("storage_key")
+  status          QrStatus      @default(draft)
+  approvedBy      String?       @map("approved_by") @db.Uuid
+  approvedAt      DateTime?     @map("approved_at") @db.Timestamptz(6)
+  printerLabel    String?       @map("printer_label")
+  quantity        Int?
+  printedAt       DateTime?     @map("printed_at") @db.Timestamptz(6)
+  supersededBy    String?       @map("superseded_by") @db.Uuid
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  wedding         Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  alias           WeddingAlias? @relation(fields: [aliasId], references: [id], onDelete: Restrict)
+  approver        User?         @relation("QrAssetApprover", fields: [approvedBy], references: [id], onDelete: SetNull)
+  supersededAsset QrAsset?      @relation("QrAssetSuperseded", fields: [supersededBy], references: [id], onDelete: SetNull)
+  supersedes      QrAsset[]     @relation("QrAssetSuperseded")
+  scanTests       QrScanTest[]
+
+  @@unique([weddingId, fileHash])
+  @@index([weddingId], map: "idx_qr_wedding")
+  @@map("qr_assets")
+}
+
+model QrScanTest {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assetId   String    @map("asset_id") @db.Uuid
+  device    String
+  scanner   String
+  lighting  String
+  passed    Boolean
+  testedAt  DateTime  @default(now()) @map("tested_at") @db.Timestamptz(6)
+  testerId  String?   @map("tester_id") @db.Uuid
+
+  asset     QrAsset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  tester    User?     @relation("QrScanTester", fields: [testerId], references: [id], onDelete: SetNull)
+
+  @@map("qr_scan_tests")
 }

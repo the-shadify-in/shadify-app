@@ -518,6 +518,14 @@ export async function generateMetadata({
     };
   }
 
+  if (dbWedding && dbWedding.status !== "published" && !demoData) {
+    return {
+      title: "Celebration Coming Soon",
+      description: "This private wedding celebration website is not yet live.",
+      robots: { index: false, follow: false, nocache: true },
+    };
+  }
+
   const coupleNames = dbWedding
     ? `${dbWedding.brideName} & ${dbWedding.groomName}`
     : demoData
@@ -592,13 +600,32 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
     (slug === "sample" || slug === "demo" ? DEMO_WEDDINGS["priya-rahul"] : null);
   const isDemoSlug = Boolean(demoData);
 
-  // 2. Deliberate 404 for unknown or draft slug (previews are served under /[slug]/preview)
+  // 2. Deliberate 404 for unknown slug
   if (!dbWedding && !isDemoSlug) {
     notFound();
   }
 
+  // 3. Generic unrevealing "Coming Soon" screen for unpublished weddings (Zero PII, zero date/venue enumeration)
   if (dbWedding && dbWedding.status !== "published" && !isDemoSlug) {
-    notFound();
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#090406] px-6 text-center text-[#FFF9F2]">
+        <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-[#C9933A]/30 bg-[#12070A]/80 p-8 shadow-2xl backdrop-blur-xl sm:p-10">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-[#C9933A]/40 bg-[#C9933A]/10 text-2xl text-[#C9933A]">
+            ✦
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C9933A]/30 bg-[#C9933A]/10 px-3.5 py-1 font-serif text-xs font-medium uppercase tracking-widest text-[#E8B96B]">
+            Celebration Coming Soon
+          </span>
+          <h1 className="mt-4 font-serif text-2xl font-light tracking-wide text-white sm:text-3xl">
+            This Celebration is Not Yet Live
+          </h1>
+          <p className="mt-3 text-xs leading-relaxed text-[#E2D5C7]/70 sm:text-sm">
+            The couple is putting the final touches on their digital itinerary. Please check back
+            closer to the celebration date.
+          </p>
+        </div>
+      </main>
+    );
   }
 
   const fallbackDemo = (demoData || DEMO_WEDDINGS["priya-rahul"]) as DemoWeddingRecord;
