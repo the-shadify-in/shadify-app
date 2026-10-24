@@ -47,13 +47,15 @@ export default function AdminLoginClient() {
   };
 
   return (
-    <div className="w-full max-w-sm rounded-2xl border border-[#C9933A]/30 bg-[#14080C] p-8 shadow-2xl">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#C9933A]/10 text-[#C9933A]">
+    <div className="w-full max-w-sm rounded-2xl border border-studio-border bg-studio-surfaceElevated p-8 shadow-2xl">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-studio-champagne/30 bg-studio-champagne/10 text-studio-champagne">
         <Shield className="h-6 w-6" />
       </div>
 
-      <h1 className="text-center font-serif text-2xl font-light text-[#FFF9F2]">Staff Concierge</h1>
-      <p className="mt-1 text-center text-xs text-[#E2D5C7]/60">
+      <h1 className="text-studio-primary text-center font-serif text-2xl font-light">
+        Staff Concierge
+      </h1>
+      <p className="text-studio-muted mt-1 text-center text-xs">
         Shadify Internal Management Portal
       </p>
 
@@ -65,33 +67,33 @@ export default function AdminLoginClient() {
 
       <form onSubmit={handleLogin} method="POST" action="#" className="mt-6 space-y-4 text-xs">
         <div>
-          <label className="block text-[#E2D5C7]/80">Staff Email</label>
+          <label className="text-studio-muted block">Staff Email</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="concierge@shadify.in"
-            className="mt-1 w-full rounded-lg border border-[#C9933A]/30 bg-[#0A0406] px-3 py-2 text-[#FFF9F2] placeholder:text-stone-500 focus:border-[#C9933A] focus:outline-none"
+            className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3 py-2 focus:border-studio-champagne focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-[#E2D5C7]/80">Password</label>
+          <label className="text-studio-muted block">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="mt-1 w-full rounded-lg border border-[#C9933A]/30 bg-[#0A0406] px-3 py-2 text-[#FFF9F2] placeholder:text-stone-500 focus:border-[#C9933A] focus:outline-none"
+            className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3 py-2 focus:border-studio-champagne focus:outline-none"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-gradient-to-r from-[#C9933A] to-[#DFB15B] py-2.5 font-semibold text-black transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full rounded-lg bg-studio-champagne py-2.5 font-semibold text-black transition-all hover:bg-studio-champagneLight active:scale-[0.98] disabled:opacity-50"
         >
           {loading ? "Authenticating..." : "Sign In to Concierge"}
         </button>

@@ -277,24 +277,24 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl border-[#C9933A]/30 bg-[#12070A] p-7 text-[#FFF9F2] shadow-2xl">
-        <DialogHeader className="border-b border-[#C9933A]/20 pb-4">
+      <DialogContent className="text-studio-primary max-w-xl border-studio-border bg-studio-surfaceElevated p-7 shadow-2xl">
+        <DialogHeader className="border-b border-studio-border pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C9933A]/20 text-[#C9933A]">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-studio-champagne/15 text-studio-champagne">
                 <Sparkles className="h-4 w-4" />
               </span>
-              <DialogTitle className="font-serif text-xl font-normal text-[#FFF9F2]">
+              <DialogTitle className="text-studio-primary font-serif text-xl font-normal">
                 {step === 3 ? "Wedding Provisioned!" : "Spin Up Client — 60s Wizard"}
               </DialogTitle>
             </div>
             {step !== 3 && (
-              <Badge variant="outline" className="border-[#C9933A]/40 text-[#C9933A]">
+              <Badge variant="outline" className="border-studio-champagne/40 text-studio-champagne">
                 Step {step} of 2
               </Badge>
             )}
           </div>
-          <DialogDescription className="text-xs text-[#E2D5C7]/60">
+          <DialogDescription className="text-studio-muted text-xs">
             {step === 1 && "Couple identity, celebration date, and primary venue city."}
             {step === 2 && "Subscription tier, theme preset, and verified URL slug."}
             {step === 3 && "Client created in draft mode with seeded itinerary & entitlements."}
@@ -316,8 +316,8 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
           <form onSubmit={handleNextToStep2} className="space-y-4 pt-2 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="bride-name" className="text-[#E2D5C7]/80">
-                  Bride&apos;s Name <span className="text-[#C9933A]">*</span>
+                <Label htmlFor="bride-name" className="text-studio-muted">
+                  Bride&apos;s Name <span className="text-studio-champagne">*</span>
                 </Label>
                 <Input
                   id="bride-name"
@@ -325,13 +325,13 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                   placeholder="e.g. Priya"
                   value={brideName}
                   onChange={(e) => setBrideName(e.target.value)}
-                  className="border-[#C9933A]/30 bg-[#090406] text-[#FFF9F2] focus:border-[#C9933A]"
+                  className="text-studio-primary border-studio-border bg-studio-canvas focus:border-studio-champagne"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="groom-name" className="text-[#E2D5C7]/80">
-                  Groom&apos;s Name <span className="text-[#C9933A]">*</span>
+                <Label htmlFor="groom-name" className="text-studio-muted">
+                  Groom&apos;s Name <span className="text-studio-champagne">*</span>
                 </Label>
                 <Input
                   id="groom-name"
@@ -339,15 +339,15 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                   placeholder="e.g. Rahul"
                   value={groomName}
                   onChange={(e) => setGroomName(e.target.value)}
-                  className="border-[#C9933A]/30 bg-[#090406] text-[#FFF9F2] focus:border-[#C9933A]"
+                  className="text-studio-primary border-studio-border bg-studio-canvas focus:border-studio-champagne"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="wedding-date" className="text-[#E2D5C7]/80">
-                  Wedding Date <span className="text-[#C9933A]">*</span>
+                <Label htmlFor="wedding-date" className="text-studio-muted">
+                  Wedding Date <span className="text-studio-champagne">*</span>
                 </Label>
                 <Input
                   id="wedding-date"
@@ -355,13 +355,13 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                   required
                   value={weddingDate}
                   onChange={(e) => setWeddingDate(e.target.value)}
-                  className="border-[#C9933A]/30 bg-[#090406] text-[#FFF9F2] focus:border-[#C9933A]"
+                  className="text-studio-primary border-studio-border bg-studio-canvas focus:border-studio-champagne"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="venue-city" className="text-[#E2D5C7]/80">
-                  Celebration City <span className="text-[#C9933A]">*</span>
+                <Label htmlFor="venue-city" className="text-studio-muted">
+                  Celebration City <span className="text-studio-champagne">*</span>
                 </Label>
                 <Input
                   id="venue-city"
@@ -369,13 +369,13 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                   placeholder="e.g. Udaipur, Rajasthan"
                   value={venueCity}
                   onChange={(e) => setVenueCity(e.target.value)}
-                  className="border-[#C9933A]/30 bg-[#090406] text-[#FFF9F2] focus:border-[#C9933A]"
+                  className="text-studio-primary border-studio-border bg-studio-canvas focus:border-studio-champagne"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="couple-phone" className="text-[#E2D5C7]/80">
+              <Label htmlFor="couple-phone" className="text-studio-muted">
                 Primary Contact Mobile (Optional)
               </Label>
               <Input
@@ -383,26 +383,26 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                 placeholder="+91 98765 43210"
                 value={couplePhone}
                 onChange={(e) => setCouplePhone(e.target.value)}
-                className="border-[#C9933A]/30 bg-[#090406] text-[#FFF9F2] focus:border-[#C9933A]"
+                className="text-studio-primary border-studio-border bg-studio-canvas focus:border-studio-champagne"
               />
-              <p className="text-[10px] text-[#E2D5C7]/50">
+              <p className="text-studio-muted/70 text-[10px]">
                 Used strictly for concierge dispatch; address book is never scanned per DPDP
                 charter.
               </p>
             </div>
 
-            <div className="flex justify-end gap-2 border-t border-[#C9933A]/15 pt-4">
+            <div className="flex justify-end gap-2 border-t border-studio-border pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-white/10 text-[#E2D5C7]/70 hover:bg-white/5"
+                className="text-studio-muted hover:text-studio-primary border-studio-border hover:bg-studio-surfaceHighlight"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="bg-gradient-to-r from-[#C9933A] to-[#DFB15B] font-semibold text-black hover:opacity-95"
+                className="bg-studio-champagne font-semibold text-black hover:bg-studio-champagneLight"
               >
                 Continue to Plan &amp; URL <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Button>
@@ -420,7 +420,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
           >
             {/* Plan Selector */}
             <div className="space-y-1.5">
-              <Label className="text-[#E2D5C7]/80">Subscription Tier</Label>
+              <Label className="text-studio-muted">Subscription Tier</Label>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   {
@@ -449,20 +449,24 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                     onClick={() => setPlan(p.id as "lite" | "premium" | "platinum")}
                     className={`flex flex-col items-start rounded-lg border p-2.5 text-left transition ${
                       plan === p.id
-                        ? "border-[#C9933A] bg-[#C9933A]/15 shadow-sm"
-                        : "border-[#C9933A]/20 bg-[#090406] hover:border-[#C9933A]/50"
+                        ? "border-studio-champagne bg-studio-champagne/15 shadow-sm"
+                        : "border-studio-border bg-studio-canvas hover:border-studio-champagne/40"
                     }`}
                   >
                     <div className="flex w-full items-center justify-between">
-                      <span className="text-[11px] font-semibold text-[#FFF9F2]">{p.name}</span>
+                      <span className="text-studio-primary text-[11px] font-semibold">
+                        {p.name}
+                      </span>
                       {p.popular && (
-                        <span className="py-0.2 rounded bg-[#C9933A] px-1 text-[9px] font-bold uppercase text-black">
+                        <span className="py-0.2 rounded bg-studio-champagne px-1 text-[9px] font-bold uppercase text-black">
                           Popular
                         </span>
                       )}
                     </div>
-                    <span className="mt-0.5 font-mono text-xs text-[#C9933A]">{p.price}</span>
-                    <span className="mt-1 text-[10px] text-[#E2D5C7]/60">{p.highlight}</span>
+                    <span className="mt-0.5 font-mono text-xs text-studio-champagne">
+                      {p.price}
+                    </span>
+                    <span className="text-studio-muted mt-1 text-[10px]">{p.highlight}</span>
                   </button>
                 ))}
               </div>
@@ -470,7 +474,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
 
             {/* Theme Selector */}
             <div className="space-y-1.5">
-              <Label className="text-[#E2D5C7]/80">Celebration Theme Preset</Label>
+              <Label className="text-studio-muted">Celebration Theme Preset</Label>
               <div className="grid grid-cols-5 gap-2">
                 {THEME_OPTIONS.map((t) => (
                   <button
@@ -479,15 +483,15 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                     onClick={() => setThemeId(t.id)}
                     className={`flex flex-col items-center rounded-lg border p-2 text-center transition ${
                       themeId === t.id
-                        ? "border-[#C9933A] bg-[#C9933A]/15"
-                        : "border-[#C9933A]/15 bg-[#090406] hover:border-[#C9933A]/40"
+                        ? "border-studio-champagne bg-studio-champagne/15"
+                        : "border-studio-border bg-studio-canvas hover:border-studio-champagne/40"
                     }`}
                   >
                     <span
                       className="shadow-xs h-3.5 w-3.5 rounded-full border border-white/20"
                       style={{ backgroundColor: t.dot }}
                     />
-                    <span className="mt-1 text-[10px] font-medium leading-tight text-[#FFF9F2]">
+                    <span className="text-studio-primary mt-1 text-[10px] font-medium leading-tight">
                       {t.label}
                     </span>
                   </button>
@@ -498,11 +502,11 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
             {/* Server-Verified URL Slug */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="slug" className="text-[#E2D5C7]/80">
-                  Invitation URL Slug <span className="text-[#C9933A]">*</span>
+                <Label htmlFor="slug" className="text-studio-muted">
+                  Invitation URL Slug <span className="text-studio-champagne">*</span>
                 </Label>
                 {slugStatus === "checking" && (
-                  <span className="flex items-center gap-1 font-mono text-[10px] text-[#C9933A]">
+                  <span className="flex items-center gap-1 font-mono text-[10px] text-studio-champagne">
                     <RefreshCw className="h-3 w-3 animate-spin" /> Verifying...
                   </span>
                 )}
@@ -518,8 +522,8 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                 )}
               </div>
 
-              <div className="flex rounded-md border border-[#C9933A]/30 bg-[#090406] focus-within:border-[#C9933A]">
-                <span className="inline-flex items-center border-r border-[#C9933A]/20 px-3 font-mono text-xs text-[#E2D5C7]/50">
+              <div className="flex rounded-md border border-studio-border bg-studio-canvas focus-within:border-studio-champagne">
+                <span className="text-studio-muted inline-flex items-center border-r border-studio-border px-3 font-mono text-xs">
                   shadify.in/
                 </span>
                 <input
@@ -531,14 +535,14 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
                   }}
                   placeholder="priya-rahul"
-                  className="w-full bg-transparent px-3 py-2 font-mono text-xs text-[#FFF9F2] placeholder:text-stone-600 focus:outline-none"
+                  className="text-studio-primary w-full bg-transparent px-3 py-2 font-mono text-xs placeholder:text-stone-600 focus:outline-none"
                 />
               </div>
 
               {/* Suggestions chips on collision */}
               {slugSuggestions.length > 0 && (
                 <div className="space-y-1 pt-1">
-                  <span className="text-[10px] text-[#E2D5C7]/60">Available suggestions:</span>
+                  <span className="text-studio-muted text-[10px]">Available suggestions:</span>
                   <div className="flex flex-wrap gap-1.5">
                     {slugSuggestions.map((s) => (
                       <button
@@ -548,7 +552,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                           setIsSlugManuallyEdited(true);
                           setSlug(s);
                         }}
-                        className="rounded bg-[#C9933A]/20 px-2 py-0.5 font-mono text-[10px] text-[#C9933A] hover:bg-[#C9933A]/30"
+                        className="rounded bg-studio-champagne/15 px-2 py-0.5 font-mono text-[10px] text-studio-champagne hover:bg-studio-champagne/25"
                       >
                         +{s}
                       </button>
@@ -558,19 +562,19 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-[#C9933A]/15 pt-4">
+            <div className="flex items-center justify-between border-t border-studio-border pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setStep(1)}
-                className="border-white/10 text-[#E2D5C7]/70 hover:bg-white/5"
+                className="text-studio-muted hover:text-studio-primary border-studio-border hover:bg-studio-surfaceHighlight"
               >
                 <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back
               </Button>
               <Button
                 type="submit"
                 disabled={submitting || slugStatus === "unavailable" || !slug}
-                className="bg-gradient-to-r from-[#C9933A] to-[#DFB15B] font-semibold text-black hover:opacity-95 disabled:opacity-50"
+                className="bg-studio-champagne font-semibold text-black hover:bg-studio-champagneLight disabled:opacity-50"
               >
                 {submitting ? (
                   <>
@@ -594,28 +598,30 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
             </div>
 
             <div>
-              <h3 className="font-serif text-2xl font-light text-[#FFF9F2]">
+              <h3 className="text-studio-primary font-serif text-2xl font-light">
                 {createdWedding.couple}
               </h3>
-              <p className="mt-1 text-xs text-[#E2D5C7]/70">
+              <p className="text-studio-muted mt-1 text-xs">
                 Wedding client successfully provisioned in{" "}
-                <strong className="text-[#C9933A]">Draft Mode</strong>.
+                <strong className="text-studio-champagne">Draft Mode</strong>.
               </p>
             </div>
 
-            <div className="space-y-2 rounded-xl border border-[#C9933A]/20 bg-[#090406] p-4 text-left">
-              <div className="flex items-center justify-between border-b border-[#C9933A]/10 pb-2">
-                <span className="text-[#E2D5C7]/60">Client URL:</span>
-                <span className="font-mono text-[#FFF9F2]">shadify.in{createdWedding.url}</span>
+            <div className="space-y-2 rounded-xl border border-studio-border bg-studio-canvas p-4 text-left">
+              <div className="flex items-center justify-between border-b border-studio-border pb-2">
+                <span className="text-studio-muted">Client URL:</span>
+                <span className="text-studio-primary font-mono">
+                  shadify.in{createdWedding.url}
+                </span>
               </div>
-              <div className="flex items-center justify-between border-b border-[#C9933A]/10 pb-2">
-                <span className="text-[#E2D5C7]/60">Subscription Tier:</span>
-                <span className="font-semibold uppercase tracking-wider text-[#C9933A]">
+              <div className="flex items-center justify-between border-b border-studio-border pb-2">
+                <span className="text-studio-muted">Subscription Tier:</span>
+                <span className="font-semibold uppercase tracking-wider text-studio-champagne">
                   {createdWedding.plan}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[#E2D5C7]/60">Itinerary Status:</span>
+                <span className="text-studio-muted">Itinerary Status:</span>
                 <span className="text-stone-400">3 Draft ceremonies seeded</span>
               </div>
             </div>
@@ -626,7 +632,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                   type="button"
                   variant="outline"
                   onClick={handleCopyLink}
-                  className="border-[#C9933A]/30 text-[#FFF9F2] hover:bg-white/5"
+                  className="text-studio-primary border-studio-border hover:bg-studio-surfaceHighlight"
                 >
                   {copiedLink ? (
                     <>
@@ -642,7 +648,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
                 <Link
                   href={createdWedding.url}
                   target="_blank"
-                  className="inline-flex items-center justify-center rounded-lg border border-[#C9933A]/30 bg-[#14080C] px-4 py-2 font-medium text-[#FFF9F2] hover:border-[#C9933A]"
+                  className="text-studio-primary inline-flex items-center justify-center rounded-lg border border-studio-border bg-studio-surface px-4 py-2 font-medium hover:border-studio-champagne/40"
                 >
                   Live Preview <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
@@ -650,7 +656,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
 
               <Link
                 href={`/admin/weddings/${createdWedding.weddingId}`}
-                className="inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#C9933A] to-[#DFB15B] py-2.5 font-semibold text-black shadow-md hover:opacity-95"
+                className="inline-flex w-full items-center justify-center rounded-lg bg-studio-champagne py-2.5 font-semibold text-black shadow-md hover:bg-studio-champagneLight"
               >
                 Open Concierge Studio Console <Sliders className="ml-1.5 h-4 w-4" />
               </Link>
@@ -658,7 +664,7 @@ export function QuickProvisionModal({ open, onOpenChange, onSuccess }: QuickProv
               <button
                 type="button"
                 onClick={resetForAnother}
-                className="pt-2 text-[11px] text-[#E2D5C7]/60 hover:text-white"
+                className="text-studio-muted hover:text-studio-primary pt-2 text-[11px]"
               >
                 + Provision another wedding
               </button>

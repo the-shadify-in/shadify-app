@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, Sparkles, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
+import { Sparkles, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { THEME_PRESETS, validateContrast, type PresetId } from "@/lib/themes/tokens";
 import { PRICING_PLANS } from "@/lib/config/pricing";
 import { IntakePanel } from "./IntakePanel";
@@ -154,50 +154,44 @@ export default function NewWeddingOnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFBF5] pb-20 font-sans text-[#1F1A2E]">
-      {/* Brand Header */}
-      <header className="sticky top-0 z-30 border-b border-[#EADDCF] bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1F1A2E]/70 hover:text-[#D6246E]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Weddings
-            </Link>
-            <div className="h-4 w-px bg-[#EADDCF]" />
-            <h1 className="font-serif text-base font-medium text-[#1F1A2E]">
+    <div className="text-studio-primary min-h-screen bg-studio-canvas pb-20 font-sans">
+      <main className="mx-auto max-w-5xl px-6 py-8">
+        {/* Executive In-Page Hero */}
+        <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-studio-primary font-serif text-2xl font-light sm:text-3xl">
               Concierge Onboarding — New Wedding
             </h1>
+            <p className="text-studio-muted mt-1 text-xs">
+              Configure celebration identity, subscription plan, visual preset, and financial
+              routing
+            </p>
           </div>
 
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6246E]/20 bg-[#FFF1F6] px-3 py-1 text-xs font-medium text-[#D6246E]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-studio-champagne/40 bg-studio-champagne/15 px-3 py-1 text-xs font-medium text-studio-champagne">
             <Sparkles className="h-3.5 w-3.5" />
-            MVP-0 Monolith
+            Full Provisioning Suite
           </span>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
         {/* Success Modal */}
         {createdWedding && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-md space-y-4 rounded-2xl border border-green-200 bg-white p-8 text-center shadow-2xl">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-700">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+            <div className="text-studio-primary w-full max-w-md space-y-4 rounded-2xl border border-studio-border bg-studio-surfaceElevated p-8 text-center shadow-2xl">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
                 <CheckCircle2 className="h-8 w-8" />
               </div>
 
-              <h2 className="font-serif text-2xl text-[#1F1A2E]">Wedding Created!</h2>
-              <p className="text-xs text-[#1F1A2E]/70">
+              <h2 className="text-studio-primary font-serif text-2xl">Wedding Created!</h2>
+              <p className="text-studio-muted text-xs">
                 The royal digital invitation for{" "}
-                <strong>
+                <strong className="text-studio-primary">
                   {brideName} &amp; {groomName}
                 </strong>{" "}
                 is published in draft mode.
               </p>
 
-              <div className="break-all rounded-xl border border-[#EADDCF] bg-[#FFFBF5] p-3 font-mono text-xs text-[#1F1A2E]/80">
+              <div className="text-studio-primary break-all rounded-xl border border-studio-border bg-studio-canvas p-3 font-mono text-xs">
                 shadify.in{createdWedding.url}
               </div>
 
@@ -206,13 +200,13 @@ export default function NewWeddingOnboardingPage() {
                   href={createdWedding.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#D6246E] py-2.5 text-xs font-semibold text-white shadow hover:opacity-95"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-studio-champagne py-2.5 text-xs font-semibold text-black shadow hover:bg-studio-champagneLight"
                 >
                   Open Live Guest Page <ExternalLink className="h-3.5 w-3.5" />
                 </a>
                 <Link
                   href="/admin"
-                  className="rounded-full border border-[#EADDCF] bg-white py-2.5 text-xs font-medium text-[#1F1A2E]/80 hover:bg-gray-50"
+                  className="text-studio-muted hover:text-studio-primary rounded-full border border-studio-border bg-studio-surface py-2.5 text-xs font-medium hover:bg-studio-surfaceElevated"
                 >
                   Return to Admin Dashboard
                 </Link>
@@ -228,8 +222,8 @@ export default function NewWeddingOnboardingPage() {
 
         <form onSubmit={handleSubmit} className="space-y-10">
           {errorMessage && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-900">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-500/40 bg-red-950/40 p-4 text-xs text-red-300">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
               <div>
                 <p className="font-semibold">Unable to create wedding</p>
                 <p className="mt-0.5 opacity-90">{errorMessage}</p>
@@ -238,17 +232,17 @@ export default function NewWeddingOnboardingPage() {
           )}
 
           {/* 1. Couple & Venue Basics */}
-          <section className="space-y-6 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
+          <section className="space-y-6 rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
             <div>
-              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
+              <h2 className="text-studio-primary font-serif text-lg font-medium">
                 1. Couple &amp; Ceremony Basics
               </h2>
-              <p className="text-xs text-[#1F1A2E]/60">Names, wedding date, city, and URL slug.</p>
+              <p className="text-studio-muted text-xs">Names, wedding date, city, and URL slug.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Bride&apos;s Name *
                 </label>
                 <input
@@ -257,12 +251,12 @@ export default function NewWeddingOnboardingPage() {
                   value={brideName}
                   onChange={(e) => setBrideName(e.target.value)}
                   placeholder="e.g. Priya"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
+                  className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3.5 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Groom&apos;s Name *
                 </label>
                 <input
@@ -271,12 +265,12 @@ export default function NewWeddingOnboardingPage() {
                   value={groomName}
                   onChange={(e) => setGroomName(e.target.value)}
                   placeholder="e.g. Rahul"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
+                  className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3.5 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Wedding Date *
                 </label>
                 <input
@@ -284,12 +278,12 @@ export default function NewWeddingOnboardingPage() {
                   required
                   value={weddingDate}
                   onChange={(e) => setWeddingDate(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] focus:border-[#D6246E] focus:outline-none"
+                  className="text-studio-primary mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3.5 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Venue City / Destination *
                 </label>
                 <input
@@ -298,18 +292,18 @@ export default function NewWeddingOnboardingPage() {
                   value={venueCity}
                   onChange={(e) => setVenueCity(e.target.value)}
                   placeholder="e.g. Udaipur, Rajasthan"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
+                  className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3.5 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Slug URL */}
             <div>
-              <label className="block text-xs font-medium text-[#1F1A2E]/80">
+              <label className="text-studio-muted block text-xs font-medium">
                 Custom Guest URL Slug *
               </label>
-              <div className="mt-1 flex overflow-hidden rounded-lg border border-[#EADDCF] bg-white focus-within:border-[#D6246E]">
-                <span className="inline-flex items-center border-r border-[#EADDCF] bg-gray-50 px-3 text-xs text-[#1F1A2E]/50">
+              <div className="mt-1 flex overflow-hidden rounded-lg border border-studio-border bg-studio-canvas focus-within:border-studio-champagne">
+                <span className="text-studio-muted inline-flex items-center border-r border-studio-border bg-studio-surfaceElevated px-3 text-xs">
                   shadify.in/
                 </span>
                 <input
@@ -321,23 +315,22 @@ export default function NewWeddingOnboardingPage() {
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
                   }}
                   placeholder="priya-rahul-2026"
-                  className="w-full bg-white px-3 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
+                  className="text-studio-primary placeholder:text-studio-subtle w-full bg-transparent px-3 py-2 text-xs focus:outline-none"
                 />
               </div>
-              <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
+              <p className="text-studio-muted/70 mt-1 text-[11px]">
                 Lowercase letters, numbers, and hyphens only. Guarded against reserved platform
                 routes (code 23514).
               </p>
             </div>
           </section>
-
           {/* 2. Pricing Plan */}
-          <section className="space-y-4 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
+          <section className="space-y-4 rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
             <div>
-              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
+              <h2 className="text-studio-primary font-serif text-lg font-medium">
                 2. Pricing Tier &amp; Entitlements
               </h2>
-              <p className="text-xs text-[#1F1A2E]/60">
+              <p className="text-studio-muted text-xs">
                 Select the couple&apos;s contracted package.
               </p>
             </div>
@@ -351,20 +344,20 @@ export default function NewWeddingOnboardingPage() {
                     onClick={() => setPlan(tierKey)}
                     className={`cursor-pointer rounded-xl border p-4 transition-all ${
                       plan === tierKey
-                        ? "border-[#D6246E] bg-[#FFF1F6] shadow-sm"
-                        : "border-[#EADDCF] bg-white hover:border-[#D6246E]/50"
+                        ? "border-studio-champagne bg-studio-champagne/15 shadow-sm"
+                        : "border-studio-border bg-studio-surfaceElevated hover:border-studio-champagne/40"
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold capitalize text-[#1F1A2E]">
+                      <span className="text-studio-primary text-xs font-semibold capitalize">
                         {planData.name}
                       </span>
-                      <span className="font-serif text-sm font-bold text-[#D6246E]">
+                      <span className="font-serif text-sm font-bold text-studio-champagne">
                         ₹{planData.priceInr.toLocaleString("en-IN")}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] text-[#1F1A2E]/70">{planData.tagline}</p>
-                    <div className="mt-3 space-y-1 border-t border-[#EADDCF]/60 pt-2 text-[10px] text-[#1F1A2E]/60">
+                    <p className="text-studio-muted mt-1 text-[11px]">{planData.tagline}</p>
+                    <div className="text-studio-muted/80 mt-3 space-y-1 border-t border-studio-border pt-2 text-[10px]">
                       <p>• {planData.hostingDurationYears}-Year Web Hosting</p>
                       <p>• {planData.rawOriginalsRetentionDays}-Day RAW Retention</p>
                       <p>
@@ -379,12 +372,12 @@ export default function NewWeddingOnboardingPage() {
           </section>
 
           {/* 3. Theme & Color Palette Selection */}
-          <section className="space-y-6 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
+          <section className="space-y-6 rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
             <div>
-              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
+              <h2 className="text-studio-primary font-serif text-lg font-medium">
                 3. Luxury Theme Preset &amp; Contrast Audit
               </h2>
-              <p className="text-xs text-[#1F1A2E]/60">
+              <p className="text-studio-muted text-xs">
                 Choose one of the 5 curated presets. Real-time WCAG AA verification runs on every
                 keystroke.
               </p>
@@ -406,11 +399,11 @@ export default function NewWeddingOnboardingPage() {
                       }}
                       className={`rounded-xl border p-3 text-left transition-all ${
                         themeId === presetKey
-                          ? "border-[#1F1A2E] bg-white shadow ring-2 ring-[#1F1A2E]"
-                          : "border-[#EADDCF] hover:bg-gray-50"
+                          ? "border-studio-champagne bg-studio-champagne/15 shadow ring-1 ring-studio-champagne"
+                          : "border-studio-border bg-studio-surfaceElevated hover:border-studio-champagne/40"
                       }`}
                     >
-                      <div className="mb-2 flex h-6 w-full overflow-hidden rounded border border-gray-200">
+                      <div className="mb-2 flex h-6 w-full overflow-hidden rounded border border-white/10">
                         <div
                           className="h-full w-1/2"
                           style={{ backgroundColor: p.palette.canvas }}
@@ -424,10 +417,10 @@ export default function NewWeddingOnboardingPage() {
                           style={{ backgroundColor: p.palette.accent }}
                         />
                       </div>
-                      <p className="text-xs font-semibold capitalize text-[#1F1A2E]">
+                      <p className="text-studio-primary text-xs font-semibold capitalize">
                         {presetKey.replace("-", " ")}
                       </p>
-                      <p className="text-[10px] text-[#1F1A2E]/60">{p.typography.displayFont}</p>
+                      <p className="text-studio-muted text-[10px]">{p.typography.displayFont}</p>
                     </button>
                   );
                 },
@@ -435,9 +428,9 @@ export default function NewWeddingOnboardingPage() {
             </div>
 
             {/* Custom Color Overrides */}
-            <div className="grid grid-cols-1 gap-4 border-t border-[#EADDCF] pt-6 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 border-t border-studio-border pt-6 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Custom Primary Hex (Optional)
                 </label>
                 <div className="mt-1 flex items-center gap-2">
@@ -445,20 +438,20 @@ export default function NewWeddingOnboardingPage() {
                     type="color"
                     value={resolvedPrimary}
                     onChange={(e) => setCustomPrimary(e.target.value)}
-                    className="h-8 w-8 cursor-pointer rounded border border-[#EADDCF]"
+                    className="h-8 w-8 cursor-pointer rounded border border-studio-border bg-transparent"
                   />
                   <input
                     type="text"
                     value={customPrimary}
                     onChange={(e) => setCustomPrimary(e.target.value)}
                     placeholder={activeBasePreset.palette.primary}
-                    className="w-full rounded-lg border border-[#EADDCF] bg-white px-3 py-1.5 font-mono text-xs uppercase text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
+                    className="text-studio-primary placeholder:text-studio-subtle w-full rounded-lg border border-studio-border bg-studio-canvas px-3 py-1.5 font-mono text-xs uppercase focus:border-studio-champagne focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Custom Accent Hex (Optional)
                 </label>
                 <div className="mt-1 flex items-center gap-2">
@@ -466,20 +459,20 @@ export default function NewWeddingOnboardingPage() {
                     type="color"
                     value={resolvedAccent}
                     onChange={(e) => setCustomAccent(e.target.value)}
-                    className="h-8 w-8 cursor-pointer rounded border border-[#EADDCF]"
+                    className="h-8 w-8 cursor-pointer rounded border border-studio-border bg-transparent"
                   />
                   <input
                     type="text"
                     value={customAccent}
                     onChange={(e) => setCustomAccent(e.target.value)}
                     placeholder={activeBasePreset.palette.accent}
-                    className="w-full rounded-lg border border-[#EADDCF] bg-white px-3 py-1.5 font-mono text-xs uppercase text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
+                    className="text-studio-primary placeholder:text-studio-subtle w-full rounded-lg border border-studio-border bg-studio-canvas px-3 py-1.5 font-mono text-xs uppercase focus:border-studio-champagne focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Monogram Initials
                 </label>
                 <input
@@ -490,8 +483,8 @@ export default function NewWeddingOnboardingPage() {
                     setIsMonogramManual(true);
                     setMonogramText(e.target.value);
                   }}
-                  placeholder="e.g. P & R"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3 py-1.5 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:outline-none"
+                  placeholder="e.g. P &amp; R"
+                  className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3 py-1.5 text-xs focus:border-studio-champagne focus:outline-none"
                 />
               </div>
             </div>
@@ -500,16 +493,16 @@ export default function NewWeddingOnboardingPage() {
             <div
               className={`rounded-xl border p-4 text-xs ${
                 contrastReport.ok
-                  ? "border-green-200 bg-green-50 text-green-900"
-                  : "border-red-200 bg-red-50 text-red-900"
+                  ? "border-emerald-500/30 bg-emerald-950/30 text-emerald-300"
+                  : "border-red-500/30 bg-red-950/30 text-red-300"
               }`}
             >
               <div className="flex items-center justify-between font-semibold">
                 <span className="flex items-center gap-2">
                   {contrastReport.ok ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertCircle className="h-4 w-4 text-red-400" />
                   )}
                   Live Accessibility Contrast Check:{" "}
                   {contrastReport.ok ? "PASSES ALL RULES" : "CONTRAST VIOLATION"}
@@ -528,12 +521,12 @@ export default function NewWeddingOnboardingPage() {
           </section>
 
           {/* 4. Couple Financial & WhatsApp Contact */}
-          <section className="space-y-4 rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
+          <section className="space-y-4 rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
             <div>
-              <h2 className="font-serif text-lg font-medium text-[#1F1A2E]">
+              <h2 className="text-studio-primary font-serif text-lg font-medium">
                 4. Direct UPI Shagun &amp; Couple Contact
               </h2>
-              <p className="text-xs text-[#1F1A2E]/60">
+              <p className="text-studio-muted text-xs">
                 VPA bank address for zero-commission cash blessings, and WhatsApp coordination
                 details.
               </p>
@@ -541,7 +534,7 @@ export default function NewWeddingOnboardingPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Couple&apos;s UPI VPA (Optional)
                 </label>
                 <div className="relative mt-1 rounded-lg">
@@ -550,16 +543,16 @@ export default function NewWeddingOnboardingPage() {
                     value={upiVpa}
                     onChange={(e) => setUpiVpa(e.target.value)}
                     placeholder="priya.rahul@okhdfcbank"
-                    className="w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
+                    className="text-studio-primary placeholder:text-studio-subtle w-full rounded-lg border border-studio-border bg-studio-canvas px-3.5 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                   />
                 </div>
-                <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
+                <p className="text-studio-muted/70 mt-1 text-[11px]">
                   Opens directly in GPay, PhonePe, Paytm with ₹0 fee.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Couple WhatsApp Mobile *
                 </label>
                 <input
@@ -568,15 +561,15 @@ export default function NewWeddingOnboardingPage() {
                   value={couplePhone}
                   onChange={(e) => setCouplePhone(e.target.value)}
                   placeholder="98XXXXXXXX"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
+                  className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3.5 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 />
-                <p className="mt-1 text-[11px] text-[#1F1A2E]/50">
+                <p className="text-studio-muted/70 mt-1 text-[11px]">
                   Used for concierge invites and owner access.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#1F1A2E]/80">
+                <label className="text-studio-muted block text-xs font-medium">
                   Couple Email (Optional)
                 </label>
                 <input
@@ -584,33 +577,33 @@ export default function NewWeddingOnboardingPage() {
                   value={coupleEmail}
                   onChange={(e) => setCoupleEmail(e.target.value)}
                   placeholder="priya@example.com"
-                  className="mt-1 w-full rounded-lg border border-[#EADDCF] bg-white px-3.5 py-2 text-xs text-[#1F1A2E] placeholder:text-stone-400 focus:border-[#D6246E] focus:outline-none"
+                  className="text-studio-primary placeholder:text-studio-subtle mt-1 w-full rounded-lg border border-studio-border bg-studio-canvas px-3.5 py-2 text-xs focus:border-studio-champagne focus:outline-none"
                 />
               </div>
             </div>
           </section>
 
           {/* Form Actions */}
-          <div className="flex flex-col items-center justify-end gap-4 border-t border-[#EADDCF] pt-6 sm:flex-row">
+          <div className="flex flex-col items-center justify-end gap-4 border-t border-studio-border pt-6 sm:flex-row">
             {isReviewGated && (
-              <span className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700">
+              <span className="rounded-lg border border-amber-500/30 bg-amber-950/40 px-3 py-1.5 text-xs font-medium text-amber-300">
                 ⚠️ Review Gate: Review and confirm all flagged checklist items in the Intake
                 Assistant above to enable creation.
               </span>
             )}
             <Link
               href="/admin"
-              className="rounded-full border border-[#EADDCF] bg-white px-6 py-2.5 text-xs font-medium text-[#1F1A2E]/80 hover:bg-gray-50"
+              className="text-studio-muted hover:text-studio-primary rounded-full border border-studio-border bg-studio-surface px-6 py-2.5 text-xs font-medium hover:bg-studio-surfaceElevated"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={isSubmitting || !contrastReport.ok || isReviewGated}
-              className={`rounded-full px-8 py-2.5 text-xs font-semibold text-white shadow transition-all ${
+              className={`rounded-full px-8 py-2.5 text-xs font-semibold shadow transition-all ${
                 isSubmitting || !contrastReport.ok || isReviewGated
-                  ? "cursor-not-allowed bg-gray-400 opacity-60"
-                  : "bg-[#D6246E] hover:opacity-95"
+                  ? "text-studio-muted/50 cursor-not-allowed bg-studio-surfaceHighlight opacity-60"
+                  : "bg-studio-champagne text-black hover:bg-studio-champagneLight"
               }`}
             >
               {isSubmitting ? "Creating Wedding..." : "Create & Launch Wedding"}

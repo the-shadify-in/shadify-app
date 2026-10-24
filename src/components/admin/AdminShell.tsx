@@ -110,7 +110,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#090406] text-[#FFF9F2]">
+    <div className="text-studio-primary selection:text-studio-primary min-h-screen bg-studio-canvas selection:bg-studio-champagne/30">
       {/* Quick Provision Modal available globally in the shell */}
       <QuickProvisionModal
         open={isProvisionOpen}
@@ -124,26 +124,26 @@ export function AdminShell({ children, staff }: AdminShellProps) {
       {/* Desktop Persistent Sidebar */}
       <aside
         aria-label="Admin Navigation"
-        className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-[#C9933A]/20 bg-[#12070A] transition-all duration-200 md:flex ${
+        className={`fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-studio-border bg-studio-surface transition-all duration-200 md:flex ${
           isCollapsed ? "w-20" : "w-64"
         }`}
       >
         {/* Brand Header */}
-        <div className="flex h-16 items-center justify-between border-b border-[#C9933A]/15 px-4">
+        <div className="flex h-16 items-center justify-between border-b border-studio-border px-4">
           <Link
             href="/admin"
             className="flex items-center gap-3 overflow-hidden text-left"
             title="Shadify Concierge"
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#C9933A]/40 bg-[#C9933A]/10 text-[#C9933A] shadow-inner">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-studio-champagne/30 bg-studio-champagne/10 text-studio-champagne shadow-inner">
               <Sparkles className="h-4 w-4" />
             </div>
             {!isCollapsed && (
               <div className="truncate">
-                <span className="block font-serif text-sm font-semibold tracking-wider text-[#FFF9F2]">
+                <span className="text-studio-primary block font-serif text-sm font-semibold tracking-wider">
                   SHADIFY
                 </span>
-                <span className="block text-[10px] uppercase tracking-widest text-[#C9933A]/80">
+                <span className="block text-[10px] uppercase tracking-widest text-studio-champagne/80">
                   Concierge Studio
                 </span>
               </div>
@@ -153,7 +153,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="rounded-md p-1.5 text-[#E2D5C7]/60 hover:bg-[#C9933A]/10 hover:text-[#FFF9F2] focus:outline-none focus:ring-1 focus:ring-[#C9933A]"
+            className="text-studio-muted hover:text-studio-primary rounded-md p-1.5 hover:bg-studio-surfaceHighlight focus:outline-none focus:ring-1 focus:ring-studio-champagne"
           >
             {isCollapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -169,7 +169,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             type="button"
             onClick={() => setIsProvisionOpen(true)}
             title="Quick Provision Celebration"
-            className={`flex w-full items-center justify-center gap-2 rounded-lg border border-[#C9933A]/40 bg-gradient-to-r from-[#C9933A]/25 to-[#C9933A]/10 px-3 py-2 text-xs font-medium text-[#E8B96B] transition hover:border-[#C9933A] hover:from-[#C9933A]/35 hover:to-[#C9933A]/20 focus:outline-none focus:ring-1 focus:ring-[#C9933A] ${
+            className={`flex w-full items-center justify-center gap-2 rounded-lg border border-studio-champagne/30 bg-studio-champagne/10 px-3 py-2 text-xs font-medium text-studio-champagne transition hover:border-studio-champagne/60 hover:bg-studio-champagne/20 focus:outline-none focus:ring-1 focus:ring-studio-champagne ${
               isCollapsed ? "px-0" : ""
             }`}
           >
@@ -189,8 +189,8 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                 title={item.label}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium transition ${
                   item.isActive
-                    ? "border border-[#C9933A]/40 bg-[#C9933A]/15 text-[#E8B96B] shadow-sm"
-                    : "text-[#E2D5C7]/70 hover:bg-[#C9933A]/10 hover:text-[#FFF9F2]"
+                    ? "border border-studio-champagne/40 bg-studio-champagne/15 text-studio-champagne shadow-sm"
+                    : "text-studio-muted hover:text-studio-primary hover:bg-studio-surfaceHighlight"
                 } ${isCollapsed ? "justify-center px-0" : ""}`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -202,17 +202,17 @@ export function AdminShell({ children, staff }: AdminShellProps) {
           {/* Contextual link when inside a wedding */}
           {isWeddingDetail && !isCollapsed && (
             <div className="pt-4">
-              <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-[#C9933A]/60">
+              <div className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-studio-champagne/80">
                 Active Celebration
               </div>
-              <div className="rounded-lg border border-[#C9933A]/25 bg-[#090406]/60 p-2.5 text-xs">
-                <div className="font-medium text-[#FFF9F2]">Wedding Studio</div>
-                <div className="mt-0.5 text-[10px] text-[#E2D5C7]/60">
+              <div className="rounded-lg border border-studio-border bg-studio-canvas/60 p-2.5 text-xs">
+                <div className="text-studio-primary font-medium">Wedding Studio</div>
+                <div className="text-studio-muted mt-0.5 text-[10px]">
                   Inspecting live operational state
                 </div>
                 <Link
                   href="/admin"
-                  className="mt-2 inline-flex items-center gap-1 text-[11px] text-[#C9933A] hover:underline"
+                  className="mt-2 inline-flex items-center gap-1 text-[11px] text-studio-champagne hover:underline"
                 >
                   <ChevronLeft className="h-3 w-3" />
                   <span>All Celebrations</span>
@@ -223,21 +223,23 @@ export function AdminShell({ children, staff }: AdminShellProps) {
         </nav>
 
         {/* Staff Profile & Sign Out Footer */}
-        <div className="border-t border-[#C9933A]/15 bg-[#090406]/40 p-3">
+        <div className="border-t border-studio-border bg-studio-canvas/40 p-3">
           <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
             <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#C9933A]/40 bg-[#C9933A]/20 text-xs font-semibold text-[#E8B96B]"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-studio-champagne/30 bg-studio-champagne/15 text-xs font-semibold text-studio-champagne"
               title={staff.fullName || staff.email}
             >
               {(staff.fullName || staff.email || "S").charAt(0).toUpperCase()}
             </div>
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
-                <div className="truncate text-xs font-medium text-[#FFF9F2]">
+                <div className="text-studio-primary truncate text-xs font-medium">
                   {staff.fullName || "Concierge Staff"}
                 </div>
-                <div className="flex items-center gap-1.5 truncate text-[10px] text-[#E2D5C7]/60">
-                  <span className="capitalize text-[#C9933A]">{staff.role.replace("_", " ")}</span>
+                <div className="text-studio-muted flex items-center gap-1.5 truncate text-[10px]">
+                  <span className="capitalize text-studio-champagne">
+                    {staff.role.replace("_", " ")}
+                  </span>
                   <span>•</span>
                   <span className="truncate">{staff.email}</span>
                 </div>
@@ -250,7 +252,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             onClick={handleLogout}
             disabled={isLoggingOut}
             title="Sign out"
-            className={`mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-white/5 bg-white/5 px-2.5 py-1.5 text-xs text-[#E2D5C7]/80 transition hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-300 focus:outline-none focus:ring-1 focus:ring-red-400 ${
+            className={`text-studio-muted mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-studio-border bg-studio-surfaceElevated px-2.5 py-1.5 text-xs transition hover:border-studio-ruby/50 hover:bg-studio-ruby/15 hover:text-red-300 focus:outline-none focus:ring-1 focus:ring-studio-ruby ${
               isCollapsed ? "px-0" : ""
             }`}
           >
@@ -270,18 +272,18 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             aria-hidden="true"
           />
 
-          <div className="relative flex w-full max-w-xs flex-1 flex-col border-r border-[#C9933A]/20 bg-[#12070A] p-4 text-[#FFF9F2]">
+          <div className="text-studio-primary relative flex w-full max-w-xs flex-1 flex-col border-r border-studio-border bg-studio-surface p-4">
             {/* Drawer Header */}
-            <div className="flex items-center justify-between border-b border-[#C9933A]/15 pb-4">
+            <div className="flex items-center justify-between border-b border-studio-border pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#C9933A]/40 bg-[#C9933A]/15 text-[#C9933A]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-studio-champagne/30 bg-studio-champagne/15 text-studio-champagne">
                   <Sparkles className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="font-serif text-sm font-semibold tracking-wider text-[#FFF9F2]">
+                  <div className="text-studio-primary font-serif text-sm font-semibold tracking-wider">
                     SHADIFY
                   </div>
-                  <div className="text-[10px] uppercase tracking-widest text-[#C9933A]/80">
+                  <div className="text-[10px] uppercase tracking-widest text-studio-champagne/80">
                     Concierge Studio
                   </div>
                 </div>
@@ -290,7 +292,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                 type="button"
                 onClick={() => setIsMobileOpen(false)}
                 aria-label="Close menu"
-                className="rounded-md p-1.5 text-[#E2D5C7]/70 hover:bg-white/10 hover:text-white"
+                className="text-studio-muted hover:text-studio-primary rounded-md p-1.5 hover:bg-studio-surfaceHighlight"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -304,7 +306,7 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                   setIsMobileOpen(false);
                   setIsProvisionOpen(true);
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#C9933A]/40 bg-gradient-to-r from-[#C9933A]/25 to-[#C9933A]/10 px-3 py-2.5 text-xs font-medium text-[#E8B96B]"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-studio-champagne/30 bg-studio-champagne/10 px-3 py-2.5 text-xs font-medium text-studio-champagne"
               >
                 <Plus className="h-4 w-4" />
                 <span>Quick Provision Celebration</span>
@@ -321,8 +323,8 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                     href={item.href}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                       item.isActive
-                        ? "border border-[#C9933A]/40 bg-[#C9933A]/15 text-[#E8B96B]"
-                        : "text-[#E2D5C7]/80 hover:bg-white/5 hover:text-white"
+                        ? "border border-studio-champagne/40 bg-studio-champagne/15 text-studio-champagne"
+                        : "text-studio-muted hover:text-studio-primary hover:bg-studio-surfaceHighlight"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -333,23 +335,23 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             </nav>
 
             {/* Staff profile & sign out */}
-            <div className="border-t border-[#C9933A]/15 pt-4">
+            <div className="border-t border-studio-border pt-4">
               <div className="mb-3 flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#C9933A]/40 bg-[#C9933A]/20 text-xs font-semibold text-[#E8B96B]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border border-studio-champagne/30 bg-studio-champagne/15 text-xs font-semibold text-studio-champagne">
                   {(staff.fullName || staff.email || "S").charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-medium text-[#FFF9F2]">
+                  <div className="text-studio-primary truncate text-xs font-medium">
                     {staff.fullName || "Concierge Staff"}
                   </div>
-                  <div className="truncate text-[10px] text-[#E2D5C7]/60">{staff.email}</div>
+                  <div className="text-studio-muted truncate text-[10px]">{staff.email}</div>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="flex w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-white/5 py-2 text-xs text-[#E2D5C7] hover:bg-red-500/10 hover:text-red-300"
+                className="text-studio-muted flex w-full items-center justify-center gap-2 rounded-md border border-studio-border bg-studio-surfaceElevated py-2 text-xs hover:border-studio-ruby/50 hover:bg-studio-ruby/15 hover:text-red-300"
               >
                 <LogOut className="h-4 w-4" />
                 <span>{isLoggingOut ? "Signing out..." : "Sign Out"}</span>
@@ -366,14 +368,14 @@ export function AdminShell({ children, staff }: AdminShellProps) {
         }`}
       >
         {/* Global Top Bar */}
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[#C9933A]/15 bg-[#12070A]/90 px-4 backdrop-blur-md sm:px-6">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-studio-border bg-studio-surface/90 px-4 backdrop-blur-md sm:px-6">
           <div className="flex items-center gap-3">
             {/* Mobile menu trigger */}
             <button
               type="button"
               onClick={() => setIsMobileOpen(true)}
               aria-label="Open navigation menu"
-              className="rounded-md p-1.5 text-[#E2D5C7]/80 hover:bg-white/10 hover:text-white md:hidden"
+              className="text-studio-muted hover:text-studio-primary rounded-md p-1.5 hover:bg-studio-surfaceHighlight md:hidden"
             >
               <Menu className="h-5 w-5" />
             </button>
@@ -384,13 +386,13 @@ export function AdminShell({ children, staff }: AdminShellProps) {
                 const isLast = idx === breadcrumbs.length - 1;
                 return (
                   <React.Fragment key={crumb.label + idx}>
-                    {idx > 0 && <span className="text-[#C9933A]/40">/</span>}
+                    {idx > 0 && <span className="text-studio-muted/40">/</span>}
                     {isLast ? (
-                      <span className="font-medium text-[#E8B96B]">{crumb.label}</span>
+                      <span className="font-medium text-studio-champagne">{crumb.label}</span>
                     ) : (
                       <Link
                         href={crumb.href}
-                        className="text-[#E2D5C7]/70 transition hover:text-[#FFF9F2]"
+                        className="text-studio-muted hover:text-studio-primary transition"
                       >
                         {crumb.label}
                       </Link>
@@ -405,12 +407,12 @@ export function AdminShell({ children, staff }: AdminShellProps) {
             <button
               type="button"
               onClick={() => setIsProvisionOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[#C9933A]/40 bg-[#C9933A]/10 px-2.5 py-1 text-xs font-medium text-[#E8B96B] transition hover:bg-[#C9933A]/20"
+              className="inline-flex items-center gap-1.5 rounded-md border border-studio-champagne/40 bg-studio-champagne/10 px-2.5 py-1 text-xs font-medium text-studio-champagne transition hover:bg-studio-champagne/20"
             >
               <Plus className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Provision</span>
             </button>
-            <div className="hidden items-center gap-2 text-xs text-[#E2D5C7]/60 sm:flex">
+            <div className="text-studio-muted hidden items-center gap-2 text-xs sm:flex">
               <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20" />
               <span>Workspace Connected</span>
             </div>

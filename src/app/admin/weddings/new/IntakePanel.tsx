@@ -209,16 +209,16 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
   const pendingCount = reviewItems.filter((item) => !item.confirmed).length;
 
   return (
-    <div className="rounded-xl border border-[#C9933A]/30 bg-[#160A10] p-5 shadow-lg">
+    <div className="rounded-xl border border-studio-border bg-studio-surface p-5 shadow-lg">
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2.5 text-left font-serif text-lg font-light text-[#FFF9F2] hover:text-[#C9933A] focus-visible:outline-none"
+          className="text-studio-primary flex items-center gap-2.5 text-left font-serif text-lg font-light hover:text-studio-champagne focus-visible:outline-none"
         >
-          <Sparkles className="h-5 w-5 text-[#C9933A]" />
+          <Sparkles className="h-5 w-5 text-studio-champagne" />
           <span>Paste WhatsApp Message (AI Intake Draft Assistant)</span>
-          <span className="rounded-full bg-[#C9933A]/20 px-2 py-0.5 font-mono text-[10px] text-[#C9933A]">
+          <span className="rounded-full bg-studio-champagne/15 px-2 py-0.5 font-mono text-[10px] text-studio-champagne">
             Staff Only
           </span>
         </button>
@@ -226,19 +226,19 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="rounded-lg p-1.5 text-[#E2D5C7]/60 hover:text-white"
+          className="text-studio-muted hover:text-studio-primary rounded-lg p-1.5"
         >
           {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </button>
       </div>
 
       {isOpen && (
-        <div className="mt-4 space-y-4 border-t border-[#C9933A]/15 pt-3">
-          <p className="text-xs leading-relaxed text-[#E2D5C7]/70">
+        <div className="mt-4 space-y-4 border-t border-studio-border pt-3">
+          <p className="text-studio-muted text-xs leading-relaxed">
             Paste forwarded WhatsApp invitations, itinerary messages, or couple details. Our
             deterministic assistant extracts names, timings, venues, and contacts into a prefilled
             draft for your review.
-            <strong className="text-[#C9933A]">
+            <strong className="text-studio-champagne">
               {" "}
               Zero data is saved until you manually click Create Wedding.
             </strong>
@@ -250,7 +250,7 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
             rows={5}
             maxLength={20000}
             placeholder="Paste raw WhatsApp text here (e.g. 'Priya weds Rahul, 14 Dec 2026 at Taj Lake Palace, Udaipur. Sangeet at 7 PM...')"
-            className="w-full rounded-lg border border-[#C9933A]/30 bg-[#0E0508] p-3 font-mono text-xs text-[#FFF9F2] placeholder-[#E2D5C7]/30 focus:border-[#C9933A] focus:outline-none"
+            className="text-studio-primary placeholder:text-studio-subtle w-full rounded-lg border border-studio-border bg-studio-canvas p-3 font-mono text-xs focus:border-studio-champagne focus:outline-none"
           />
 
           {error && (
@@ -261,7 +261,7 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
           )}
 
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-[#E2D5C7]/40">
+            <span className="text-studio-muted/70 text-[11px]">
               {inputText.length} / 20,000 characters
             </span>
 
@@ -269,7 +269,7 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
               type="button"
               disabled={isLoading || !inputText.trim()}
               onClick={handleExtract}
-              className="rounded-lg bg-gradient-to-r from-[#C9933A] to-[#DFB15B] px-5 py-2 text-xs font-semibold text-black shadow-md transition hover:scale-105 disabled:opacity-50"
+              className="rounded-lg bg-studio-champagne px-5 py-2 text-xs font-semibold text-black shadow-md transition hover:bg-studio-champagneLight disabled:opacity-50"
             >
               {isLoading ? (
                 <>
@@ -287,11 +287,11 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
 
           {/* REVIEW GATE CHECKLIST */}
           {reviewItems.length > 0 && (
-            <div className="mt-5 space-y-3 rounded-lg border border-amber-500/30 bg-[#1D0F16] p-4">
+            <div className="mt-5 space-y-3 rounded-lg border border-amber-500/30 bg-studio-surfaceElevated p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="h-5 w-5 text-amber-400" />
-                  <h4 className="font-serif text-sm font-semibold text-[#FFF9F2]">
+                  <h4 className="text-studio-primary font-serif text-sm font-semibold">
                     Review Gate: Human Verification Required
                   </h4>
                 </div>
@@ -306,7 +306,7 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
                 </span>
               </div>
 
-              <p className="text-[11px] text-[#E2D5C7]/70">
+              <p className="text-studio-muted text-[11px]">
                 To prevent publishing errors, please inspect each flagged field below. The{" "}
                 <strong>&quot;Create Wedding&quot;</strong> button remains locked until every item
                 is reviewed and marked confirmed.
@@ -318,31 +318,31 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
                     key={item.id}
                     className={`flex items-start justify-between gap-3 rounded-md border p-2.5 text-xs transition ${
                       item.confirmed
-                        ? "border-green-500/30 bg-green-950/20 text-[#E2D5C7]/70"
-                        : "border-amber-500/30 bg-[#180A10] text-[#FFF9F2]"
+                        ? "text-studio-muted border-emerald-500/30 bg-emerald-950/20"
+                        : "text-studio-primary border-amber-500/30 bg-studio-canvas"
                     }`}
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-white">{item.label}</span>
+                        <span className="text-studio-primary font-semibold">{item.label}</span>
                         <span
                           className={`py-0.2 rounded px-1.5 text-[9px] font-bold uppercase ${
                             item.confidence === "high"
-                              ? "bg-green-900/60 text-green-300"
+                              ? "bg-emerald-950/60 text-emerald-300"
                               : item.confidence === "medium"
-                                ? "bg-yellow-900/60 text-yellow-300"
-                                : "bg-red-900/60 text-red-300"
+                                ? "bg-amber-950/60 text-amber-300"
+                                : "bg-red-950/60 text-red-300"
                           }`}
                         >
                           {item.confidence}
                         </span>
                       </div>
-                      <p className="font-mono text-[11px] text-[#C9933A]">{item.value}</p>
+                      <p className="font-mono text-[11px] text-studio-champagne">{item.value}</p>
                       {item.reason && (
-                        <p className="text-[10px] text-[#E2D5C7]/60">{item.reason}</p>
+                        <p className="text-studio-muted text-[10px]">{item.reason}</p>
                       )}
                       {item.source && (
-                        <p className="text-[10px] italic text-[#E2D5C7]/40">
+                        <p className="text-studio-muted/70 text-[10px] italic">
                           Source snippet: &quot;{item.source}&quot;
                         </p>
                       )}
@@ -353,9 +353,9 @@ export function IntakePanel({ onApplyDraft, onReviewGateChange }: IntakePanelPro
                         type="checkbox"
                         checked={item.confirmed}
                         onChange={() => handleToggleConfirmItem(item.id)}
-                        className="h-4 w-4 rounded border-amber-500/50 bg-[#0E0508] text-[#C9933A] focus:ring-amber-500"
+                        className="h-4 w-4 rounded border-amber-500/50 bg-studio-canvas text-studio-champagne focus:ring-amber-500"
                       />
-                      <span className="text-[11px] text-[#E2D5C7]/80">
+                      <span className="text-studio-muted text-[11px]">
                         {item.confirmed ? "Confirmed" : "Verify"}
                       </span>
                     </label>

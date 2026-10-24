@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  ShieldCheck,
-  Sparkles,
-  AlertCircle,
-  AlertTriangle,
-} from "lucide-react";
+import { CheckCircle2, ShieldCheck, Sparkles, AlertCircle, AlertTriangle } from "lucide-react";
 import { THEME_PRESETS, validateContrast } from "@/lib/themes/tokens";
 
 export default function ThemePreviewAndSwatchPage() {
@@ -18,108 +10,102 @@ export default function ThemePreviewAndSwatchPage() {
   const contrastReport = validateContrast(selectedTheme.palette);
 
   return (
-    <div className="min-h-screen bg-[#FFFBF5] font-sans text-[#1F1A2E]">
-      {/* Brand Header */}
-      <header className="border-b border-[#EADDCF] bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/admin"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1F1A2E]/70 hover:text-[#D6246E]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Admin
-            </Link>
-            <div className="h-4 w-px bg-[#EADDCF]" />
-            <h1 className="font-serif text-base font-medium text-[#1F1A2E]">
+    <div className="text-studio-primary min-h-screen bg-studio-canvas font-sans">
+      <main className="mx-auto max-w-7xl space-y-10 p-6 sm:p-8">
+        {/* Executive In-Page Hero */}
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-studio-primary font-serif text-2xl font-light sm:text-3xl">
               Design System &amp; Theme Inspector
             </h1>
+            <p className="text-studio-muted mt-1 text-xs">
+              Live audit of brand isolation, dual token namespaces, and client theme contrast
+              matrices
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-[#D6246E]/20 bg-[#FFF1F6] px-3 py-1 text-xs font-medium text-[#D6246E]">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-studio-champagne/40 bg-studio-champagne/15 px-3 py-1 text-xs font-medium text-studio-champagne">
               <Sparkles className="h-3.5 w-3.5" />
               Dual Namespace Active
             </span>
           </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-7xl space-y-12 px-6 py-10">
         {/* ------------------------------------------------------------- */}
         {/* 1. BRAND PALETTE (ISOLATED TO ADMIN & MARKETING) */}
         {/* ------------------------------------------------------------- */}
-        <section className="rounded-2xl border border-[#EADDCF] bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#D6246E]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-studio-champagne">
                 Namespace: --brand-*
               </span>
-              <h2 className="font-serif text-xl font-medium text-[#1F1A2E]">
+              <h2 className="text-studio-primary font-serif text-xl font-medium">
                 Shadify Platform Identity
               </h2>
-              <p className="text-xs text-[#1F1A2E]/60">
+              <p className="text-studio-muted text-xs">
                 Used solely in marketing, staff concierge, and error screens. Never injected into
                 couple sites.
               </p>
             </div>
-            <div className="mt-2 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-1 text-xs text-green-700 sm:mt-0">
-              <ShieldCheck className="h-4 w-4" />
+            <div className="mt-2 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-950/40 px-3 py-1 text-xs text-emerald-300 sm:mt-0">
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
               Zero Guest Page Bleed
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-6">
-            <div className="rounded-xl border border-[#EADDCF] p-3 text-center">
+            <div className="rounded-xl border border-studio-border bg-studio-surfaceElevated p-3 text-center">
               <div className="h-12 w-full rounded-lg bg-[#D6246E] shadow-inner" />
-              <p className="mt-2 text-xs font-semibold">Rani Pink</p>
-              <p className="font-mono text-[11px] text-[#1F1A2E]/60">#D6246E</p>
+              <p className="text-studio-primary mt-2 text-xs font-semibold">Rani Pink</p>
+              <p className="text-studio-muted font-mono text-[11px]">#D6246E</p>
               <span className="mt-1 inline-block text-[10px] font-medium text-[#D6246E]">
                 Primary Accent
               </span>
             </div>
 
-            <div className="rounded-xl border border-[#EADDCF] p-3 text-center">
+            <div className="rounded-xl border border-studio-border bg-studio-surfaceElevated p-3 text-center">
               <div className="h-12 w-full rounded-lg bg-[#F5A524] shadow-inner" />
-              <p className="mt-2 text-xs font-semibold">Marigold</p>
-              <p className="font-mono text-[11px] text-[#1F1A2E]/60">#F5A524</p>
-              <span className="mt-1 inline-block text-[10px] font-medium text-amber-700">
+              <p className="text-studio-primary mt-2 text-xs font-semibold">Marigold</p>
+              <p className="text-studio-muted font-mono text-[11px]">#F5A524</p>
+              <span className="mt-1 inline-block text-[10px] font-medium text-amber-400">
                 Highlight / Badges
               </span>
             </div>
 
-            <div className="rounded-xl border border-[#EADDCF] p-3 text-center">
+            <div className="rounded-xl border border-studio-border bg-studio-surfaceElevated p-3 text-center">
               <div className="h-12 w-full rounded-lg bg-[#0E9F8E] shadow-inner" />
-              <p className="mt-2 text-xs font-semibold">Peacock Teal</p>
-              <p className="font-mono text-[11px] text-[#1F1A2E]/60">#0E9F8E</p>
-              <span className="mt-1 inline-block text-[10px] font-medium text-teal-700">
+              <p className="text-studio-primary mt-2 text-xs font-semibold">Peacock Teal</p>
+              <p className="text-studio-muted font-mono text-[11px]">#0E9F8E</p>
+              <span className="mt-1 inline-block text-[10px] font-medium text-teal-400">
                 Secondary Accent
               </span>
             </div>
 
-            <div className="rounded-xl border border-[#EADDCF] p-3 text-center">
+            <div className="rounded-xl border border-studio-border bg-studio-surfaceElevated p-3 text-center">
               <div className="h-12 w-full rounded-lg bg-[#3D3BC4] shadow-inner" />
-              <p className="mt-2 text-xs font-semibold">Royal Indigo</p>
-              <p className="font-mono text-[11px] text-[#1F1A2E]/60">#3D3BC4</p>
-              <span className="mt-1 inline-block text-[10px] font-medium text-indigo-700">
+              <p className="text-studio-primary mt-2 text-xs font-semibold">Royal Indigo</p>
+              <p className="text-studio-muted font-mono text-[11px]">#3D3BC4</p>
+              <span className="mt-1 inline-block text-[10px] font-medium text-indigo-400">
                 Infographics
               </span>
             </div>
 
-            <div className="rounded-xl border border-[#EADDCF] p-3 text-center">
-              <div className="h-12 w-full rounded-lg border border-gray-200 bg-[#FFFBF5] shadow-inner" />
-              <p className="mt-2 text-xs font-semibold">Ivory Ground</p>
-              <p className="font-mono text-[11px] text-[#1F1A2E]/60">#FFFBF5</p>
-              <span className="mt-1 inline-block text-[10px] font-medium text-gray-600">
+            <div className="rounded-xl border border-studio-border bg-studio-surfaceElevated p-3 text-center">
+              <div className="h-12 w-full rounded-lg border border-gray-600 bg-[#FFFBF5] shadow-inner" />
+              <p className="text-studio-primary mt-2 text-xs font-semibold">Ivory Ground</p>
+              <p className="text-studio-muted font-mono text-[11px]">#FFFBF5</p>
+              <span className="mt-1 inline-block text-[10px] font-medium text-stone-300">
                 Canvas Background
               </span>
             </div>
 
-            <div className="rounded-xl border border-[#EADDCF] p-3 text-center">
+            <div className="rounded-xl border border-studio-border bg-studio-surfaceElevated p-3 text-center">
               <div className="h-12 w-full rounded-lg bg-[#1F1A2E] shadow-inner" />
-              <p className="mt-2 text-xs font-semibold text-[#1F1A2E]">Midnight Ink</p>
-              <p className="font-mono text-[11px] text-[#1F1A2E]/60">#1F1A2E</p>
-              <span className="mt-1 inline-block text-[10px] font-medium text-purple-900">
+              <p className="text-studio-primary mt-2 text-xs font-semibold">Midnight Ink</p>
+              <p className="text-studio-muted font-mono text-[11px]">#1F1A2E</p>
+              <span className="mt-1 inline-block text-[10px] font-medium text-purple-300">
                 Reading Text
               </span>
             </div>
@@ -132,13 +118,13 @@ export default function ThemePreviewAndSwatchPage() {
         <section className="space-y-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-purple-700">
+              <span className="text-xs font-semibold uppercase tracking-wider text-studio-champagne">
                 Namespace: --theme-*
               </span>
-              <h2 className="font-serif text-xl font-medium text-[#1F1A2E]">
+              <h2 className="text-studio-primary font-serif text-xl font-medium">
                 Client Wedding Theme Presets
               </h2>
-              <p className="text-xs text-[#1F1A2E]/60">
+              <p className="text-studio-muted text-xs">
                 Every preset is audited across the 8-point contrast matrix for mobile legibility.
               </p>
             </div>
@@ -153,8 +139,8 @@ export default function ThemePreviewAndSwatchPage() {
                     onClick={() => setSelectedPresetKey(key)}
                     className={`rounded-lg px-4 py-2 text-xs font-medium capitalize transition-all ${
                       selectedPresetKey === key
-                        ? "bg-[#1F1A2E] text-white shadow-md"
-                        : "border border-[#EADDCF] bg-white text-[#1F1A2E]/70 hover:bg-[#FFF1F6]"
+                        ? "border border-studio-champagne bg-studio-champagne/20 text-studio-champagne shadow-md"
+                        : "text-studio-muted hover:text-studio-primary border border-studio-border bg-studio-surface hover:border-studio-champagne/40"
                     }`}
                   >
                     {key.replace("-", " ")}
@@ -166,12 +152,12 @@ export default function ThemePreviewAndSwatchPage() {
           {/* Active Preset Inspector Grid */}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Left: Token Details & Contrast Matrix */}
-            <div className="space-y-6 rounded-2xl border border-[#EADDCF] bg-white p-6">
+            <div className="space-y-6 rounded-2xl border border-studio-border bg-studio-surface p-6">
               <div>
-                <h3 className="text-sm font-semibold capitalize text-[#1F1A2E]">
+                <h3 className="text-studio-primary text-sm font-semibold capitalize">
                   {selectedTheme.presetId.replace("-", " ")}
                 </h3>
-                <p className="text-xs text-[#1F1A2E]/60">
+                <p className="text-studio-muted text-xs">
                   Preset Version: {selectedTheme.version}.0
                 </p>
               </div>
@@ -233,8 +219,8 @@ export default function ThemePreviewAndSwatchPage() {
 
               {/* Palette Details */}
               <div className="space-y-3 text-xs">
-                <p className="font-semibold text-[#1F1A2E]/80">Palette Tokens</p>
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <p className="text-studio-primary font-semibold">Palette Tokens</p>
+                <div className="text-studio-muted grid grid-cols-2 gap-2 text-[11px]">
                   <div className="flex items-center gap-2">
                     <div
                       className="h-4 w-4 rounded"
@@ -267,22 +253,22 @@ export default function ThemePreviewAndSwatchPage() {
               </div>
 
               {/* Typography & Monogram */}
-              <div className="space-y-2 border-t border-[#EADDCF] pt-4 text-xs">
+              <div className="text-studio-muted space-y-2 border-t border-studio-border pt-4 text-xs">
                 <p>
-                  <span className="font-semibold">Display Font:</span>{" "}
+                  <span className="text-studio-primary font-semibold">Display Font:</span>{" "}
                   {selectedTheme.typography.displayFont}
                 </p>
                 <p>
-                  <span className="font-semibold">Body Font:</span>{" "}
+                  <span className="text-studio-primary font-semibold">Body Font:</span>{" "}
                   {selectedTheme.typography.bodyFont}
                 </p>
                 <p>
-                  <span className="font-semibold">Monogram:</span> &ldquo;
+                  <span className="text-studio-primary font-semibold">Monogram:</span> &ldquo;
                   {selectedTheme.monogram.text}&rdquo; ({selectedTheme.monogram.style})
                 </p>
                 <p>
-                  <span className="font-semibold">Ornaments:</span> {selectedTheme.ornaments.motif}{" "}
-                  ({selectedTheme.ornaments.borderStyle})
+                  <span className="text-studio-primary font-semibold">Ornaments:</span>{" "}
+                  {selectedTheme.ornaments.motif} ({selectedTheme.ornaments.borderStyle})
                 </p>
               </div>
             </div>
