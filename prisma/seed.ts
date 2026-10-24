@@ -1,4 +1,5 @@
 import { prisma } from "../src/lib/db";
+import { hashPassword } from "../src/lib/auth";
 
 async function main() {
   console.log("Seeding Shadify sample wedding...");
@@ -296,6 +297,27 @@ async function main() {
   console.log(
     `✅ Seeded promo codes: ${guestPromo.code} (Guest), ${partnerPromo.code} (Partner), ${pilotPromo.code} (Pilot 100%)`,
   );
+
+  // 4. Seed Staff Concierge User for Testing and Development
+  if (process.env.NODE_ENV !== "production" || process.env.SEED_STAFF === "true") {
+    const staffEmail = process.env.TEST_STAFF_EMAIL || "concierge@shadify.in";
+    const staffPassword =
+      process.env.TEST_STAFF_PASSWORD || process.env.STAFF_PASSWORD || "TestStaffPass!2026";
+    const staffPasswordHash = await hashPassword(staffPassword);
+
+    await prisma.user.upsert({
+      where: { email: staffEmail },
+      update: { passwordHash: staffPasswordHash, role: "staff" },
+      create: {
+        fullName: "Shadify Concierge Staff",
+        phone: "+919800000002",
+        email: staffEmail,
+        role: "staff",
+        passwordHash: staffPasswordHash,
+      },
+    });
+    console.log(`✅ Seeded staff concierge user: ${staffEmail}`);
+  }
 }
 
 main()
