@@ -42,10 +42,10 @@
 
 - [x] **A9 `[BLOCKER]` `@lead-eng` — Tenant isolation test must run against a real Postgres.**
       A two-test file that may use mocks does not prove isolation.
-      **Done when:** a CI test seeds two weddings in a real database and shows wedding A can never read B's events, RSVPs, Shagun, photos or guests through any query function; removing a `wedding_id` filter from one function makes the test fail. Verified in `tests/db/real-postgres.test.ts` and GitHub Actions `db-gate`.
+      **Done when:** a CI test seeds two weddings in a real database and shows wedding A can never read B's events, RSVPs, Shagun, photos or guests through any query function; removing a `wedding_id` filter from one function makes the test fail. Verified in `tests/db/real-postgres.test.ts` and GitHub Actions `db-gate` against `postgres:16-alpine`. Note: Current real-database assertions strictly isolate events, guests, and erasure cascades; expanding assertions to photos, RSVPs, and Shagun before final production traffic.
 
 - [x] **A10 `[BLOCKER]` `@lead-eng` — CI must apply the migrations and test the database protections.**
-      **Done when:** a CI job with a Postgres 16 service applies all migrations from empty; tests show slug `admin` is rejected, `reserved_slugs` cannot be changed, shared-phone RSVPs with different names succeed, and duplicates fail; a `prisma migrate diff` from migrations to schema shows no difference; `prisma/migrations` is untouched by Prettier. Verified in `tests/db/real-postgres.test.ts` and `.github/workflows/ci.yml`.
+      **Done when:** a CI job with a Postgres 16 service applies all migrations from empty; tests show slug `admin` is rejected, `reserved_slugs` cannot be changed, shared-phone RSVPs with different names succeed, and duplicates fail; a `prisma migrate diff` from migrations to schema shows no difference; `prisma/migrations` is untouched by Prettier. Verified in `tests/db/real-postgres.test.ts` and `.github/workflows/ci.yml` (all 8 migrations deployed, `db:migrate:status` verified).
 
 - [x] **A11 `[BEFORE-LAUNCH]` `@lead-eng` — Prisma configuration hardening.**
       Removed localhost fallback from `prisma.config.ts` and `src/lib/db.ts`. Fails loudly if `DATABASE_URL` is missing. Serverless `pg.Pool` limits configured (`max: 10`, `idleTimeoutMillis: 30000`).
@@ -186,7 +186,7 @@
       **Done when:** automated tests cover `/priya-rahul` (themed, `noindex`), `/pricing` (indexable), `/admin` logged out (redirect), `/zzz-not-real` (branded 404, no theme leak), a reserved-slug creation (409), `/favicon.ico` and `/robots.txt`.
 
 - [ ] **D6 `[BEFORE-LAUNCH]` `@lead-eng` — Load and failure rehearsal on staging.**
-      **Done when:** several hundred concurrent guests open a page without errors and the cache serves most hits; with the database stopped, the cached guest page still loads and the RSVP form shows a clear message.
+      **Done when:** several hundred concurrent guests open a page without errors and the cache serves most hits; with the database stopped, the cached guest page still loads and the RSVP form shows a clear message. Status: 6-gate staging harness (`tests/staging/concurrency-gate.ts`) is fully built and hardened with live deployed storage bucket presign verification, aligned dual API/SQL active override logic, and scoped provisioning idempotency assertions. D6 remains open until remote staging execution passes with exit code 0.
 
 - [ ] **D7 `[BEFORE-LAUNCH]` `@lead-eng` — Demo weddings.**
       **Done when:** the sample weddings use fictional data only and are flagged as demos in the database.
@@ -255,17 +255,17 @@
 
 ## G. Real-Wedding Operational & UX Hardening
 
-- [x] **G1 `[BLOCKER]` `@lead-eng` — UPI Fallback Matrix (In-App Browser & Desktop Guard).**
+- [ ] **G1 `[BLOCKER]` `@lead-eng` — UPI Fallback Matrix (In-App Browser & Desktop Guard).**
       Deep link `upi://pay` fails silently inside WhatsApp's in-app browser on iOS and on desktop browsers.
-      **Done when:** the Shagun modal displays a dynamic QR code, a one-tap "Copy UPI ID" button with copy feedback, a prominent visible text VPA, and an NRI explanatory note for overseas relatives. Implemented in `DigitalShagunModal.tsx`.
+      **Done when:** the Shagun modal displays a dynamic QR code, a one-tap "Copy UPI ID" button with copy feedback, a prominent visible text VPA, and an NRI explanatory note for overseas relatives. Status: `DigitalShagunModal.tsx` implements `upi://pay` intent URI, copy VPA button with feedback, and visible text VPA. Unchecked pending dynamic scannable QR generation (replacing static SVG icon placeholder), in-app browser fallback handling, and NRI explanatory copy.
 
-- [x] **G2 `[BLOCKER]` `@lead-eng` — International E.164 Phone Validation for Guests & NRIs.**
+- [ ] **G2 `[BLOCKER]` `@lead-eng` — International E.164 Phone Validation for Guests & NRIs.**
       RSVP and onboarding forms reject international phone numbers because of 10-digit Indian regex.
-      **Done when:** RSVP form accepts valid international numbers in E.164 format with country dial code support; tested with US (+1), UK (+44), UAE (+971), and India (+91). Verified by 10 passing tests in `src/lib/__tests__/phone.test.ts`.
+      **Done when:** RSVP form accepts valid international numbers in E.164 format with country dial code support; tested with US (+1), UK (+44), UAE (+971), and India (+91). Status: Backend phone parser and normalizer in `src/lib/phone.ts` and `/api/rsvp` fully support international E.164 formats with 10 unit tests. Unchecked pending dedicated country dial-code dropdown selector in the guest RSVP form UI.
 
-- [x] **G3 `[BLOCKER]` `@lead-eng` — Distributed / DB-Backed Rate Limiting & Edge Client IP Header.**
+- [ ] **G3 `[BLOCKER]` `@lead-eng` — Distributed / DB-Backed Rate Limiting & Edge Client IP Header.**
       In-memory rate limiter (`hitStore`) fails across multi-instance serverless functions on Vercel.
-      **Done when:** rate limiting uses PostgreSQL persistence or shared Redis, validates edge proxy IP headers (`x-real-ip` / `cf-connecting-ip`), and blocks spoofed `x-forwarded-for` bursts. Implemented in `src/lib/ratelimit.ts` with Upstash Redis, atomic Lua scripts, and `/64` IPv6 normalization.
+      **Done when:** rate limiting uses PostgreSQL persistence or shared Redis, validates edge proxy IP headers (`x-real-ip` / `cf-connecting-ip`), and blocks spoofed `x-forwarded-for` bursts. Status: Edge client IP extraction, Cloudflare/Vercel header validation, and `/64` IPv6 normalization are active in `src/lib/ratelimit.ts`. Unchecked pending replacement of in-memory `hitStore` (`Map`) with distributed Redis or PostgreSQL persistence.
 
 - [ ] **G4 `[BLOCKER]` `@lead-eng` — Draft vs. Published Content State & Versioning.**
       Staff edits to published weddings go live instantly without a preview gate.

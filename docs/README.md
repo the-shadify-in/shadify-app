@@ -53,6 +53,7 @@ shadify-app/
 │   │   ├── terms/page.tsx         ← Customer agreement & 5-year hosting terms
 │   │   ├── privacy/page.tsx       ← DPDP Act 2023 zero-harvesting privacy notice
 │   │   ├── refunds/page.tsx       ← Cancellation, postponement & refund policy
+│   │   ├── report/                ← Public community & content reporting interface
 │   │   ├── [slug]/                ← Direct guest wedding website (envelope reveal, RSVP, Shagun)
 │   │   ├── admin/                 ← Concierge studio (AdminShell, directory, /admin/health, /admin/theme-preview, /admin/weddings/[id])
 │   │   └── api/
@@ -62,7 +63,14 @@ shadify-app/
 │   │       ├── promos/validate/   ← Server-side promo code validation in integer paise
 │   │       ├── media/finalize/    ← Photo finalize with SELECT FOR UPDATE concurrency lock
 │   │       ├── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
-│   │       └── admin/             ← Staff APIs (provisioning, PIN rotation, entitlements, aliases, QR)
+│   │       ├── privacy/data-request/ ← Statutory DPDP Act 2023 data export & erasure requests
+│   │       ├── analytics/chip/    ← Anonymous daily aggregate chip tap telemetry
+│   │       └── admin/             ← Staff APIs:
+│   │           ├── weddings/provision/   ← Transactional provision with advisory lock & idempotency
+│   │           ├── weddings/[id]/pin/    ← Masked PIN rotation, reset & cookie invalidation
+│   │           ├── weddings/[id]/entitlements/ ← Central limit engine & staff override audits
+│   │           ├── weddings/[id]/aliases/← Custom vanity domains & collision prevention
+│   │           └── weddings/[id]/export-rsvps/ ← CSV attendee & dietary data export
 │   │
 │   ├── components/                ← Primitives (Button, Dialog, Turnstile) & AdminShell patterns
 │   ├── features/                  ← Modular domain logic (weddings, entitlements, promos, guest)
@@ -80,7 +88,22 @@ shadify-app/
 
 ---
 
-## 3. Database Workflow
+## 3. Database Workflow & Migration Inventory
+
+All schema migrations are version-controlled in `prisma/migrations/`:
+
+| Migration | Name                             | Description & Invariants                                                                                                                          |
+| --------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0**     | `0_init`                         | Core schema tables, custom enums, foreign keys, and base indexes.                                                                                 |
+| **1**     | `1_db_protections`               | Invariant enforcement: `block_reserved_slug()` trigger, `REVOKE` write privileges on `reserved_slugs`, partial unique indexes, check constraints. |
+| **2**     | `2_theme_config`                 | Validated wedding theme palette & typography JSON schema.                                                                                         |
+| **3**     | `3_promos_and_referrals`         | B2B partner commissions, guest referral credit ledger, and integer paise promo codes.                                                             |
+| **4**     | `4_reserved_slugs_expand`        | Expanded reserved slug trigger aligned with application route boundaries.                                                                         |
+| **5**     | `5_schema_constraints_alignment` | Constraint alignment for partial unique indexes and tenant isolation.                                                                             |
+| **6**     | `6_chip_counts`                  | First-party anonymous daily question analytics aggregates (`wedding_chip_counts`).                                                                |
+| **7**     | `7_aliases_and_qr_assets`        | Vanity domain/URL aliases (`wedding_aliases`), print QR assets (`wedding_qr_assets`), and entitlement override audit logs.                        |
+
+### Migration Commands
 
 1. **Local Schema Validation**:
    ```bash
@@ -96,7 +119,24 @@ shadify-app/
    ```
 
 > [!IMPORTANT]
-> Never use `prisma db push` in production. Always use `prisma migrate deploy` to ensure that custom triggers (`block_reserved_slug`), partial indexes, and check constraints in `1_db_protections/migration.sql` are applied properly.
+> Never use `prisma db push` in production. Always use `prisma migrate deploy` to ensure that custom triggers (`block_reserved_slug`), partial indexes, and check constraints in `1_db_protections/migration.sql` and `4_reserved_slugs_expand/migration.sql` are applied properly.
+
+---
+
+## 4. Staging Release-Gate Harness
+
+Prior to production release, the release-gate harness (`tests/staging/concurrency-gate.ts`) executes 6 sequential verification gates against a live staging deployment:
+
+```bash
+bun run tests/staging/concurrency-gate.ts
+```
+
+- **Gate 0**: Safety & Environment Preflight (DB host/name verification, deployed R2 presigned probe, dual API/SQL 0 active overrides check, disposable fixture checks).
+- **Gate 1**: Provisioning Race (20 concurrent requests, exactly 1 wedding + 1 idempotency audit record).
+- **Gate 2**: Media Quota Race (10 concurrent requests against ceiling, `SELECT ... FOR UPDATE` row lock, exactly 1 committed photo, 9 HTTP 403 quota failures).
+- **Gate 3**: Commercial Gate Enforcement (Lite plan branding removal restriction).
+- **Gate 4**: Guest PIN Rotation & Session Invalidation (Replay rejection, fail-closed cleanup).
+- **Gate 5**: Entitlement Override & Revocation Audit (Audit trail, reason justification, fail-closed cleanup).
 
 ---
 

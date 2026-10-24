@@ -29,10 +29,20 @@ The root `docs/` folder is organized into **7 authoritative master documents**:
 
 ---
 
-## 3. Sub-Repository Documentation Strategy
+## 3. Implementation Repository Structure
 
-As we scaffold the codebase, each app/package maintains its own specialized `docs/`:
+The implementation is unified inside the `shadify-app` monolith:
 
-- **`apps/web/docs/`**: Next.js 14 App Router layout, guest routes (`/[slug]`), concierge admin (`/admin`), and API route handlers.
-- **`packages/database/docs/`**: PostgreSQL 16 schema, Drizzle/Prisma migrations, and seed scripts.
-- **`packages/ui/docs/`**: Shared design tokens, Indian wedding themes, and CSS envelope animations.
+- **`shadify-app/docs/`**: Engineering guidelines, launch checklist, observability guide, and concierge runbooks.
+- **`shadify-app/prisma/`**: PostgreSQL 16 schema, Prisma ORM, seed scripts, and eight versioned declarative migrations:
+  1. `0_init`: Core tables, enums, FKs, base indexes.
+  2. `1_db_protections`: Reserved slug trigger, slug check constraints, partial unique indexes, `reserved_slugs` write revocation.
+  3. `2_theme_config`: Validated theme palette & typography JSON schema.
+  4. `3_promos_and_referrals`: Partner commission ledger and promo codes in paise.
+  5. `4_reserved_slugs_expand`: Expanded reserved slug triggers.
+  6. `5_schema_constraints_alignment`: Unique constraints alignment.
+  7. `6_chip_counts`: Anonymous daily aggregate chip tap analytics.
+  8. `7_aliases_and_qr_assets`: Custom vanity aliases, high-res QR print assets, and entitlement override audit logs.
+- **`shadify-app/src/app/`**: Next.js 14 App Router guest experiences (`/[slug]`), concierge admin studio (`/admin`), and API route handlers including Phase 4 transactional provisioning (`/api/admin/weddings/provision`), PIN lifecycle (`/api/admin/weddings/[id]/pin`), central entitlements (`/api/admin/weddings/[id]/entitlements`), vanity aliases (`/api/admin/weddings/[id]/aliases`), CSV attendee export (`/api/admin/weddings/[id]/export-rsvps`), DPDP privacy requests (`/api/privacy/data-request`), and chip telemetry (`/api/analytics/chip`).
+- **`shadify-app/tests/staging/concurrency-gate.ts`**: 6-gate staging release gate validating database isolation, `pg_advisory_xact_lock` provisioning race, and `SELECT ... FOR UPDATE` media quota race.
+- **`shadify-app/src/lib/themes/`**: Dual design token system (`--brand-*` vs `--theme-*`), 5 curated Indian wedding presets, and contrast validation matrix.

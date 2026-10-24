@@ -67,6 +67,7 @@ shadify-app/
 │   │   ├── terms/page.tsx         ← Customer agreement & 5-year hosting terms
 │   │   ├── privacy/page.tsx       ← DPDP Act 2023 zero-harvesting privacy notice
 │   │   ├── refunds/page.tsx       ← Cancellation, postponement & refund policy
+│   │   ├── report/page.tsx        ← Public community & content reporting interface
 │   │   ├── [slug]/page.tsx        ← Direct guest wedding site (Envelope, itinerary, RSVP, Shagun)
 │   │   ├── admin/
 │   │   │   ├── layout.tsx         ← Authenticated AdminShell wrapper with collapsible sidebar
@@ -83,7 +84,14 @@ shadify-app/
 │   │       ├── promos/validate/   ← Integer paise promo validation
 │   │       ├── media/finalize/    ← Photo finalize with SELECT FOR UPDATE concurrency lock
 │   │       ├── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
-│   │       └── admin/             ← Staff APIs (provision, PIN rotation, entitlements, aliases, QR)
+│   │       ├── privacy/data-request/ ← Statutory DPDP Act 2023 data export & erasure requests
+│   │       ├── analytics/chip/    ← Anonymous daily aggregate chip tap telemetry
+│   │       └── admin/             ← Staff APIs:
+│   │           ├── weddings/provision/   ← Transactional provision with advisory lock & idempotency
+│   │           ├── weddings/[id]/pin/    ← Masked PIN rotation, reset & cookie invalidation
+│   │           ├── weddings/[id]/entitlements/ ← Central limit engine & staff override audits
+│   │           ├── weddings/[id]/aliases/← Custom vanity domains & collision prevention
+│   │           └── weddings/[id]/export-rsvps/ ← CSV attendee & dietary data export
 │   │
 │   ├── components/                ← Primitives (Button, Dialog, Turnstile) & AdminShell patterns
 │   ├── features/                  ← Modular domain logic (weddings, entitlements, promos, guest)
@@ -160,7 +168,8 @@ npm run db:migrate:deploy
 npm run db:seed
 
 # Run automated test suites
-npm run test          # 65 Vitest unit & integration tests
+# Run automated test suites
+npm run test          # 41 test files, 259 Vitest unit & integration tests
 npm run test:e2e      # Playwright headless browser E2E smoke suite
 npm run check         # Prettier, ESLint, Brand isolation, TypeScript & Vitest
 ```
@@ -182,14 +191,54 @@ Visit:
 
 ## 🗄️ Database & Migrations
 
-The database setup uses a two-step migration architecture:
+Shadify enforces a strictly audited, eight-step declarative migration architecture in `prisma/migrations/`:
 
-1. **`0_init/migration.sql`**: Generates all core tables, custom PostgreSQL enums, foreign keys, and standard indexes.
-2. **`1_db_protections/migration.sql`**: Applies custom database protections:
-   - `block_reserved_slug()` function and trigger preventing weddings from claiming reserved routes (`admin`, `api`, `w`, etc.).
-   - `REVOKE` write privileges on `reserved_slugs` to ensure table immutability from the application role.
-   - Partial unique indexes (`uq_rsvp_event_guest`, `uq_rsvp_event_phone_name`).
-   - Strict `CHECK` constraints on party sizes, slugs, and amounts.
+| Migration | Identifier                       | Scope & Applied Protections                                                                                                                                                                                                                                                                                |
+| --------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0**     | `0_init`                         | Core relational schema: `weddings`, `events`, `guests`, `rsvps`, `photos`, custom PostgreSQL enums, foreign keys, and base indexes.                                                                                                                                                                        |
+| **1**     | `1_db_protections`               | Database invariants: `block_reserved_slug()` trigger preventing reserved route claims (`admin`, `api`, `w`), `REVOKE` write privileges on `reserved_slugs`, partial unique indexes (`uq_rsvp_event_guest`, `uq_rsvp_event_phone_name`), and strict `CHECK` constraints on party sizes, slugs, and amounts. |
+| **2**     | `2_theme_config`                 | Validated wedding theme palette & typography JSON schema (`themeConfig`).                                                                                                                                                                                                                                  |
+| **3**     | `3_promos_and_referrals`         | B2B partner commission ledger, guest referral credits, and integer paise promo codes (`promos`, `referral_credits`, `partner_commissions`).                                                                                                                                                                |
+| **4**     | `4_reserved_slugs_expand`        | Expanded reserved slug list trigger synchronized with application route boundaries.                                                                                                                                                                                                                        |
+| **5**     | `5_schema_constraints_alignment` | Database constraint alignment for safe partial unique indexes and tenant isolation.                                                                                                                                                                                                                        |
+| **6**     | `6_chip_counts`                  | First-party anonymous daily question analytics aggregates (`wedding_chip_counts`).                                                                                                                                                                                                                         |
+| **7**     | `7_aliases_and_qr_assets`        | Vanity domain/URL aliases (`wedding_aliases`), high-resolution print QR assets (`wedding_qr_assets`), and entitlement override audit logs.                                                                                                                                                                 |
+
+---
+
+## 🛡️ Staging Release Gate (`tests/staging/concurrency-gate.ts`)
+
+Before any release or production promotion, the automated staging concurrency gate verifies database isolation, transactional locking, and media quotas against a live staging deployment:
+
+```bash
+bun run tests/staging/concurrency-gate.ts
+```
+
+### Sequential Safety Gates
+
+1. **Gate 0: Safety & Environment Preflight**: Non-mutating verification running first. Verifies target host boundaries, direct database connection to `STAGING_EXPECTED_DB_HOST`/`NAME`, queries the deployed `/api/media/presign` endpoint to prove deployed storage matches `STAGING_EXPECTED_STORAGE_BUCKET`, asserts disposable fixture keys, validates 0 active entitlement overrides via both API and SQL, and confirms exactly 1 remaining photo slot.
+2. **Gate 1: Provisioning Idempotency Race (20 concurrent requests)**: Validates `pg_advisory_xact_lock` serialization. Asserts that 20 simultaneous requests with the same run-scoped idempotency key result in exactly 1 persisted wedding and 1 audit record.
+3. **Gate 2: Concurrent Media Quota Enforcement (10 concurrent requests)**: Validates PostgreSQL `SELECT ... FOR UPDATE` row locking against the photo quota ceiling. Asserts exactly 1 photo is committed and 9 requests reject with HTTP 403 quota exceeded.
+4. **Gate 3: Commercial Gate Enforcement**: Validates that Lite plan weddings cannot toggle branding removal without an authorized tier upgrade.
+5. **Gate 4: Guest PIN Rotation & Session Invalidation**: Validates that rotating or resetting a wedding PIN instantly invalidates previous guest session cookies with fail-closed cleanup.
+6. **Gate 5: Entitlement Override & Revocation Audit**: Validates that staff overrides apply cleanly with operator attribution, log immutable audit trails, and revocation restores plan defaults with fail-closed cleanup.
+
+### Mandatory Environment Variables
+
+```ini
+STAGING_BASE_URL="https://staging.shadify.in"
+STAGING_EXPECTED_HOST="staging.shadify.in"
+STAGING_CONFIRM="I_UNDERSTAND_THIS_MUTATES_STAGING"
+STAGING_ADMIN_COOKIE="<signed-staging-staff-cookie>"
+STAGING_PROVISION_BODY_JSON='{"slug":"staging-test-wedding","brideName":"...","groomName":"..."}'
+STAGING_IDEMPOTENCY_KEY="staging-gate-key"
+STAGING_LITE_WEDDING_ID="<disposable-lite-wedding-uuid>"
+STAGING_MEDIA_FINALIZE_BODIES_JSON='[{"weddingSlug":"...","key":"weddings/<uuid>/photos/disposable-..."}]'
+STAGING_DATABASE_URL="postgresql://user:pass@staging-db.shadify.internal/shadify_staging"
+STAGING_EXPECTED_DB_NAME="shadify_staging"
+STAGING_EXPECTED_DB_HOST="staging-db.shadify.internal"
+STAGING_EXPECTED_STORAGE_BUCKET="shadify-media-staging"
+```
 
 ---
 
@@ -201,7 +250,7 @@ For in-depth product, architectural, operational, and financial specifications, 
 - **[ui-ux-guidelines.md](./docs/engineering/ui-ux-guidelines.md)**: Luxury Indian wedding design tokens, 5 curated presets, envelope reveal, and mobile ergonomics.
 - **[launch-checklist.md](./docs/operations/launch-checklist.md)**: Pre-launch verification matrix, blocker tracking, and quality gates.
 - **[runbooks.md](./docs/operations/runbooks.md)**: Concierge operations runbooks (Emergency triage, B2B partner payouts, DPDP erasure).
-- **[observability.md](./docs/operations/observability.md)**: Structured JSON logging, `/api/health` heartbeat, `/admin/health` gate, and P0/P1 alert matrix.
+- **[observability.md](./docs/operations/observability.md)**: Structured JSON logging, `/api/health` heartbeat, `/admin/health` gate, staging release gate, and P0/P1 alert matrix.
 - **[00-master-plan.md](./docs/product-specs/00-master-plan.md)**: Architectural principles and development standards.
 - **[01-product-vision-and-mvp.md](./docs/product-specs/01-product-vision-and-mvp.md)**: Product scope, unit economics table, and break-even targets.
 - **[02-system-architecture.md](./docs/product-specs/02-system-architecture.md)**: Caching tiers, monolith layout, and R2 presigned upload mechanics.

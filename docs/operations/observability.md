@@ -162,3 +162,100 @@ Flags any wedding occurring within the next 14 days with an incomplete operation
 3. **Simulate Guest RSVP**: Submit a test RSVP via concierge test suite to verify write path.
 4. **Inspect R2 Quotas**: Confirm no egress or bucket policy blocks.
 5. **Rollback Command**: If bad deploy occurred, promote previous release artifact immediately in Vercel/Fly dashboard.
+
+---
+
+## 7. Staging Release-Gate Harness & Concurrency Verification
+
+> **Harness Source**: `tests/staging/concurrency-gate.ts`  
+> **Execution Command**: `bun run tests/staging/concurrency-gate.ts`
+
+Prior to any production deployment or release sign-off, the automated staging harness verifies real database serialization, storage bucket isolation, dual API/SQL override synchronization, and concurrent race handling against the remote staging environment.
+
+### 1. Required Environment Variables
+
+All variables are mandatory; missing or invalid variables immediately abort execution before any requests are issued:
+
+| Variable                             | Type / Example                      | Purpose & Validation Rules                                                                                                                                                              |
+| ------------------------------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STAGING_BASE_URL`                   | `https://staging.shadify.in`        | Target base URL of the deployed staging service. Host must not contain `prod` or `production`.                                                                                          |
+| `STAGING_EXPECTED_HOST`              | `staging.shadify.in`                | Exact host name assertion to prevent accidental DNS misdirection.                                                                                                                       |
+| `STAGING_CONFIRM`                    | `I_UNDERSTAND_THIS_MUTATES_STAGING` | Strict explicit human acknowledgment; fails if omitted or altered.                                                                                                                      |
+| `STAGING_ADMIN_COOKIE`               | String (min 32 chars)               | Valid signed staff session token for the staging environment. Masked in all logs.                                                                                                       |
+| `STAGING_PROVISION_BODY_JSON`        | JSON String                         | Wedding payload for `POST /api/admin/weddings/provision`.                                                                                                                               |
+| `STAGING_IDEMPOTENCY_KEY`            | String                              | Base idempotency key. Harness appends a fresh UUID run nonce (`${key}-${nonce}`) per execution.                                                                                         |
+| `STAGING_LITE_WEDDING_ID`            | UUID                                | UUID of a disposable test wedding on the `lite` tier.                                                                                                                                   |
+| `STAGING_MEDIA_FINALIZE_BODIES_JSON` | JSON Array (10 items)               | 10 distinct request payloads for `/api/media/finalize` targeting a wedding with exactly 1 remaining photo slot. Keys must contain a disposable marker (`/disposable-`, `/test-`, etc.). |
+| `STAGING_DATABASE_URL`               | PostgreSQL URL                      | Direct connection string for independent database assertions. Host must not contain `prod` or `production`.                                                                             |
+| `STAGING_EXPECTED_DB_NAME`           | `shadify_staging`                   | Exact database name checked against `SELECT current_database()`.                                                                                                                        |
+| `STAGING_EXPECTED_DB_HOST`           | `staging-db.shadify.internal`       | Exact database host checked against parsed connection URL.                                                                                                                              |
+| `STAGING_EXPECTED_STORAGE_BUCKET`    | `shadify-media-staging`             | Expected R2 bucket checked via deployed `/api/media/presign` probe.                                                                                                                     |
+
+### 2. Sequential Gate Architecture
+
+The harness executes 6 sequential gates in strict order:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 0. Non-Mutating Safety & Environment Preflight              │
+│    • Target deployment /api/health probe                    │
+│    • Direct DB current_database() & host validation         │
+│    • Deployed API presigned URL storage bucket probe        │
+│    • Dual API & SQL zero active override verification       │
+│    • Photo capacity check (exactly 1 slot remaining)        │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ PASS
+┌──────────────────────────────▼──────────────────────────────┐
+│ 1. Provisioning Idempotency Race (20 concurrent requests)    │
+│    • pg_advisory_xact_lock transaction serialization        │
+│    • Asserts all 20 return the exact same wedding ID        │
+│    • Independent DB query: exactly 1 wedding created        │
+│    • Independent DB query: exactly 1 audit record           │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ PASS
+┌──────────────────────────────▼──────────────────────────────┐
+│ 2. Concurrent Media Quota Enforcement (10 requests)         │
+│    • SELECT ... FOR UPDATE row locking against quota ceiling │
+│    • Asserts exactly 1 commit succeeds (HTTP 200/201)       │
+│    • Asserts exactly 9 reject with HTTP 403 quota exceeded  │
+│    • Independent DB query: photo count increased by exactly +1│
+└──────────────────────────────┬──────────────────────────────┘
+                               │ PASS
+┌──────────────────────────────▼──────────────────────────────┐
+│ 3. Commercial Gate Enforcement                               │
+│    • Validates Lite tier weddings cannot remove branding    │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ PASS
+┌──────────────────────────────▼──────────────────────────────┐
+│ 4. Guest PIN Rotation & Session Invalidation                │
+│    • Rotates PIN and asserts old session cookies rejected   │
+│    • Mandatory fail-closed cleanup in finally block         │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ PASS
+┌──────────────────────────────▼──────────────────────────────┐
+│ 5. Entitlement Override & Revocation Audit                  │
+│    • Applies 850-photo staff override with reason           │
+│    • Validates audit_log records actor ID and justification │
+│    • Revokes override and asserts restoration to plan defaults│
+│    • Mandatory fail-closed cleanup in finally block         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 3. Failure Behavior & Isolation Guarantees
+
+- **Fail-Closed Execution**: If any gate fails an assertion, downstream gates are aborted immediately.
+- **Fail-Closed Cleanup**: Gates 4 and 5 wrap mutations in `try ... finally` blocks. If cleanup fails, the entire run fails and alerts operators.
+- **Credential Masking**: All session cookies, bearer tokens, HMAC signatures, and PIN numbers are scrubbed via `sanitize()` before printing to stdout/stderr.
+- **Non-Zero Exit Code**: Any preflight abort or gate failure sets `process.exitCode = 1`.
+
+### 4. Evidence to Retain for Release Sign-Off
+
+To approve a production release, the operator must capture and store:
+
+1. **Console Run Log**: Full terminal output demonstrating all 6 gates passing (`6/6 gates passed`).
+2. **Exit Code**: Confirmed exit code `0`.
+3. **Database Snapshot**: Direct SQL query results showing:
+   - Exactly 1 wedding created from Gate 1.
+   - Exactly 1 `wedding.provision` audit record matching `${STAGING_IDEMPOTENCY_KEY}-${runNonce}`.
+   - Exactly +1 photo recorded in `photos` table from Gate 2.
+   - Zero active entitlement overrides remaining after Gate 5 cleanup.
