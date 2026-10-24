@@ -62,13 +62,26 @@ export async function POST(request: NextRequest) {
     if (weddingId) searchConditions.push({ id: weddingId });
     if (weddingSlug) searchConditions.push({ slug: weddingSlug });
 
-    const wedding = await prisma.wedding.findFirst({
+    let wedding = await prisma.wedding.findFirst({
       where: {
         OR: searchConditions,
         deletedAt: null,
       },
       select: { id: true, status: true, privatePinHash: true },
     });
+
+    if (!wedding && weddingSlug && prisma.weddingAlias?.findUnique) {
+      const alias = await prisma.weddingAlias.findUnique({
+        where: { alias: weddingSlug },
+        select: {
+          retiredAt: true,
+          wedding: { select: { id: true, status: true, privatePinHash: true } },
+        },
+      });
+      if (alias && !alias.retiredAt && alias.wedding) {
+        wedding = alias.wedding;
+      }
+    }
 
     if (!wedding) {
       return NextResponse.json({ error: "Wedding celebration not found." }, { status: 404 });
@@ -152,13 +165,26 @@ export async function GET(request: NextRequest) {
     if (weddingId) getConditions.push({ id: weddingId });
     if (weddingSlug) getConditions.push({ slug: weddingSlug });
 
-    const wedding = await prisma.wedding.findFirst({
+    let wedding = await prisma.wedding.findFirst({
       where: {
         OR: getConditions,
         deletedAt: null,
       },
       select: { id: true, privatePinHash: true },
     });
+
+    if (!wedding && weddingSlug && prisma.weddingAlias?.findUnique) {
+      const alias = await prisma.weddingAlias.findUnique({
+        where: { alias: weddingSlug },
+        select: {
+          retiredAt: true,
+          wedding: { select: { id: true, privatePinHash: true } },
+        },
+      });
+      if (alias && !alias.retiredAt && alias.wedding) {
+        wedding = alias.wedding;
+      }
+    }
 
     if (!wedding) {
       return NextResponse.json({ error: "Wedding celebration not found." }, { status: 404 });

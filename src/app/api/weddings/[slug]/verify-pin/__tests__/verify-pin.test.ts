@@ -13,6 +13,7 @@ import { prisma } from "@/lib/db";
 
 vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: vi.fn(),
+  checkRateLimitDistributed: vi.fn(),
   getClientIp: vi.fn(() => "203.0.113.195"),
 }));
 
@@ -64,6 +65,12 @@ describe("Private Wedding Server-Enforced Privacy Gate & Security Checklist", ()
       remaining: 4,
       resetMs: 900000,
     });
+    vi.mocked(ratelimit.checkRateLimitDistributed).mockResolvedValue({
+      success: true,
+      limit: 5,
+      remaining: 4,
+      resetMs: 900000,
+    });
   });
 
   describe("Authentication & Token Mechanics", () => {
@@ -80,7 +87,7 @@ describe("Private Wedding Server-Enforced Privacy Gate & Security Checklist", ()
     });
 
     it("enforces dual rate-limiting on repeated attempts (IP and Target)", async () => {
-      vi.mocked(ratelimit.checkRateLimit).mockReturnValue({
+      vi.mocked(ratelimit.checkRateLimitDistributed).mockResolvedValue({
         success: false,
         limit: 5,
         remaining: 0,

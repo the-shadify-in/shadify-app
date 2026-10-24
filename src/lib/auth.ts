@@ -238,26 +238,28 @@ export interface GuestAccessEntry {
   exp: number;
 }
 
+const HEX_16_REGEX = /^[a-f0-9]{16}$/;
+
 const GuestAccessEntrySchema = z.object({
-  weddingId: z.string(),
-  pinFingerprint: z.string(),
-  iat: z.number(),
-  exp: z.number(),
+  weddingId: z.string().min(1).max(64),
+  pinFingerprint: z.string().regex(HEX_16_REGEX, "Fingerprint must be 16 lowercase hex characters"),
+  iat: z.number().int().positive(),
+  exp: z.number().int().positive(),
 });
 
 const GuestPinPayloadSchema = z.object({
   purpose: z.literal("guest_pin_access"),
-  weddingId: z.string().optional(),
-  pinFingerprint: z.string().optional(),
-  iat: z.number().optional(),
-  exp: z.number().optional(),
-  accesses: z.array(GuestAccessEntrySchema).optional(),
+  weddingId: z.string().min(1).max(64).optional(),
+  pinFingerprint: z.string().regex(HEX_16_REGEX).optional(),
+  iat: z.number().int().positive().optional(),
+  exp: z.number().int().positive().optional(),
+  accesses: z.array(GuestAccessEntrySchema).max(10).optional(),
 });
 
 /**
  * Signs an HMAC-SHA256 authenticated guest PIN access session token for a private wedding.
  * Incorporates a separate purpose claim and binds to the current PIN fingerprint.
- * Merges with existing valid sessions if the guest is attending multiple weddings.
+ * Merges with existing valid sessions if the guest is attending multiple weddings (up to 10 max).
  */
 export function signGuestPinToken(
   weddingId: string,
@@ -277,34 +279,47 @@ export function signGuestPinToken(
   };
 
   const existingEntries: GuestAccessEntry[] = [];
+  const seenWeddingIds = new Set<string>([weddingId]);
+
   if (existingCookieToken) {
     try {
-      const [payloadB64] = existingCookieToken.split(".");
-      if (payloadB64) {
-        const rawPayload: unknown = JSON.parse(
-          Buffer.from(payloadB64, "base64url").toString("utf-8"),
-        );
-        const parsed = GuestPinPayloadSchema.safeParse(rawPayload);
-        if (parsed.success && parsed.data.purpose === "guest_pin_access") {
-          if (parsed.data.accesses) {
-            for (const item of parsed.data.accesses) {
-              if (item.weddingId !== weddingId && item.exp > now) {
-                existingEntries.push(item);
+      const [payloadB64, signature] = existingCookieToken.split(".");
+      if (payloadB64 && signature) {
+        // Cryptographically verify existing cookie before trusting its contents
+        const expectedSig = createHmac("sha256", GUEST_PIN_SECRET)
+          .update(payloadB64)
+          .digest("base64url");
+        const sigBuf = Buffer.from(signature);
+        const expBuf = Buffer.from(expectedSig);
+
+        if (sigBuf.length === expBuf.length && timingSafeEqual(sigBuf, expBuf)) {
+          const rawPayload: unknown = JSON.parse(
+            Buffer.from(payloadB64, "base64url").toString("utf-8"),
+          );
+          const parsed = GuestPinPayloadSchema.safeParse(rawPayload);
+          if (parsed.success && parsed.data.purpose === "guest_pin_access") {
+            if (parsed.data.accesses) {
+              for (const item of parsed.data.accesses) {
+                if (!seenWeddingIds.has(item.weddingId) && item.exp > now) {
+                  seenWeddingIds.add(item.weddingId);
+                  existingEntries.push(item);
+                }
               }
+            } else if (
+              parsed.data.weddingId &&
+              !seenWeddingIds.has(parsed.data.weddingId) &&
+              parsed.data.pinFingerprint &&
+              parsed.data.exp &&
+              parsed.data.exp > now
+            ) {
+              seenWeddingIds.add(parsed.data.weddingId);
+              existingEntries.push({
+                weddingId: parsed.data.weddingId,
+                pinFingerprint: parsed.data.pinFingerprint,
+                iat: parsed.data.iat || now,
+                exp: parsed.data.exp,
+              });
             }
-          } else if (
-            parsed.data.weddingId &&
-            parsed.data.weddingId !== weddingId &&
-            parsed.data.pinFingerprint &&
-            parsed.data.exp &&
-            parsed.data.exp > now
-          ) {
-            existingEntries.push({
-              weddingId: parsed.data.weddingId,
-              pinFingerprint: parsed.data.pinFingerprint,
-              iat: parsed.data.iat || now,
-              exp: parsed.data.exp,
-            });
           }
         }
       }
@@ -313,7 +328,7 @@ export function signGuestPinToken(
     }
   }
 
-  // Keep up to 9 previous accesses plus the new one
+  // Keep up to 9 previous accesses plus the new one (strict max 10 entries)
   const accesses = [newEntry, ...existingEntries.slice(0, 9)];
 
   const payloadObj = {

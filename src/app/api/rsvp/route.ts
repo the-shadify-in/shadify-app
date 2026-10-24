@@ -87,10 +87,24 @@ export async function POST(request: NextRequest) {
         : null;
 
     if (lookupWhere && prisma.wedding?.findUnique) {
-      const w = await prisma.wedding.findUnique({
+      let w = await prisma.wedding.findUnique({
         where: lookupWhere,
         select: { id: true, privatePinHash: true },
       });
+
+      if (!w && weddingSlug && prisma.weddingAlias?.findUnique) {
+        const alias = await prisma.weddingAlias.findUnique({
+          where: { alias: String(weddingSlug).toLowerCase().trim() },
+          select: {
+            retiredAt: true,
+            wedding: { select: { id: true, privatePinHash: true } },
+          },
+        });
+        if (alias && !alias.retiredAt && alias.wedding) {
+          w = alias.wedding;
+        }
+      }
+
       if (w) {
         weddingId = w.id;
         if (w.privatePinHash) {

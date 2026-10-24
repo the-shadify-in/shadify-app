@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { verifyPassword, signGuestPinToken, GUEST_PIN_COOKIE_NAME } from "@/lib/auth";
-import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
+import { checkRateLimitDistributed, getClientIp } from "@/lib/ratelimit";
 import { logRequest } from "@/lib/log";
 
 interface RouteParams {
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   const ip = getClientIp(req);
 
   // 1. Dual-Boundary Rate Limiting:
-  // Layer A: Global IP rate limit (max 15 attempts across any weddings per 15 minutes)
-  const ipRateResult = checkRateLimit(`pin-ip:${ip}`, 15, 900000);
+  // Layer A: Global IP rate limit (max 15 attempts across any weddings per 15 minutes = 900s)
+  const ipRateResult = await checkRateLimitDistributed(`pin-ip:${ip}`, 15, 900);
   if (!ipRateResult.success) {
     return NextResponse.json(
       { error: "Too many access attempts. Please wait 15 minutes before trying again." },
@@ -79,10 +79,14 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Layer B: Canonical Wedding + IP rate limit (max 5 attempts per wedding per 15 minutes)
+    // Layer B: Canonical Wedding + IP rate limit (max 5 attempts per wedding per 15 minutes = 900s)
     // Keying by canonical wedding ID (or cleanSlug if unknown) ensures aliases share the exact same bucket
     const targetKey = wedding ? wedding.id : cleanSlug;
-    const targetRateResult = checkRateLimit(`pin-target:${targetKey}:${ip}`, 5, 900000);
+    const targetRateResult = await checkRateLimitDistributed(
+      `pin-target:${targetKey}:${ip}`,
+      5,
+      900,
+    );
     if (!targetRateResult.success) {
       return NextResponse.json(
         { error: "Too many access attempts for this celebration. Please wait 15 minutes." },
