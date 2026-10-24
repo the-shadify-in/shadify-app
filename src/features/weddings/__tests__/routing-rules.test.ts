@@ -66,4 +66,19 @@ describe("Routing Rules & Reserved Slug Enforcement", () => {
       expect(parsed.success).toBe(false);
     }
   });
+
+  it("strictly reserves 'q' slug and preserves 308 redirect in nextConfig", async () => {
+    expect(isReservedSlug("q")).toBe(true);
+    expect(RESERVED_SLUGS.has("q")).toBe(true);
+
+    const { default: nextConfig } = await import("../../../../next.config.mjs");
+    expect(nextConfig.redirects).toBeDefined();
+    if (nextConfig.redirects) {
+      const redirects = await nextConfig.redirects();
+      const qRedirect = redirects.find((r: { source: string }) => r.source === "/q/:slug");
+      expect(qRedirect).toBeDefined();
+      expect(qRedirect?.destination).toBe("/:slug");
+      expect(qRedirect?.permanent).toBe(true);
+    }
+  });
 });

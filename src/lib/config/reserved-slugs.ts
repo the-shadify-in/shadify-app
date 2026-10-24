@@ -73,6 +73,7 @@ export const RESERVED_SLUGS_LIST = [
   "refund",
   "refunds",
   "register",
+  "report",
   "robots",
   "root",
   "rsvp",
