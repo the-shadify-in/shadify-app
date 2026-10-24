@@ -214,7 +214,7 @@ export function getGuestAccessSecret(): string {
   if (process.env.NODE_ENV === "production") {
     // During Next.js static collection/build phase, allow build to complete if runtime secrets are not yet injected
     if (
-      (process.env.NEXT_PHASE === "phase-production-build" || process.env.CI === "true") &&
+      process.env.NEXT_PHASE === "phase-production-build" &&
       (!secret || secret.trim().length < 32)
     ) {
       return "shadify-build-placeholder-guest-access-secret-32-chars";
@@ -230,13 +230,19 @@ export function getGuestAccessSecret(): string {
         "FATAL_SECURITY_CONFIG_ERROR: GUEST_ACCESS_SECRET cannot share the same key material as ADMIN_SESSION_SECRET. Use independent secrets.",
       );
     }
+    const erasureSecret = process.env.ERASURE_HMAC_SECRET;
+    if (erasureSecret && secret.trim() === erasureSecret.trim()) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: GUEST_ACCESS_SECRET cannot share the same key material as ERASURE_HMAC_SECRET. Use independent secrets.",
+      );
+    }
     return secret.trim();
   }
   return secret?.trim() || "shadify-dev-guest-access-secret-minimum-32-chars-long";
 }
 
 /**
- * Startup validator to fail deployment or health check if secrets are missing or weak.
+ * Startup validator to fail deployment or health check if secrets are missing, weak, or reused.
  */
 export function validateSecurityConfiguration(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -249,12 +255,18 @@ export function validateSecurityConfiguration(): { valid: boolean; errors: strin
     if (!guestSecret || guestSecret.trim().length < 32) {
       errors.push("GUEST_ACCESS_SECRET must be at least 32 characters in production.");
     }
-    if (adminSecret && guestSecret && adminSecret.trim() === guestSecret.trim()) {
-      errors.push("GUEST_ACCESS_SECRET must not share the same value as ADMIN_SESSION_SECRET.");
-    }
     const erasureSecret = process.env.ERASURE_HMAC_SECRET;
     if (!erasureSecret || erasureSecret.trim().length < 32) {
       errors.push("ERASURE_HMAC_SECRET must be at least 32 characters in production.");
+    }
+    if (adminSecret && guestSecret && adminSecret.trim() === guestSecret.trim()) {
+      errors.push("GUEST_ACCESS_SECRET must not share the same value as ADMIN_SESSION_SECRET.");
+    }
+    if (adminSecret && erasureSecret && adminSecret.trim() === erasureSecret.trim()) {
+      errors.push("ERASURE_HMAC_SECRET must not share the same value as ADMIN_SESSION_SECRET.");
+    }
+    if (guestSecret && erasureSecret && guestSecret.trim() === erasureSecret.trim()) {
+      errors.push("ERASURE_HMAC_SECRET must not share the same value as GUEST_ACCESS_SECRET.");
     }
   }
   return { valid: errors.length === 0, errors };
