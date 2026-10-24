@@ -25,6 +25,7 @@ vi.mock("@/lib/db", () => ({
     },
     auditLog: {
       create: vi.fn(),
+      findFirst: vi.fn(),
     },
     $transaction: vi.fn((promises: unknown[]) => Promise.all(promises)),
   },
@@ -103,6 +104,7 @@ describe("Staff Wedding Detail API: /api/admin/weddings/[id]", () => {
       const existingWedding = {
         id: weddingId,
         slug: "ananya-rohit",
+        plan: "platinum",
         themeId: "royal-crimson",
         status: "draft",
         aliases: [],
@@ -137,6 +139,66 @@ describe("Staff Wedding Detail API: /api/admin/weddings/[id]", () => {
       expect(json.wedding.hasPrivatePin).toBe(true);
       expect(json.wedding.privatePinHash).toBeUndefined();
       expect(auth.hashPassword).toHaveBeenCalledWith("5678");
+    });
+
+    it("rejects disabling branding on Lite plan with 403", async () => {
+      vi.mocked(auth.getAdminSession).mockResolvedValue({
+        userId: "staff-1",
+        role: "staff",
+        exp: Date.now() + 100000,
+      });
+
+      const liteWedding = {
+        id: weddingId,
+        slug: "ananya-rohit",
+        plan: "lite",
+        themeId: "royal-crimson",
+        status: "draft",
+        aliases: [],
+      };
+      vi.mocked(prisma.wedding.findUnique).mockResolvedValue(
+        liteWedding as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>,
+      );
+
+      const req = new NextRequest(`http://localhost:3000/api/admin/weddings/${weddingId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ showBranding: false }),
+      });
+      const res = await PATCH(req, { params: { id: weddingId } });
+
+      expect(res.status).toBe(403);
+      const data = (await res.json()) as { error: string };
+      expect(data.error).toContain("Upgrade to Premium or Platinum to remove branding");
+    });
+
+    it("rejects customDomain on Lite plan with 403", async () => {
+      vi.mocked(auth.getAdminSession).mockResolvedValue({
+        userId: "staff-1",
+        role: "staff",
+        exp: Date.now() + 100000,
+      });
+
+      const liteWedding = {
+        id: weddingId,
+        slug: "ananya-rohit",
+        plan: "lite",
+        themeId: "royal-crimson",
+        status: "draft",
+        aliases: [],
+      };
+      vi.mocked(prisma.wedding.findUnique).mockResolvedValue(
+        liteWedding as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>,
+      );
+
+      const req = new NextRequest(`http://localhost:3000/api/admin/weddings/${weddingId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ customDomain: "celebration.example.com" }),
+      });
+      const res = await PATCH(req, { params: { id: weddingId } });
+
+      expect(res.status).toBe(403);
+      const data = (await res.json()) as { error: string };
+      expect(data.error).toContain("Custom wedding domains require the Platinum plan");
     });
   });
 });

@@ -38,9 +38,12 @@ shadify-app/
 │   └── migrations/
 │       ├── 0_init/                ← Base tables, enums, standard indexes, FKs
 │       ├── 1_db_protections/      ← Reserved slug triggers, check constraints, partial indexes
-│       ├── 2_shagun_indices/      ← Descending indexes for guest shagun feeds
+│       ├── 2_theme_config/        ← Validated wedding theme palette & typography JSON
 │       ├── 3_promos_and_referrals/← B2B partner and guest referral credit tables
-│       └── 4_reserved_slugs_expand/← Expanded reserved slugs list trigger
+│       ├── 4_reserved_slugs_expand/← Expanded reserved slugs list trigger
+│       ├── 5_schema_constraints_alignment/ ← Unique indexes and constraints alignment
+│       ├── 6_chip_counts/         ← Chip tap analytics aggregates
+│       └── 7_aliases_and_qr_assets/← Vanity aliases, QR print assets, and audit logs
 │
 ├── docs/                          ← Authoritative architecture, engineering, and operations specs
 │
@@ -51,18 +54,24 @@ shadify-app/
 │   │   ├── privacy/page.tsx       ← DPDP Act 2023 zero-harvesting privacy notice
 │   │   ├── refunds/page.tsx       ← Cancellation, postponement & refund policy
 │   │   ├── [slug]/                ← Direct guest wedding website (envelope reveal, RSVP, Shagun)
-│   │   ├── admin/                 ← Concierge staff admin (onboarding, metrics, /admin/health)
+│   │   ├── admin/                 ← Concierge studio (AdminShell, directory, /admin/health, /admin/theme-preview, /admin/weddings/[id])
 │   │   └── api/
 │   │       ├── rsvp/              ← Rate-limited RSVP with Turnstile bot protection
 │   │       ├── guestbook/         ← Moderated guestbook blessing submissions
 │   │       ├── health/            ← PostgreSQL heartbeat endpoint with roundtrip latency
 │   │       ├── promos/validate/   ← Server-side promo code validation in integer paise
-│   │       └── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
+│   │       ├── media/finalize/    ← Photo finalize with SELECT FOR UPDATE concurrency lock
+│   │       ├── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
+│   │       └── admin/             ← Staff APIs (provisioning, PIN rotation, entitlements, aliases, QR)
 │   │
-│   ├── components/                ← Primitives (Button, Dialog, Turnstile) & Patterns
-│   ├── features/                  ← Modular domain logic (weddings, promos, guest)
-│   ├── lib/                       ← Core singletons: db.ts, r2.ts, ratelimit.ts, auth.ts, turnstile.ts
+│   ├── components/                ← Primitives (Button, Dialog, Turnstile) & AdminShell patterns
+│   ├── features/                  ← Modular domain logic (weddings, entitlements, promos, guest)
+│   ├── lib/                       ← Core singletons: db.ts, r2.ts, ratelimit.ts, auth.ts, themes
 │   └── middleware.ts              ← Reserved slug guard, scanner bot filter, admin session protection
+│
+├── tests/
+│   ├── db/real-postgres.test.ts   ← Real Postgres 16 tenant isolation & constraint suite
+│   └── staging/concurrency-gate.ts← 6-gate staging release gate (advisory lock & media quota race)
 │
 ├── .env.example                   ← Environment variables template
 ├── package.json

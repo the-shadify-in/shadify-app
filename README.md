@@ -53,7 +53,13 @@ shadify-app/
 │   ├── schema.prisma              ← Type-safe models, enums & relations
 │   └── migrations/
 │       ├── 0_init/                ← Base tables, enums, standard indexes, FKs
-│       └── 1_db_protections/      ← Reserved slug triggers, check constraints, partial indexes
+│       ├── 1_db_protections/      ← Reserved slug triggers, check constraints, partial indexes
+│       ├── 2_theme_config/        ← Validated wedding theme palette & typography JSON
+│       ├── 3_promos_and_referrals/← B2B partner and guest referral credit tables
+│       ├── 4_reserved_slugs_expand/← Expanded reserved slugs list trigger
+│       ├── 5_schema_constraints_alignment/ ← Unique indexes and constraints alignment
+│       ├── 6_chip_counts/         ← Chip tap analytics aggregates
+│       └── 7_aliases_and_qr_assets/← Vanity aliases, QR print assets, and audit logs
 │
 ├── src/
 │   ├── app/
@@ -63,24 +69,30 @@ shadify-app/
 │   │   ├── refunds/page.tsx       ← Cancellation, postponement & refund policy
 │   │   ├── [slug]/page.tsx        ← Direct guest wedding site (Envelope, itinerary, RSVP, Shagun)
 │   │   ├── admin/
+│   │   │   ├── layout.tsx         ← Authenticated AdminShell wrapper with collapsible sidebar
 │   │   │   ├── login/page.tsx     ← Staff concierge authentication
 │   │   │   ├── health/page.tsx    ← 14-day pre-wedding readiness gate
-│   │   │   └── page.tsx           ← Managed weddings overview & metrics
+│   │   │   ├── theme-preview/     ← Design system & theme inspector studio
+│   │   │   ├── weddings/[id]/     ← Operational wedding studio (4-domain navigation, PIN, overrides)
+│   │   │   ├── weddings/new/      ← New wedding concierge creation
+│   │   │   └── page.tsx           ← Managed celebrations directory & metrics
 │   │   └── api/
 │   │       ├── rsvp/route.ts      ← Rate-limited RSVP submission with Turnstile
 │   │       ├── guestbook/route.ts ← Moderated guest blessing submissions
 │   │       ├── health/route.ts    ← Heartbeat database probe
 │   │       ├── promos/validate/   ← Integer paise promo validation
-│   │       └── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
+│   │       ├── media/finalize/    ← Photo finalize with SELECT FOR UPDATE concurrency lock
+│   │       ├── media/presign/     ← S3-compatible Cloudflare R2 presigned PUT generator
+│   │       └── admin/             ← Staff APIs (provision, PIN rotation, entitlements, aliases, QR)
 │   │
-│   ├── lib/
-│   │   ├── db.ts                  ← PrismaClient singleton with serverless pooling
-│   │   ├── r2.ts                  ← Cloudflare R2 S3 client & signed URL helpers
-│   │   ├── auth.ts                ← HMAC session security helpers
-│   │   ├── ratelimit.ts           ← In-memory sliding window rate limiter
-│   │   ├── turnstile.ts           ← Cloudflare Turnstile token verifier
-│   │   └── media/image-processor.ts← Sharp EXIF GPS stripping pipeline
+│   ├── components/                ← Primitives (Button, Dialog, Turnstile) & AdminShell patterns
+│   ├── features/                  ← Modular domain logic (weddings, entitlements, promos, guest)
+│   ├── lib/                       ← Core singletons: db.ts, r2.ts, ratelimit.ts, auth.ts, themes
 │   └── middleware.ts              ← Reserved slug guard, scanner bot filter, admin protection
+│
+├── tests/
+│   ├── db/real-postgres.test.ts   ← Real Postgres 16 tenant isolation & constraint tests
+│   └── staging/concurrency-gate.ts← 6-gate staging release gate (advisory lock & media quota race)
 │
 ├── .env.example
 ├── package.json

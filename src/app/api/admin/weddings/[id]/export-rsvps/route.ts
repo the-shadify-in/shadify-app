@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
+import { getEffectiveEntitlements } from "@/features/entitlements";
 
 interface RouteParams {
   params: { id: string };
@@ -31,6 +32,15 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     if (!wedding) {
       return NextResponse.json({ error: "Wedding celebration not found" }, { status: 404 });
+    }
+
+    // 2. Entitlement Guard: Catering export is a Premium/Platinum capability
+    const effective = await getEffectiveEntitlements(id);
+    if (wedding.plan === "lite" && !effective.hasActiveOverride) {
+      return NextResponse.json(
+        { error: "RSVP catering export requires the Premium or Platinum plan." },
+        { status: 403 },
+      );
     }
 
     // 2. Build RFC 4180 Compliant CSV
@@ -78,6 +88,20 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const csvContent = [headers.join(","), ...rows.map((row) => row.join(","))].join("\r\n");
 
     const filename = `caterer-rsvps-${wedding.slug}-${new Date().toISOString().slice(0, 10)}.csv`;
+
+    // 3. Audit Logging: Record export action without logging sensitive guest PII
+    await prisma.auditLog.create({
+      data: {
+        weddingId: id,
+        actorId: session.userId,
+        action: "wedding.export_rsvps",
+        detail: {
+          format: "csv",
+          rowCount: wedding.rsvps.length,
+          timestamp: new Date().toISOString(),
+        },
+      },
+    });
 
     return new Response(csvContent, {
       status: 200,

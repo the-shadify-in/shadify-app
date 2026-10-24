@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { createPresignedUploadUrl } from "@/lib/r2";
 import { getAdminSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { PRICING_PLANS } from "@/lib/config/pricing";
+import { getEffectiveEntitlements } from "@/features/entitlements";
 import { ALLOWED_MEDIA_MIMES, MAX_PHOTO_BYTES, MAX_VIDEO_BYTES } from "@/lib/media/image-processor";
 
 const PresignRequestSchema = z.object({
@@ -95,14 +95,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const planConfig = PRICING_PLANS[wedding.plan];
+    const effective = await getEffectiveEntitlements(wedding.id);
 
     // 5. Video bite gate
     if (isVideo) {
-      if (planConfig.maxVideoBites <= 0) {
+      if (!effective.videoBite || effective.maxVideoBites <= 0) {
         return NextResponse.json(
           {
-            error: `Video bites are not included in the ${planConfig.name} plan. Upgrade to Premium or Platinum.`,
+            error: `Video bites are not included in the ${effective.name} plan. Upgrade to Premium or Platinum.`,
           },
           { status: 403 },
         );
@@ -116,13 +116,13 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      if (currentPhotoCount >= planConfig.maxPhotos) {
+      if (currentPhotoCount >= effective.maxPhotos) {
         return NextResponse.json(
           {
-            error: `Photo storage limit of ${planConfig.maxPhotos} photos reached for ${planConfig.name} plan. Upgrade to upload more moments.`,
+            error: `Photo storage limit of ${effective.maxPhotos} photos reached for ${effective.name} plan. Upgrade to upload more moments.`,
             plan: wedding.plan,
             currentCount: currentPhotoCount,
-            maxAllowed: planConfig.maxPhotos,
+            maxAllowed: effective.maxPhotos,
           },
           { status: 403 },
         );

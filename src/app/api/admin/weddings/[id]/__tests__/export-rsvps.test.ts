@@ -13,6 +13,9 @@ vi.mock("@/lib/db", () => ({
     wedding: {
       findUnique: vi.fn(),
     },
+    auditLog: {
+      create: vi.fn(),
+    },
   },
 }));
 
@@ -62,6 +65,7 @@ describe("GET /api/admin/weddings/[id]/export-rsvps", () => {
     const mockWedding = {
       id: weddingId,
       slug: "ananya-rohit",
+      plan: "premium",
       rsvps: [
         {
           id: "rsvp-1",
@@ -102,5 +106,46 @@ describe("GET /api/admin/weddings/[id]/export-rsvps", () => {
 
     // Phone numbers starting with + are also prefixed to prevent Excel number coercion / formulas
     expect(text).toContain('"\'+919876543210"');
+
+    // Verify audit log record created without leaking PII
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        weddingId,
+        actorId: "staff-1",
+        action: "wedding.export_rsvps",
+        detail: expect.objectContaining({
+          format: "csv",
+          rowCount: 1,
+        }),
+      }),
+    });
+  });
+
+  it("rejects catering CSV export on Lite plan without active entitlement override", async () => {
+    vi.mocked(auth.getAdminSession).mockResolvedValue({
+      userId: "staff-1",
+      role: "staff",
+      exp: Date.now() + 100000,
+    });
+
+    const liteWedding = {
+      id: weddingId,
+      slug: "ananya-rohit-lite",
+      plan: "lite",
+      rsvps: [],
+    };
+
+    vi.mocked(prisma.wedding.findUnique).mockResolvedValue(
+      liteWedding as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>,
+    );
+
+    const req = new NextRequest(
+      `http://localhost:3000/api/admin/weddings/${weddingId}/export-rsvps`,
+    );
+    const res = await GET(req, { params: { id: weddingId } });
+
+    expect(res.status).toBe(403);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toContain("RSVP catering export requires the Premium or Platinum plan");
   });
 });

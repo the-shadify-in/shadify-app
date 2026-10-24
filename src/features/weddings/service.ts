@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { THEME_PRESETS, validateContrast } from "@/lib/themes/tokens";
-import { PRICING_PLANS } from "@/lib/config/pricing";
+import { getPlanDefaults } from "@/features/entitlements";
+import { RESERVED_SLUGS } from "@/lib/config/reserved-slugs";
 import type { CreateWeddingInput } from "./schemas";
 import { normalizePhoneNumber } from "@/lib/phone";
 
@@ -94,17 +95,13 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
     sections: basePreset.sections,
   };
 
-  const planConfig = PRICING_PLANS[data.plan];
-  const weddingDateObj = new Date(data.weddingDate);
-  const now = new Date();
+  if (RESERVED_SLUGS.has(slug)) {
+    throw new ReservedSlugError(slug);
+  }
 
-  // Hosting lasts 5 years from creation; master original RAWs are retained for 90 days
-  const hostingUntil = new Date(
-    now.getTime() + planConfig.hostingDurationYears * 365.25 * 24 * 60 * 60 * 1000,
-  );
-  const originalsExpireAt = new Date(
-    now.getTime() + planConfig.rawOriginalsRetentionDays * 24 * 60 * 60 * 1000,
-  );
+  const now = new Date();
+  const planDefaults = getPlanDefaults(data.plan, now);
+  const weddingDateObj = new Date(data.weddingDate);
 
   const phoneValidation = data.couplePhone ? normalizePhoneNumber(data.couplePhone) : null;
   const normalizedPhone = phoneValidation?.e164 || null;
@@ -112,7 +109,7 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // Create or update couple owner user
+      // Step A: Create or update couple owner user
       let coupleUser = null;
       if (normalizedPhone) {
         coupleUser = await tx.user.findFirst({
@@ -131,7 +128,7 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
         });
       }
 
-      // Create the wedding
+      // Step B: Create the wedding
       const wedding = await tx.wedding.create({
         data: {
           slug,
@@ -147,13 +144,13 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
           accentColor: resolvedPalette.accent,
           monogramText: data.monogramText || `${data.brideName[0]} & ${data.groomName[0]}`,
           upiVpa: data.upiVpa || null,
-          showBranding: !planConfig.canHideBranding,
-          contentExpiresAt: hostingUntil,
-          originalsExpireAt: originalsExpireAt,
+          showBranding: !planDefaults.canHideBranding,
+          contentExpiresAt: planDefaults.hostingUntil,
+          originalsExpireAt: planDefaults.originalsExpireAt,
         },
       });
 
-      // Link owner membership
+      // Step C: Link owner membership
       await tx.weddingMember.create({
         data: {
           weddingId: wedding.id,
@@ -162,19 +159,55 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
         },
       });
 
-      // Create Entitlements record
-      await tx.entitlement.create({
+      // Step D: Create canonical alias entry
+      await tx.weddingAlias.create({
         data: {
+          alias: slug,
           weddingId: wedding.id,
-          hostingUntil: hostingUntil,
-          customDomain: planConfig.canCustomDomain,
-          videoBite: false,
-          faceSearch: false,
-          maxPhotos: 500,
+          kind: "vanity",
         },
       });
 
-      // Audit Log Entry
+      // Step E: Create Entitlements record matching canonical plan configuration
+      await tx.entitlement.create({
+        data: {
+          weddingId: wedding.id,
+          hostingUntil: planDefaults.hostingUntil,
+          customDomain: planDefaults.customDomain,
+          videoBite: planDefaults.videoBite,
+          faceSearch: planDefaults.faceSearch,
+          maxPhotos: planDefaults.maxPhotos,
+        },
+      });
+
+      // Step F: Seed initial safe draft itinerary with clearly marked draft ceremonies
+      const draftEvents = [
+        {
+          weddingId: wedding.id,
+          eventType: "ceremony",
+          title: "Muhurtham & Vivah (Draft)",
+          description:
+            "Sacred pheras and ceremony rituals. Times and venue details to be confirmed.",
+          startsAt: weddingDateObj,
+          venueName: `${data.venueCity} Mandap (TBD)`,
+          venueAddress: data.venueCity,
+          sortOrder: 1,
+        },
+        {
+          weddingId: wedding.id,
+          eventType: "sangeet",
+          title: "Sangeet & Celebration (Draft)",
+          description:
+            "Music, dance, and cocktail soiree. Times and venue details to be confirmed.",
+          startsAt: weddingDateObj,
+          venueName: `${data.venueCity} Celebration Hall (TBD)`,
+          venueAddress: data.venueCity,
+          sortOrder: 2,
+        },
+      ];
+      await tx.event.createMany({ data: draftEvents });
+
+      // Step G: Audit Log Trail Entry
       await tx.auditLog.create({
         data: {
           weddingId: wedding.id,
@@ -185,6 +218,10 @@ export async function createWeddingService(data: CreateWeddingInput, actorUserId
             plan: data.plan,
             themeId: data.themeId,
             couplePhone: normalizedPhone,
+            maxPhotos: planDefaults.maxPhotos,
+            maxEvents: planDefaults.maxEvents,
+            hostingUntil: planDefaults.hostingUntil.toISOString(),
+            originalsExpireAt: planDefaults.originalsExpireAt.toISOString(),
           },
         },
       });

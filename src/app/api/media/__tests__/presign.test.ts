@@ -24,6 +24,9 @@ vi.mock("@/lib/db", () => ({
     photo: {
       count: vi.fn(),
     },
+    auditLog: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 

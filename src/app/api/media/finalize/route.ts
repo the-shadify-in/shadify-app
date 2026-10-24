@@ -16,7 +16,7 @@ import {
   stripExifFromOriginal,
   MAX_PHOTO_BYTES,
 } from "@/lib/media/image-processor";
-import { PRICING_PLANS } from "@/lib/config/pricing";
+import { getEffectiveEntitlements } from "@/features/entitlements";
 
 export const maxDuration = 60; // Extended timeout for serverless image processing
 
@@ -147,8 +147,8 @@ export async function POST(req: NextRequest) {
     const sha256 = crypto.createHash("sha256").update(sanitizedOriginal.buffer).digest("hex");
 
     // 7. Atomic Quota Enforcement & Row-Locking in PostgreSQL Transaction
-    const planConfig = PRICING_PLANS[wedding.plan];
-    const maxAllowedPhotos = wedding.entitlement?.maxPhotos || planConfig.maxPhotos;
+    const effective = await getEffectiveEntitlements(wedding.id);
+    const maxAllowedPhotos = effective.maxPhotos;
 
     const result = await prisma.$transaction(async (tx) => {
       // Row lock on wedding to prevent parallel upload race conditions

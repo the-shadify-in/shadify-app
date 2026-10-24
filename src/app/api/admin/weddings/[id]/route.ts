@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getAdminSession, hashPassword } from "@/lib/auth";
 import { logRequest } from "@/lib/log";
 import { THEME_PRESETS, validateContrast, type PresetId } from "@/lib/themes/tokens";
+import { getEffectiveEntitlements } from "@/features/entitlements";
 
 interface RouteParams {
   params: { id: string };
@@ -29,6 +30,14 @@ const UpdateWeddingSchema = z.object({
   monogramText: z.string().max(10).optional().nullable(),
   upiVpa: z.string().max(100).optional().nullable(),
   showBranding: z.boolean().optional(),
+  customDomain: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/, "Must be a valid domain format")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
   liveStreamUrl: z.string().url().optional().nullable().or(z.literal("")),
   themeConfig: z.record(z.string(), z.unknown()).optional().nullable(),
   privatePin: z
@@ -122,6 +131,28 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Entitlement Gates for commercial upgrades
+    const effective = await getEffectiveEntitlements(id);
+
+    if (parsed.showBranding === false && !effective.canHideBranding) {
+      return NextResponse.json(
+        {
+          error:
+            "The Lite plan includes Shadify branding. Upgrade to Premium or Platinum to remove branding.",
+        },
+        { status: 403 },
+      );
+    }
+
+    if (parsed.customDomain && !effective.customDomain) {
+      return NextResponse.json(
+        {
+          error: "Custom wedding domains require the Platinum plan.",
+        },
+        { status: 403 },
+      );
+    }
+
     // Build update payload
     const updateData: Record<string, unknown> = {};
     if (parsed.brideName !== undefined) updateData.brideName = parsed.brideName;
@@ -141,6 +172,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (parsed.monogramText !== undefined) updateData.monogramText = parsed.monogramText;
     if (parsed.upiVpa !== undefined) updateData.upiVpa = parsed.upiVpa;
     if (parsed.showBranding !== undefined) updateData.showBranding = parsed.showBranding;
+    if (parsed.customDomain !== undefined) {
+      updateData.customDomain = parsed.customDomain
+        ? parsed.customDomain.trim().toLowerCase()
+        : null;
+    }
     if (parsed.liveStreamUrl !== undefined) updateData.liveStreamUrl = parsed.liveStreamUrl || null;
     if (parsed.themeConfig !== undefined) updateData.themeConfig = parsed.themeConfig;
     if (parsed.privatePin !== undefined) {

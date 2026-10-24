@@ -2,6 +2,7 @@ import React from "react";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
+import { getEffectiveEntitlements } from "@/features/entitlements";
 import WeddingDetailClient from "./WeddingDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -20,29 +21,33 @@ export default async function WeddingDetailPage({ params }: WeddingDetailPagePro
   }
 
   // 2. Fetch full operational wedding record from database
-  const wedding = await prisma.wedding.findUnique({
-    where: { id },
-    include: {
-      events: { orderBy: { sortOrder: "asc" } },
-      vips: { orderBy: { sortOrder: "asc" } },
-      aliases: { orderBy: { createdAt: "desc" } },
-      qrAssets: {
-        orderBy: { createdAt: "desc" },
-        include: { scanTests: { orderBy: { testedAt: "desc" } } },
+  const [wedding, effective, photoCount] = await Promise.all([
+    prisma.wedding.findUnique({
+      where: { id },
+      include: {
+        events: { orderBy: { sortOrder: "asc" } },
+        vips: { orderBy: { sortOrder: "asc" } },
+        aliases: { orderBy: { createdAt: "desc" } },
+        qrAssets: {
+          orderBy: { createdAt: "desc" },
+          include: { scanTests: { orderBy: { testedAt: "desc" } } },
+        },
+        consents: { orderBy: { grantedAt: "desc" } },
+        entitlement: true,
+        rsvps: {
+          include: { event: true },
+          orderBy: { createdAt: "desc" },
+        },
+        auditLogs: {
+          include: { actor: { select: { fullName: true, role: true } } },
+          orderBy: { createdAt: "desc" },
+          take: 50,
+        },
       },
-      consents: { orderBy: { grantedAt: "desc" } },
-      entitlement: true,
-      rsvps: {
-        include: { event: true },
-        orderBy: { createdAt: "desc" },
-      },
-      auditLogs: {
-        include: { actor: { select: { fullName: true, role: true } } },
-        orderBy: { createdAt: "desc" },
-        take: 50,
-      },
-    },
-  });
+    }),
+    getEffectiveEntitlements(id).catch(() => null),
+    prisma.photo.count({ where: { weddingId: id } }).catch(() => 0),
+  ]);
 
   if (!wedding) {
     notFound();
@@ -105,5 +110,20 @@ export default async function WeddingDetailPage({ params }: WeddingDetailPagePro
     })),
   };
 
-  return <WeddingDetailClient initialWedding={serialized} staffSession={session} />;
+  const serializedEffective = effective
+    ? {
+        ...effective,
+        hostingUntil: effective.hostingUntil.toISOString(),
+        originalsExpireAt: effective.originalsExpireAt.toISOString(),
+      }
+    : null;
+
+  return (
+    <WeddingDetailClient
+      initialWedding={serialized}
+      staffSession={session}
+      initialEffectiveEntitlements={serializedEffective}
+      initialPhotoCount={photoCount}
+    />
+  );
 }
