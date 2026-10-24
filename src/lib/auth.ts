@@ -212,6 +212,13 @@ export function verifyPreviewToken(token?: string | null, slug?: string): boolea
 export function getGuestAccessSecret(): string {
   const secret = process.env.GUEST_ACCESS_SECRET;
   if (process.env.NODE_ENV === "production") {
+    // During Next.js static collection/build phase, allow build to complete if runtime secrets are not yet injected
+    if (
+      (process.env.NEXT_PHASE === "phase-production-build" || process.env.CI === "true") &&
+      (!secret || secret.trim().length < 32)
+    ) {
+      return "shadify-build-placeholder-guest-access-secret-32-chars";
+    }
     if (!secret || secret.trim().length < 32) {
       throw new Error(
         "FATAL_SECURITY_CONFIG_ERROR: GUEST_ACCESS_SECRET must be set to an independent, cryptographically random key of at least 32 characters in production.",
@@ -254,9 +261,11 @@ export function validateSecurityConfiguration(): { valid: boolean; errors: strin
 }
 
 /**
- * Separate HMAC secret dedicated specifically to guest PIN access sessions.
+ * Lazy accessor for guest PIN HMAC secret dedicated specifically to guest PIN access sessions.
  */
-export const GUEST_PIN_SECRET = getGuestAccessSecret();
+export function getGuestPinSecret(): string {
+  return getGuestAccessSecret();
+}
 
 /**
  * Computes a deterministic 16-character SHA-256 fingerprint of the wedding's active private PIN hash.
@@ -333,7 +342,7 @@ export function signGuestPinToken(
       const [payloadB64, signature] = existingCookieToken.split(".");
       if (payloadB64 && signature) {
         // Cryptographically verify existing cookie before trusting its contents
-        const expectedSig = createHmac("sha256", GUEST_PIN_SECRET)
+        const expectedSig = createHmac("sha256", getGuestPinSecret())
           .update(payloadB64)
           .digest("base64url");
         const sigBuf = Buffer.from(signature);
@@ -388,7 +397,7 @@ export function signGuestPinToken(
   };
 
   const payload = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
-  const signature = createHmac("sha256", GUEST_PIN_SECRET).update(payload).digest("base64url");
+  const signature = createHmac("sha256", getGuestPinSecret()).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 }
 
@@ -406,7 +415,7 @@ export function verifyGuestPinToken(
     const [payloadB64, signature] = token.split(".");
     if (!payloadB64 || !signature) return false;
 
-    const expectedSig = createHmac("sha256", GUEST_PIN_SECRET)
+    const expectedSig = createHmac("sha256", getGuestPinSecret())
       .update(payloadB64)
       .digest("base64url");
     const sigBuf = Buffer.from(signature);
