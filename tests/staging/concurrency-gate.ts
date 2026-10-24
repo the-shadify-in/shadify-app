@@ -396,14 +396,14 @@ async function preflightSafetyGate(): Promise<void> {
 
   // Fail-closed storage endpoint domain validation
   const hostname = parsedStorageUrl.hostname.toLowerCase();
+  const isLocalStaging = ["localhost", "127.0.0.1", "::1"].includes(base.hostname.toLowerCase());
   const validStorageHost =
     hostname.endsWith(".r2.cloudflarestorage.com") ||
     hostname.endsWith(".amazonaws.com") ||
-    hostname === "localhost" ||
-    hostname === "127.0.0.1";
+    (isLocalStaging && (hostname === "localhost" || hostname === "127.0.0.1"));
   assert(
     validStorageHost,
-    `Presigned upload URL hostname '${hostname}' does not match a valid Cloudflare R2 or S3 storage endpoint`,
+    `Presigned upload URL hostname '${hostname}' does not match a valid Cloudflare R2 or S3 storage endpoint${!isLocalStaging ? " (localhost storage is strictly disallowed for remote staging)" : ""}`,
   );
 
   // Exact bucket identification: extract first path segment (path-style) or subdomain (virtual-hosted style)
@@ -490,6 +490,13 @@ async function provisioningRace(): Promise<void> {
   const runNonce = crypto.randomUUID().slice(0, 8);
   const effectiveKey = `${baseKey}-${runNonce}`;
 
+  const effectiveBody = { ...body };
+  if (typeof effectiveBody.slug === "string" && effectiveBody.slug.trim().length > 0) {
+    if (!effectiveBody.slug.includes(runNonce)) {
+      effectiveBody.slug = `${effectiveBody.slug}-${runNonce}`;
+    }
+  }
+
   assert(
     Number.isInteger(count) && count >= 2 && count <= 50,
     "STAGING_PROVISION_REQUESTS must be between 2 and 50",
@@ -507,7 +514,7 @@ async function provisioningRace(): Promise<void> {
           ...adminHeaders,
           "Idempotency-Key": effectiveKey,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(effectiveBody),
       }),
     ),
   );
@@ -540,8 +547,8 @@ async function provisioningRace(): Promise<void> {
 
   // 2. If a slug was specified in the payload, verify exactly one wedding exists with that slug
   const requestedSlug =
-    typeof (body as Record<string, unknown>)?.slug === "string"
-      ? ((body as Record<string, unknown>).slug as string)
+    typeof (effectiveBody as Record<string, unknown>)?.slug === "string"
+      ? ((effectiveBody as Record<string, unknown>).slug as string)
       : undefined;
   if (requestedSlug) {
     const dbSlugWeddings = await queryStagingDb<{ count: number }>(
@@ -582,6 +589,16 @@ async function provisioningRace(): Promise<void> {
     true,
     `${count}/${count} HTTP 20x responses with identical wedding ID; DB confirmed exactly 1 wedding and 1 idempotency audit record`,
   );
+
+  // Teardown cleanup: clean up the disposable wedding created during the provision race
+  if (process.env.STAGING_PRESERVE_PROVISIONED_FIXTURE !== "true") {
+    await queryStagingDb("DELETE FROM audit_log WHERE wedding_id = $1::uuid", [weddingId]);
+    await queryStagingDb("DELETE FROM events WHERE wedding_id = $1::uuid", [weddingId]);
+    await queryStagingDb("DELETE FROM weddings WHERE id = $1::uuid", [weddingId]);
+    console.log(
+      `Gate 1: Teardown cleanup removed disposable provisioned wedding '${weddingId}' and associated records.`,
+    );
+  }
 }
 
 /**
@@ -640,6 +657,7 @@ async function mediaQuotaRace(): Promise<void> {
 
   const firstCreated = created[0];
   const successStatus = firstCreated ? firstCreated.status : 200;
+  const createdPhotoId = (firstCreated?.body as Json)?.photoId as string | undefined;
 
   // Persisted photo count after race (MANDATORY)
   const countAfterRows = await queryStagingDb<{ count: number }>(
@@ -658,6 +676,14 @@ async function mediaQuotaRace(): Promise<void> {
     true,
     `1 committed photo (HTTP ${successStatus}); 9 HTTP 403 quota failures; DB confirmed exactly +1 photo created (from ${beforeCount} to ${afterCount})`,
   );
+
+  // Teardown cleanup: delete the newly committed photo from the media race so the fixture wedding is cleanly restored to having exactly 1 slot remaining for future gate runs
+  if (createdPhotoId && process.env.STAGING_PRESERVE_MEDIA_FIXTURE !== "true") {
+    await queryStagingDb("DELETE FROM photos WHERE id = $1::uuid", [createdPhotoId]);
+    console.log(
+      `Gate 2: Teardown cleanup removed committed test photo '${createdPhotoId}' to restore fixture capacity.`,
+    );
+  }
 }
 
 /**
