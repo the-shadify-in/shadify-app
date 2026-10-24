@@ -59,7 +59,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       include: {
         actor: { select: { fullName: true, role: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 20,
     });
 

@@ -92,7 +92,7 @@ export async function getEffectiveEntitlements(
         weddingId,
         action: { in: ["entitlement.override", "entitlement.override_revoked"] },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
   }
 

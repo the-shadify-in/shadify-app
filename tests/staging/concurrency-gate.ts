@@ -391,17 +391,44 @@ async function preflightSafetyGate(): Promise<void> {
     !/(prod|production)/i.test(presignUploadUrl),
     `Deployed application presigned URL target appears to reference production storage: ${presignUploadUrl}`,
   );
+  const cleanExpectedBucket = expectedStorageBucket.trim().toLowerCase();
   const parsedStorageUrl = new URL(presignUploadUrl);
+
+  // Fail-closed storage endpoint domain validation
+  const hostname = parsedStorageUrl.hostname.toLowerCase();
+  const validStorageHost =
+    hostname.endsWith(".r2.cloudflarestorage.com") ||
+    hostname.endsWith(".amazonaws.com") ||
+    hostname === "localhost" ||
+    hostname === "127.0.0.1";
+  assert(
+    validStorageHost,
+    `Presigned upload URL hostname '${hostname}' does not match a valid Cloudflare R2 or S3 storage endpoint`,
+  );
+
+  // Exact bucket identification: extract first path segment (path-style) or subdomain (virtual-hosted style)
+  const pathFirstSegment = parsedStorageUrl.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
+  const hostSubdomain = hostname.split(".")[0];
   const deployedBucketMatches =
-    parsedStorageUrl.hostname.toLowerCase().includes(expectedStorageBucket.toLowerCase()) ||
-    parsedStorageUrl.pathname.toLowerCase().startsWith(`/${expectedStorageBucket.toLowerCase()}/`);
+    pathFirstSegment === cleanExpectedBucket || hostSubdomain === cleanExpectedBucket;
+
   assert(
     deployedBucketMatches,
-    `Deployed application storage bucket in presigned URL (${parsedStorageUrl.host}${parsedStorageUrl.pathname}) does not match required STAGING_EXPECTED_STORAGE_BUCKET '${expectedStorageBucket}'`,
+    `Deployed application storage bucket in presigned URL (${parsedStorageUrl.host}${parsedStorageUrl.pathname}) does not match required STAGING_EXPECTED_STORAGE_BUCKET '${expectedStorageBucket}'. Expected exact bucket '${cleanExpectedBucket}', detected path segment '${pathFirstSegment}' / subdomain '${hostSubdomain}'.`,
+  );
+
+  // Verify that presign probe is purely ephemeral and created zero persistent database records
+  const probeDbRows = await queryStagingDb<{ count: number }>(
+    "SELECT count(*)::int AS count FROM photos WHERE file_key LIKE '%disposable-storage-verification-probe.jpg%'",
+  );
+  assert(
+    Number(probeDbRows[0]?.count ?? 0) === 0,
+    "Presign probe unexpectedly created a persistent photo database record. Presign must be completely ephemeral.",
   );
 
   // Direct SQL audit check: independently verify zero active overrides exist in audit_log
   // Matches getEffectiveEntitlements resolution: finds the latest override/revocation event,
+  // ordered deterministically by created_at DESC, id DESC,
   // and asserts that no active, unrevoked, unexpired override is in effect.
   const dbOverrideRows = await queryStagingDb<{ count: number }>(
     `WITH latest_audit AS (
@@ -409,7 +436,7 @@ async function preflightSafetyGate(): Promise<void> {
        FROM audit_log
        WHERE wedding_id = (SELECT id FROM weddings WHERE slug = $1 LIMIT 1)
          AND action IN ('entitlement.override', 'entitlement.override_revoked')
-       ORDER BY created_at DESC
+       ORDER BY created_at DESC, id DESC
        LIMIT 1
      )
      SELECT count(*)::int AS count 
@@ -494,37 +521,66 @@ async function provisioningRace(): Promise<void> {
 
   assert(
     successful.length === count && allHaveIds && uniqueIds.size === 1,
-    `Provisioning did not return exactly one consistent wedding ID across all concurrent requests (${uniqueIds.size} distinct IDs found)`,
+    `Provisioning did not return exactly one consistent wedding ID across all concurrent requests (${uniqueIds.size} distinct IDs found across ${successful.length}/${count} successful responses)`,
   );
 
   const weddingId = Array.from(uniqueIds)[0];
 
   // Independent database verification using separate bound parameters (MANDATORY)
+  // 1. Verify exactly one wedding record exists for the returned ID
   const dbWeddings = await queryStagingDb<{ count: number }>(
     "SELECT count(*)::int AS count FROM weddings WHERE id = $1::uuid",
     [weddingId],
   );
+  const weddingCount = Number(dbWeddings[0]?.count ?? 0);
+  assert(
+    weddingCount === 1,
+    `Database assertion failed: expected exactly 1 wedding record for ID '${weddingId}', found ${weddingCount}`,
+  );
+
+  // 2. If a slug was specified in the payload, verify exactly one wedding exists with that slug
+  const requestedSlug =
+    typeof (body as Record<string, unknown>)?.slug === "string"
+      ? ((body as Record<string, unknown>).slug as string)
+      : undefined;
+  if (requestedSlug) {
+    const dbSlugWeddings = await queryStagingDb<{ count: number }>(
+      "SELECT count(*)::int AS count FROM weddings WHERE slug = $1",
+      [requestedSlug],
+    );
+    const slugCount = Number(dbSlugWeddings[0]?.count ?? 0);
+    assert(
+      slugCount === 1,
+      `Database assertion failed: expected exactly 1 wedding with slug '${requestedSlug}', found ${slugCount}`,
+    );
+  }
+
+  // 3. Scoped audit check: verify exactly 1 provisioning audit record exists for (weddingId, idempotencyKey)
   const dbAudits = await queryStagingDb<{ count: number }>(
     "SELECT count(*)::int AS count FROM audit_log WHERE wedding_id = $1::uuid AND action = 'wedding.provision' AND detail->>'idempotencyKey' = $2",
     [weddingId, effectiveKey],
   );
-
-  const weddingCount = Number(dbWeddings[0]?.count ?? 0);
   const auditCount = Number(dbAudits[0]?.count ?? 0);
-
-  assert(
-    weddingCount === 1,
-    `Database assertion failed: expected 1 wedding record for ID, found ${weddingCount}`,
-  );
   assert(
     auditCount === 1,
-    `Database assertion failed: expected 1 audit_log idempotency record, found ${auditCount}`,
+    `Database assertion failed: expected exactly 1 scoped audit_log idempotency record for wedding '${weddingId}', found ${auditCount}`,
+  );
+
+  // 4. Global audit check: verify across the entire audit table that exactly 1 provisioning event was recorded for this key
+  const dbGlobalAudits = await queryStagingDb<{ count: number }>(
+    "SELECT count(*)::int AS count FROM audit_log WHERE action = 'wedding.provision' AND detail->>'idempotencyKey' = $1",
+    [effectiveKey],
+  );
+  const globalAuditCount = Number(dbGlobalAudits[0]?.count ?? 0);
+  assert(
+    globalAuditCount === 1,
+    `Database assertion failed: expected exactly 1 global audit_log record for idempotency key '${effectiveKey}', found ${globalAuditCount}`,
   );
 
   record(
     "1. Provision race",
     true,
-    `${count}/${count} HTTP 20x responses; DB confirmed exactly 1 wedding and 1 idempotency audit record`,
+    `${count}/${count} HTTP 20x responses with identical wedding ID; DB confirmed exactly 1 wedding and 1 idempotency audit record`,
   );
 }
 
