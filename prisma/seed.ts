@@ -1,24 +1,7 @@
 import { prisma } from "../src/lib/db";
-import { hashPassword } from "../src/lib/auth";
 
 async function main() {
   console.log("Seeding Shadify sample wedding...");
-
-  // 0. Seed Staff Concierge User with hashed password
-  const staffPassword = process.env.TEST_STAFF_PASSWORD || "TestStaffPass!2026";
-  const staffPasswordHash = await hashPassword(staffPassword);
-
-  await prisma.user.upsert({
-    where: { email: "concierge@shadify.in" },
-    update: { passwordHash: staffPasswordHash, role: "staff" },
-    create: {
-      fullName: "Shadify Concierge Staff",
-      email: "concierge@shadify.in",
-      phone: "+919876599999",
-      role: "staff",
-      passwordHash: staffPasswordHash,
-    },
-  });
 
   // 1. Create Couple User
   const coupleUser = await prisma.user.upsert({
