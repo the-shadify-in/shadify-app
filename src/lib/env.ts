@@ -44,7 +44,8 @@ const envSchema = z.object({
     .refine(
       (val) => val.replace(/\D/g, "") !== "918000000000",
       "NEXT_PUBLIC_CONCIERGE_WHATSAPP cannot be the placeholder 918000000000. Set a real business WhatsApp number.",
-    ),
+    )
+    .default(isDevOrBuild ? "919876543210" : ""),
   NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY: z.string().optional(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),

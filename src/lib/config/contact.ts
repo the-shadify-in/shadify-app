@@ -3,8 +3,16 @@
  * All public WhatsApp inquiries and support channels resolve from environment variables.
  */
 
-const envWhatsapp = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP?.replace(/\D/g, "");
-const envWhatsappDisplay = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY;
+const isDevOrBuild =
+  process.env.NODE_ENV !== "production" ||
+  process.env.NEXT_PHASE === "phase-production-build" ||
+  process.env.CI === "true";
+
+const rawWhatsapp = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP?.replace(/\D/g, "");
+const envWhatsapp = rawWhatsapp || (isDevOrBuild ? "919876543210" : "");
+const envWhatsappDisplay =
+  process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY ||
+  (isDevOrBuild ? "+91 98765 43210" : undefined);
 
 if (!envWhatsapp || envWhatsapp === "918000000000") {
   throw new Error(
