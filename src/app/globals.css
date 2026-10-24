@@ -38,24 +38,35 @@
   --brand-border: #eaddcf;
   --brand-tint: #fff1f6;
 
-  /* Studio Fallbacks */
-  --studio-canvas: #0a0b10;
-  --studio-surface: #12141d;
-  --studio-surface-elevated: #1a1d2b;
-  --studio-surface-highlight: #252a3b;
-  --studio-border: rgba(255, 255, 255, 0.14);
-  --studio-border-strong: rgba(255, 255, 255, 0.22);
-  --studio-border-subtle: rgba(255, 255, 255, 0.14);
-  --studio-champagne: #c5a059;
-  --studio-champagne-light: #e5c07b;
-  --studio-ruby: #b91c1c;
-  --studio-success: #34d399;
-  --studio-warning: #fbbf24;
-  --studio-danger: #f87171;
-  --studio-text-primary: #f8fafc;
-  --studio-text-muted: #b0bacb;
-  --studio-text-subtle: #94a3b8;
-  --studio-focus-ring: #e5c07b;
+  /* Studio Fallbacks — Editorial Luxury */
+  --studio-canvas: #fbf9f5;
+  --studio-surface: #ffffff;
+  --studio-surface-elevated: #f7f4ee;
+  --studio-surface-highlight: #efebe1;
+  --studio-border: #e8e2d5;
+  --studio-border-strong: #d4cbb9;
+  --studio-border-subtle: #f2ece0;
+  --studio-champagne: #9c7c38;
+  --studio-champagne-light: #b38e46;
+  --studio-champagne-soft: #f7f2e7;
+  --studio-champagne-border: #e2d5ba;
+  --studio-ruby: #991b1b;
+  --studio-success: #2d5442;
+  --studio-success-bg: #f0f6f2;
+  --studio-success-border: #c8ddd1;
+  --studio-warning: #92400e;
+  --studio-warning-bg: #fef7ee;
+  --studio-warning-border: #f7dcb6;
+  --studio-danger: #991b1b;
+  --studio-danger-bg: #fdf2f2;
+  --studio-danger-border: #f8c8c8;
+  --studio-info: #1e3a5f;
+  --studio-info-bg: #f0f4f8;
+  --studio-info-border: #c2d5e8;
+  --studio-text-primary: #1c1917;
+  --studio-text-muted: #57534e;
+  --studio-text-subtle: #78716c;
+  --studio-focus-ring: #9c7c38;
 
   /* Motion Tokens (GPU-accelerated transitions) */
   --motion-fast: 150ms;
@@ -64,26 +75,85 @@
   --ease-luxury: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Imperial Atelier — admin only */
+/* Editorial Luxury Atelier — Concierge Admin Workspace */
 .admin-studio {
+  color-scheme: light;
+
+  /* Porcelain & Warm Stone Canvases */
+  --studio-canvas: #fbf9f5;
+  --studio-surface: #ffffff;
+  --studio-surface-elevated: #f7f4ee;
+  --studio-surface-highlight: #efebe1;
+
+  /* Refined Architectural Borders */
+  --studio-border: #e8e2d5;
+  --studio-border-strong: #d4cbb9;
+  --studio-border-subtle: #f2ece0;
+
+  /* Restrained Antique Brass & Champagne Accents (used sparingly) */
+  --studio-champagne: #9c7c38;
+  --studio-champagne-light: #b38e46;
+  --studio-champagne-soft: #f7f2e7;
+  --studio-champagne-border: #e2d5ba;
+
+  /* Status Colors: Restrained Sage, Warm Ochre & Classic Crimson */
+  --studio-ruby: #991b1b;
+  --studio-success: #2d5442;
+  --studio-success-bg: #f0f6f2;
+  --studio-success-border: #c8ddd1;
+  --studio-warning: #92400e;
+  --studio-warning-bg: #fef7ee;
+  --studio-warning-border: #f7dcb6;
+  --studio-danger: #991b1b;
+  --studio-danger-bg: #fdf2f2;
+  --studio-danger-border: #f8c8c8;
+  --studio-info: #1e3a5f;
+  --studio-info-bg: #f0f4f8;
+  --studio-info-border: #c2d5e8;
+
+  /* High-Contrast Editorial Typography (WCAG AAA / AA compliant) */
+  --studio-text-primary: #1c1917;
+  --studio-text-muted: #57534e;
+  --studio-text-subtle: #78716c;
+
+  --studio-focus-ring: #9c7c38;
+
+  background: var(--studio-canvas);
+  color: var(--studio-text-primary);
+}
+
+/* Optional Dark Atelier Mode (Available if toggled/preferred) */
+.admin-studio[data-theme="dark"],
+.dark .admin-studio {
   color-scheme: dark;
 
-  --studio-canvas: #0a0b10;
-  --studio-surface: #12141d;
-  --studio-surface-elevated: #1a1d2b;
-  --studio-surface-highlight: #252a3b;
+  --studio-canvas: #0e0f14;
+  --studio-surface: #151722;
+  --studio-surface-elevated: #1c1f2e;
+  --studio-surface-highlight: #262a3d;
 
-  --studio-border: rgba(255, 255, 255, 0.14);
+  --studio-border: rgba(255, 255, 255, 0.12);
   --studio-border-strong: rgba(255, 255, 255, 0.22);
-  --studio-border-subtle: rgba(255, 255, 255, 0.14);
+  --studio-border-subtle: rgba(255, 255, 255, 0.08);
 
   --studio-champagne: #c5a059;
   --studio-champagne-light: #e5c07b;
+  --studio-champagne-soft: rgba(197, 160, 89, 0.12);
+  --studio-champagne-border: rgba(197, 160, 89, 0.3);
 
   --studio-ruby: #b91c1c;
   --studio-success: #34d399;
+  --studio-success-bg: rgba(52, 211, 153, 0.12);
+  --studio-success-border: rgba(52, 211, 153, 0.3);
   --studio-warning: #fbbf24;
+  --studio-warning-bg: rgba(251, 191, 36, 0.12);
+  --studio-warning-border: rgba(251, 191, 36, 0.3);
   --studio-danger: #f87171;
+  --studio-danger-bg: rgba(248, 113, 113, 0.12);
+  --studio-danger-border: rgba(248, 113, 113, 0.3);
+  --studio-info: #60a5fa;
+  --studio-info-bg: rgba(96, 165, 250, 0.12);
+  --studio-info-border: rgba(96, 165, 250, 0.3);
 
   --studio-text-primary: #f8fafc;
   --studio-text-muted: #b0bacb;
