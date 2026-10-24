@@ -108,7 +108,16 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (
+    request.cookies.has("__Host-shadify_guest_access") ||
+    request.cookies.has("shadify_guest_access") ||
+    pathname.startsWith("/api/weddings/")
+  ) {
+    response.headers.set("Cache-Control", "private, no-store, must-revalidate");
+  }
+
+  return response;
 }
 
 export const config = {

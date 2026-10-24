@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual, scrypt, randomBytes } from "crypto";
+import { createHmac, createHash, timingSafeEqual, scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 import { z } from "zod";
 
@@ -200,6 +200,214 @@ export function verifyPreviewToken(token?: string | null, slug?: string): boolea
     if (Date.now() > payload.exp) return false;
 
     return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Separate HMAC secret dedicated specifically to guest PIN access sessions.
+ */
+const GUEST_PIN_SECRET =
+  process.env.GUEST_ACCESS_SECRET || `${SESSION_SECRET}_guest_pin_access_purpose_v1`;
+
+/**
+ * Computes a deterministic 16-character SHA-256 fingerprint of the wedding's active private PIN hash.
+ * If the owner changes or clears the PIN, the fingerprint changes, immediately invalidating old tokens.
+ */
+export function computePinFingerprint(privatePinHash?: string | null): string {
+  if (!privatePinHash) return "none";
+  return createHash("sha256").update(privatePinHash).digest("hex").slice(0, 16);
+}
+
+/**
+ * Unified RFC 6265bis __Host- cookie name for guest private wedding access.
+ * Single cookie name avoids accumulating one cookie per wedding.
+ */
+export const GUEST_PIN_COOKIE_NAME =
+  process.env.NODE_ENV === "production" ? "__Host-shadify_guest_access" : "shadify_guest_access";
+
+export function getGuestPinCookieName(): string {
+  return GUEST_PIN_COOKIE_NAME;
+}
+
+export interface GuestAccessEntry {
+  weddingId: string;
+  pinFingerprint: string;
+  iat: number;
+  exp: number;
+}
+
+const GuestAccessEntrySchema = z.object({
+  weddingId: z.string(),
+  pinFingerprint: z.string(),
+  iat: z.number(),
+  exp: z.number(),
+});
+
+const GuestPinPayloadSchema = z.object({
+  purpose: z.literal("guest_pin_access"),
+  weddingId: z.string().optional(),
+  pinFingerprint: z.string().optional(),
+  iat: z.number().optional(),
+  exp: z.number().optional(),
+  accesses: z.array(GuestAccessEntrySchema).optional(),
+});
+
+/**
+ * Signs an HMAC-SHA256 authenticated guest PIN access session token for a private wedding.
+ * Incorporates a separate purpose claim and binds to the current PIN fingerprint.
+ * Merges with existing valid sessions if the guest is attending multiple weddings.
+ */
+export function signGuestPinToken(
+  weddingId: string,
+  privatePinHash: string,
+  existingCookieToken?: string | null,
+  ttlMs = 24 * 60 * 60 * 1000,
+): string {
+  const now = Date.now();
+  const exp = now + ttlMs;
+  const pinFingerprint = computePinFingerprint(privatePinHash);
+
+  const newEntry: GuestAccessEntry = {
+    weddingId,
+    pinFingerprint,
+    iat: now,
+    exp,
+  };
+
+  const existingEntries: GuestAccessEntry[] = [];
+  if (existingCookieToken) {
+    try {
+      const [payloadB64] = existingCookieToken.split(".");
+      if (payloadB64) {
+        const rawPayload: unknown = JSON.parse(
+          Buffer.from(payloadB64, "base64url").toString("utf-8"),
+        );
+        const parsed = GuestPinPayloadSchema.safeParse(rawPayload);
+        if (parsed.success && parsed.data.purpose === "guest_pin_access") {
+          if (parsed.data.accesses) {
+            for (const item of parsed.data.accesses) {
+              if (item.weddingId !== weddingId && item.exp > now) {
+                existingEntries.push(item);
+              }
+            }
+          } else if (
+            parsed.data.weddingId &&
+            parsed.data.weddingId !== weddingId &&
+            parsed.data.pinFingerprint &&
+            parsed.data.exp &&
+            parsed.data.exp > now
+          ) {
+            existingEntries.push({
+              weddingId: parsed.data.weddingId,
+              pinFingerprint: parsed.data.pinFingerprint,
+              iat: parsed.data.iat || now,
+              exp: parsed.data.exp,
+            });
+          }
+        }
+      }
+    } catch {
+      // Ignore parsing errors for existing cookie token
+    }
+  }
+
+  // Keep up to 9 previous accesses plus the new one
+  const accesses = [newEntry, ...existingEntries.slice(0, 9)];
+
+  const payloadObj = {
+    purpose: "guest_pin_access" as const,
+    weddingId,
+    pinFingerprint,
+    iat: now,
+    exp,
+    accesses,
+  };
+
+  const payload = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
+  const signature = createHmac("sha256", GUEST_PIN_SECRET).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+}
+
+/**
+ * Verifies that a guest PIN session token is authentic, unexpired, matches purpose 'guest_pin_access',
+ * is strictly bound to the target weddingId, and matches the current PIN fingerprint.
+ */
+export function verifyGuestPinToken(
+  token?: string | null,
+  weddingId?: string,
+  currentPinHash?: string | null,
+): boolean {
+  if (!token || !weddingId) return false;
+  try {
+    const [payloadB64, signature] = token.split(".");
+    if (!payloadB64 || !signature) return false;
+
+    const expectedSig = createHmac("sha256", GUEST_PIN_SECRET)
+      .update(payloadB64)
+      .digest("base64url");
+    const sigBuf = Buffer.from(signature);
+    const expBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+      return false;
+    }
+
+    const rawPayload: unknown = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8"));
+    const parsed = GuestPinPayloadSchema.safeParse(rawPayload);
+    if (!parsed.success) return false;
+
+    const payload = parsed.data;
+    if (payload.purpose !== "guest_pin_access") return false;
+
+    // Check accesses list or single-wedding fallback
+    let match: GuestAccessEntry | null = null;
+    if (payload.accesses && payload.accesses.length > 0) {
+      match = payload.accesses.find((a) => a.weddingId === weddingId) || null;
+    } else if (payload.weddingId === weddingId && payload.pinFingerprint && payload.exp) {
+      match = {
+        weddingId: payload.weddingId,
+        pinFingerprint: payload.pinFingerprint,
+        iat: payload.iat || 0,
+        exp: payload.exp,
+      };
+    }
+
+    if (!match) return false;
+    if (Date.now() > match.exp) return false;
+
+    // Verify PIN configuration fingerprint: if owner changed or removed the PIN, reject session
+    const expectedFingerprint = computePinFingerprint(currentPinHash);
+    if (match.pinFingerprint !== expectedFingerprint) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Server helper to check if the current guest holds a valid verified PIN session for a given wedding.
+ */
+export async function getGuestPinSession(
+  weddingId: string,
+  currentPinHash?: string | null,
+): Promise<boolean> {
+  try {
+    const { cookies } = await import("next/headers");
+    const cookieStore = cookies();
+    const pinCookie =
+      cookieStore.get(GUEST_PIN_COOKIE_NAME) ||
+      cookieStore.get("__Host-shadify_guest_access") ||
+      cookieStore.get("shadify_guest_access") ||
+      // Legacy fallback
+      cookieStore.get(`__Host-shadify_pin_${weddingId}`) ||
+      cookieStore.get(`shadify_pin_${weddingId}`);
+
+    if (!pinCookie?.value) return false;
+    return verifyGuestPinToken(pinCookie.value, weddingId, currentPinHash);
   } catch {
     return false;
   }
