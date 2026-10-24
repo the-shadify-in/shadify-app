@@ -126,8 +126,9 @@ export function checkRateLimit(
 }
 
 /**
- * Distributed rate limiting via Upstash Redis REST API when configured,
- * falling back gracefully to sliding-window in-memory store.
+ * Distributed rate limiting via Upstash Redis REST API using an atomic Lua script.
+ * Guarantees atomicity: INCR, conditional EXPIRE, and TTL check occur in a single Redis transaction.
+ * Completely eliminates race conditions between incrementing and setting expiry, preventing orphaned keys.
  */
 export async function checkRateLimitDistributed(
   identifier: string,
@@ -140,30 +141,42 @@ export async function checkRateLimitDistributed(
   if (url && token) {
     try {
       const key = `shadify:rl:${identifier}`;
-      const res = await fetch(`${url}/pipeline`, {
+      const luaScript =
+        "local current = redis.call('INCR', KEYS[1]) if current == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end local ttl = redis.call('TTL', KEYS[1]) return {current, ttl}";
+
+      const res = await fetch(`${url}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify([
-          ["INCR", key],
-          ["EXPIRE", key, windowSeconds],
-        ]),
+        body: JSON.stringify(["EVAL", luaScript, 1, key, windowSeconds]),
         cache: "no-store",
       });
+
       if (res.ok) {
-        const data = (await res.json()) as Array<{ result: number }>;
-        const count = data[0]?.result ?? 1;
+        const data = (await res.json()) as { result?: [number, number] };
+        if (Array.isArray(data.result) && data.result.length >= 2) {
+          const count = Number(data.result[0]) || 1;
+          const ttlSeconds = Number(data.result[1]) || windowSeconds;
+          return {
+            success: count <= maxHits,
+            limit: maxHits,
+            remaining: Math.max(0, maxHits - count),
+            resetMs: Math.max(0, ttlSeconds * 1000),
+          };
+        }
+      }
+    } catch {
+      // If fail-closed is configured in production, reject requests on limiter outage
+      if (process.env.NODE_ENV === "production" && process.env.RATE_LIMIT_FAIL_CLOSED === "true") {
         return {
-          success: count <= maxHits,
+          success: false,
           limit: maxHits,
-          remaining: Math.max(0, maxHits - count),
+          remaining: 0,
           resetMs: windowSeconds * 1000,
         };
       }
-    } catch {
-      // Graceful fallback to local in-memory store on network failure
     }
   }
 

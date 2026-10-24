@@ -1,14 +1,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { logger } from "@/lib/log";
+import { validateSecurityConfiguration } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const start = performance.now();
 
+  // 1. Verify Production Security Secrets
+  const secConfig = validateSecurityConfiguration();
+  if (!secConfig.valid) {
+    logger.error({ errors: secConfig.errors }, "Security configuration validation failed");
+    return NextResponse.json(
+      {
+        status: "unhealthy",
+        error: "Security configuration error: Missing or invalid production secrets.",
+        details: process.env.NODE_ENV === "production" ? undefined : secConfig.errors,
+      },
+      { status: 503 },
+    );
+  }
+
   try {
-    // 1. Perform database heartbeat query
+    // 2. Perform database heartbeat query
     await prisma.$queryRaw`SELECT 1`;
     const latencyMs = Math.round(performance.now() - start);
 

@@ -206,10 +206,57 @@ export function verifyPreviewToken(token?: string | null, slug?: string): boolea
 }
 
 /**
+ * Validates production security secrets at startup / request time.
+ * Enforces dedicated key material for guest access tokens distinct from admin session tokens.
+ */
+export function getGuestAccessSecret(): string {
+  const secret = process.env.GUEST_ACCESS_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    if (!secret || secret.trim().length < 32) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: GUEST_ACCESS_SECRET must be set to an independent, cryptographically random key of at least 32 characters in production.",
+      );
+    }
+    const adminSecret = process.env.ADMIN_SESSION_SECRET;
+    if (adminSecret && secret.trim() === adminSecret.trim()) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: GUEST_ACCESS_SECRET cannot share the same key material as ADMIN_SESSION_SECRET. Use independent secrets.",
+      );
+    }
+    return secret.trim();
+  }
+  return secret?.trim() || "shadify-dev-guest-access-secret-minimum-32-chars-long";
+}
+
+/**
+ * Startup validator to fail deployment or health check if secrets are missing or weak.
+ */
+export function validateSecurityConfiguration(): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  if (process.env.NODE_ENV === "production") {
+    const adminSecret = process.env.ADMIN_SESSION_SECRET;
+    if (!adminSecret || adminSecret.trim().length < 32) {
+      errors.push("ADMIN_SESSION_SECRET must be at least 32 characters in production.");
+    }
+    const guestSecret = process.env.GUEST_ACCESS_SECRET;
+    if (!guestSecret || guestSecret.trim().length < 32) {
+      errors.push("GUEST_ACCESS_SECRET must be at least 32 characters in production.");
+    }
+    if (adminSecret && guestSecret && adminSecret.trim() === guestSecret.trim()) {
+      errors.push("GUEST_ACCESS_SECRET must not share the same value as ADMIN_SESSION_SECRET.");
+    }
+    const erasureSecret = process.env.ERASURE_HMAC_SECRET;
+    if (!erasureSecret || erasureSecret.trim().length < 32) {
+      errors.push("ERASURE_HMAC_SECRET must be at least 32 characters in production.");
+    }
+  }
+  return { valid: errors.length === 0, errors };
+}
+
+/**
  * Separate HMAC secret dedicated specifically to guest PIN access sessions.
  */
-const GUEST_PIN_SECRET =
-  process.env.GUEST_ACCESS_SECRET || `${SESSION_SECRET}_guest_pin_access_purpose_v1`;
+export const GUEST_PIN_SECRET = getGuestAccessSecret();
 
 /**
  * Computes a deterministic 16-character SHA-256 fingerprint of the wedding's active private PIN hash.

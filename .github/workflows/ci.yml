@@ -20,6 +20,7 @@ jobs:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/shadify_ci?sslmode=disable"
       DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/shadify_ci?sslmode=disable"
       ADMIN_SESSION_SECRET: "test-admin-session-secret-min-32-chars-long-for-ci"
+      GUEST_ACCESS_SECRET: "test-guest-access-secret-independent-min-32-chars-ci"
       ERASURE_HMAC_SECRET: "test-erasure-hmac-secret-min-32-chars-ci"
 
     steps:
@@ -76,6 +77,7 @@ jobs:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/shadify_ci?sslmode=disable"
       DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/shadify_ci?sslmode=disable"
       ADMIN_SESSION_SECRET: "test-admin-session-secret-min-32-chars-long-for-ci"
+      GUEST_ACCESS_SECRET: "test-guest-access-secret-independent-min-32-chars-ci"
       ERASURE_HMAC_SECRET: "test-erasure-hmac-secret-min-32-chars-ci"
 
     steps:
