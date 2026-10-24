@@ -15,10 +15,6 @@ export function getSessionCookieName(): string {
 }
 
 export const SESSION_COOKIE_NAME = getSessionCookieName();
-
-const SESSION_SECRET =
-  process.env.ADMIN_SESSION_SECRET ?? "fallback-dev-secret-do-not-use-in-production";
-
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 // Bumped to v2 to immediately invalidate any legacy or previously exposed session tokens
@@ -64,6 +60,12 @@ export function signSessionToken(
   role: string,
   ttlMs = SESSION_MAX_AGE_SECONDS * 1000,
 ): string {
+  const secret = getAdminSessionSecret();
+  if (process.env.NODE_ENV === "production" && secret.startsWith("shadify-build-placeholder")) {
+    throw new Error(
+      "FATAL_SECURITY_ERROR: Cannot sign admin session token with build placeholder secret in production",
+    );
+  }
   const exp = Date.now() + ttlMs;
   const payload = JSON.stringify({
     userId,
@@ -73,7 +75,7 @@ export function signSessionToken(
     exp,
   });
   const encodedPayload = Buffer.from(payload).toString("base64url");
-  const signature = createHmac("sha256", SESSION_SECRET).update(encodedPayload).digest("base64url");
+  const signature = createHmac("sha256", secret).update(encodedPayload).digest("base64url");
   return `${encodedPayload}.${signature}`;
 }
 
@@ -89,10 +91,14 @@ const SessionPayloadSchema = z.object({
  */
 export function verifySessionToken(token: string): AdminSession | null {
   try {
+    const secret = getAdminSessionSecret();
+    if (process.env.NODE_ENV === "production" && secret.startsWith("shadify-build-placeholder")) {
+      return null;
+    }
     const [encodedPayload, signature] = token.split(".");
     if (!encodedPayload || !signature) return null;
 
-    const expectedSignature = createHmac("sha256", SESSION_SECRET)
+    const expectedSignature = createHmac("sha256", secret)
       .update(encodedPayload)
       .digest("base64url");
 
@@ -163,9 +169,15 @@ export async function requireAdminSession(): Promise<AdminSession> {
  * Signs a temporary preview token for a wedding slug
  */
 export function signPreviewToken(slug: string, ttlMs = 24 * 60 * 60 * 1000): string {
+  const secret = getAdminSessionSecret();
+  if (process.env.NODE_ENV === "production" && secret.startsWith("shadify-build-placeholder")) {
+    throw new Error(
+      "FATAL_SECURITY_ERROR: Cannot sign preview token with build placeholder secret in production",
+    );
+  }
   const expiresAt = Date.now() + ttlMs;
   const payload = Buffer.from(JSON.stringify({ slug, exp: expiresAt })).toString("base64url");
-  const signature = createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
+  const signature = createHmac("sha256", secret).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 }
 
@@ -180,10 +192,14 @@ const PreviewPayloadSchema = z.object({
 export function verifyPreviewToken(token?: string | null, slug?: string): boolean {
   if (!token || !slug) return false;
   try {
+    const secret = getAdminSessionSecret();
+    if (process.env.NODE_ENV === "production" && secret.startsWith("shadify-build-placeholder")) {
+      return false;
+    }
     const [payloadB64, signature] = token.split(".");
     if (!payloadB64 || !signature) return false;
 
-    const expectedSig = createHmac("sha256", SESSION_SECRET).update(payloadB64).digest("base64url");
+    const expectedSig = createHmac("sha256", secret).update(payloadB64).digest("base64url");
 
     const sigBuf = Buffer.from(signature);
     const expBuf = Buffer.from(expectedSig);
@@ -203,6 +219,42 @@ export function verifyPreviewToken(token?: string | null, slug?: string): boolea
   } catch {
     return false;
   }
+}
+
+/**
+ * Validates and retrieves the admin session HMAC secret.
+ * Enforces dedicated key material distinct from guest access and erasure secrets.
+ */
+export function getAdminSessionSecret(): string {
+  const secret = process.env.ADMIN_SESSION_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    // During Next.js static collection/build phase, allow build to complete if runtime secrets are not yet injected
+    if (
+      process.env.NEXT_PHASE === "phase-production-build" &&
+      (!secret || secret.trim().length < 32)
+    ) {
+      return "shadify-build-placeholder-admin-session-secret-32-chars";
+    }
+    if (!secret || secret.trim().length < 32) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: ADMIN_SESSION_SECRET must be set to a cryptographically random key of at least 32 characters in production.",
+      );
+    }
+    const guestSecret = process.env.GUEST_ACCESS_SECRET;
+    if (guestSecret && secret.trim() === guestSecret.trim()) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: ADMIN_SESSION_SECRET cannot share the same key material as GUEST_ACCESS_SECRET. Use independent secrets.",
+      );
+    }
+    const erasureSecret = process.env.ERASURE_HMAC_SECRET;
+    if (erasureSecret && secret.trim() === erasureSecret.trim()) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: ADMIN_SESSION_SECRET cannot share the same key material as ERASURE_HMAC_SECRET. Use independent secrets.",
+      );
+    }
+    return secret.trim();
+  }
+  return secret?.trim() || "fallback-dev-secret-do-not-use-in-production";
 }
 
 /**
@@ -239,6 +291,41 @@ export function getGuestAccessSecret(): string {
     return secret.trim();
   }
   return secret?.trim() || "shadify-dev-guest-access-secret-minimum-32-chars-long";
+}
+
+/**
+ * Validates and retrieves the erasure HMAC secret used to anonymize audit log references.
+ * Must be independent of admin session and guest access secrets.
+ */
+export function getErasureHmacSecret(): string {
+  const secret = process.env.ERASURE_HMAC_SECRET;
+  if (process.env.NODE_ENV === "production") {
+    if (
+      process.env.NEXT_PHASE === "phase-production-build" &&
+      (!secret || secret.trim().length < 32)
+    ) {
+      return "shadify-build-placeholder-erasure-hmac-secret-32-chars";
+    }
+    if (!secret || secret.trim().length < 32) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: ERASURE_HMAC_SECRET must be set to an independent, cryptographically random key of at least 32 characters in production.",
+      );
+    }
+    const adminSecret = process.env.ADMIN_SESSION_SECRET;
+    if (adminSecret && secret.trim() === adminSecret.trim()) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: ERASURE_HMAC_SECRET cannot share the same key material as ADMIN_SESSION_SECRET. Use independent secrets.",
+      );
+    }
+    const guestSecret = process.env.GUEST_ACCESS_SECRET;
+    if (guestSecret && secret.trim() === guestSecret.trim()) {
+      throw new Error(
+        "FATAL_SECURITY_CONFIG_ERROR: ERASURE_HMAC_SECRET cannot share the same key material as GUEST_ACCESS_SECRET. Use independent secrets.",
+      );
+    }
+    return secret.trim();
+  }
+  return secret?.trim() || "shadify-dev-erasure-hmac-secret-minimum-32-chars-long";
 }
 
 /**
@@ -349,12 +436,22 @@ export function signGuestPinToken(
   const existingEntries: GuestAccessEntry[] = [];
   const seenWeddingIds = new Set<string>([weddingId]);
 
+  const guestSecret = getGuestPinSecret();
+  if (
+    process.env.NODE_ENV === "production" &&
+    guestSecret.startsWith("shadify-build-placeholder")
+  ) {
+    throw new Error(
+      "FATAL_SECURITY_ERROR: Cannot sign guest access token with build placeholder secret in production",
+    );
+  }
+
   if (existingCookieToken) {
     try {
       const [payloadB64, signature] = existingCookieToken.split(".");
       if (payloadB64 && signature) {
         // Cryptographically verify existing cookie before trusting its contents
-        const expectedSig = createHmac("sha256", getGuestPinSecret())
+        const expectedSig = createHmac("sha256", guestSecret)
           .update(payloadB64)
           .digest("base64url");
         const sigBuf = Buffer.from(signature);
@@ -409,7 +506,7 @@ export function signGuestPinToken(
   };
 
   const payload = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
-  const signature = createHmac("sha256", getGuestPinSecret()).update(payload).digest("base64url");
+  const signature = createHmac("sha256", guestSecret).update(payload).digest("base64url");
   return `${payload}.${signature}`;
 }
 
@@ -424,12 +521,17 @@ export function verifyGuestPinToken(
 ): boolean {
   if (!token || !weddingId) return false;
   try {
+    const guestSecret = getGuestPinSecret();
+    if (
+      process.env.NODE_ENV === "production" &&
+      guestSecret.startsWith("shadify-build-placeholder")
+    ) {
+      return false;
+    }
     const [payloadB64, signature] = token.split(".");
     if (!payloadB64 || !signature) return false;
 
-    const expectedSig = createHmac("sha256", getGuestPinSecret())
-      .update(payloadB64)
-      .digest("base64url");
+    const expectedSig = createHmac("sha256", guestSecret).update(payloadB64).digest("base64url");
     const sigBuf = Buffer.from(signature);
     const expBuf = Buffer.from(expectedSig);
     if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {

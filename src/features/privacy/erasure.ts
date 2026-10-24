@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { deleteMediaObject } from "@/lib/r2";
+import { getErasureHmacSecret } from "@/lib/auth";
 import crypto from "crypto";
 
 export interface ExecuteErasureResult {
@@ -197,11 +198,16 @@ export async function executeWeddingErasure(
         },
       });
 
-      // Record audit log entry using HMAC with secret key outside database to prevent rainbow-table slug recovery
-      const secretKey =
-        process.env.ERASURE_HMAC_SECRET ||
-        process.env.ADMIN_SESSION_SECRET ||
-        "shadify-audit-log-hmac-salt-secret";
+      // Record audit log entry using HMAC with dedicated secret key outside database to prevent rainbow-table slug recovery
+      const secretKey = getErasureHmacSecret();
+      if (
+        process.env.NODE_ENV === "production" &&
+        secretKey.startsWith("shadify-build-placeholder")
+      ) {
+        throw new Error(
+          "FATAL_SECURITY_ERROR: Cannot calculate erasure HMAC with build placeholder in production",
+        );
+      }
       const slugHmac = crypto.createHmac("sha256", secretKey).update(weddingSlug).digest("hex");
       const isUuid =
         Boolean(actorId) &&
