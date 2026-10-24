@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getAdminSession } from "@/lib/auth";
 import {
-  ArrowLeft,
   CheckCircle2,
   AlertTriangle,
   ShieldCheck,
@@ -62,57 +61,53 @@ export default async function AdminHealthDashboardPage() {
     .catch(() => []);
 
   return (
-    <div className="min-h-screen bg-[#090406] text-[#FFF9F2]">
-      {/* Header */}
-      <header className="border-b border-[#C9933A]/20 bg-[#12070A]/80 px-6 py-4 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/admin"
-              className="flex items-center gap-1.5 text-xs text-[#FFF9F2]/60 hover:text-[#C9933A]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Concierge
-            </Link>
-            <span className="h-4 w-px bg-white/10" />
-            <h1 className="font-serif text-xl font-light text-[#FFF9F2]">
-              Operations & Health Monitor
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              Telemetry Live
-            </span>
-          </div>
+    <div className="space-y-8 p-6 sm:p-8">
+      {/* Page Header Banner */}
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="font-serif text-2xl font-light text-studio-text-primary sm:text-3xl">
+            Operations &amp; Health Monitor
+          </h1>
+          <p className="mt-1 text-xs text-studio-text-muted">
+            Real-time telemetry, PostgreSQL connection latency, and 14-day pre-wedding operational
+            gate
+          </p>
         </div>
-      </header>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+            Telemetry Live
+          </span>
+        </div>
+      </div>
 
-      <main className="mx-auto max-w-7xl space-y-8 p-6">
+      <main className="space-y-8">
         {/* Top Status Cards */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-5">
-            <div className="flex items-center justify-between text-xs text-[#FFF9F2]/60">
+          <div className="rounded-2xl border border-studio-border bg-studio-surface p-5 shadow-sm transition-colors hover:border-studio-borderSubtle">
+            <div className="flex items-center justify-between text-xs text-studio-text-muted">
               <span>PostgreSQL Database</span>
-              <Database className="h-4 w-4 text-[#C9933A]" />
+              <Database className="h-4 w-4 text-studio-champagne" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span
                 className={`text-2xl font-semibold ${
-                  dbStatus === "connected" ? "text-emerald-400" : "text-red-400"
+                  dbStatus === "connected" ? "text-emerald-400" : "text-rose-400"
                 }`}
               >
                 {dbStatus === "connected" ? "Connected" : "Degraded"}
               </span>
-              <span className="text-xs text-[#FFF9F2]/40">({dbLatency}ms roundtrip)</span>
+              <span className="text-xs text-studio-text-subtle">({dbLatency}ms roundtrip)</span>
             </div>
-            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">Heartbeat query SELECT 1 passing</p>
+            <p className="mt-1 text-[11px] text-studio-text-muted/70">
+              Heartbeat query SELECT 1 passing
+            </p>
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-5">
-            <div className="flex items-center justify-between text-xs text-[#FFF9F2]/60">
+          <div className="rounded-2xl border border-studio-border bg-studio-surface p-5 shadow-sm transition-colors hover:border-studio-borderSubtle">
+            <div className="flex items-center justify-between text-xs text-studio-text-muted">
               <span>Cloudflare R2 Storage</span>
-              <HardDrive className="h-4 w-4 text-[#C9933A]" />
+              <HardDrive className="h-4 w-4 text-studio-champagne" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span
@@ -122,21 +117,21 @@ export default async function AdminHealthDashboardPage() {
               >
                 {r2Configured ? "Configured" : "Not Configured"}
               </span>
-              <span className="text-xs text-[#FFF9F2]/40">
+              <span className="text-xs text-studio-text-subtle">
                 {r2Configured ? "(90-Day Lifecycle)" : "(Mock / Local)"}
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">
+            <p className="mt-1 text-[11px] text-studio-text-muted/70">
               {r2Configured
                 ? "Zero egress fee media pipeline"
                 : "R2 bucket credentials not set in env"}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-5">
-            <div className="flex items-center justify-between text-xs text-[#FFF9F2]/60">
+          <div className="rounded-2xl border border-studio-border bg-studio-surface p-5 shadow-sm transition-colors hover:border-studio-borderSubtle">
+            <div className="flex items-center justify-between text-xs text-studio-text-muted">
               <span>Error Rate Tracking</span>
-              <RefreshCw className="h-4 w-4 text-[#C9933A]" />
+              <RefreshCw className="h-4 w-4 text-studio-champagne" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span
@@ -146,54 +141,58 @@ export default async function AdminHealthDashboardPage() {
               >
                 {errorTrackingConfigured ? "Active" : "Not Configured"}
               </span>
-              <span className="text-xs text-[#FFF9F2]/40">
+              <span className="text-xs text-studio-text-subtle">
                 {errorTrackingConfigured ? "(Sentry DSN Set)" : "(Pending Sentry)"}
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">
+            <p className="mt-1 text-[11px] text-studio-text-muted/70">
               {errorTrackingConfigured
                 ? "Exception stream active"
                 : "Sentry DSN not configured in env"}
             </p>
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-5">
-            <div className="flex items-center justify-between text-xs text-[#FFF9F2]/60">
-              <span>Privacy & Erasure</span>
-              <ShieldCheck className="h-4 w-4 text-[#C9933A]" />
+          <div className="rounded-2xl border border-studio-border bg-studio-surface p-5 shadow-sm transition-colors hover:border-studio-borderSubtle">
+            <div className="flex items-center justify-between text-xs text-studio-text-muted">
+              <span>Privacy &amp; Erasure</span>
+              <ShieldCheck className="h-4 w-4 text-studio-champagne" />
             </div>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="text-2xl font-semibold text-emerald-400">0 Pending</span>
-              <span className="text-xs text-[#FFF9F2]/40">(DPDP SLA: 30d)</span>
+              <span className="text-xs text-studio-text-subtle">(DPDP SLA: 30d)</span>
             </div>
-            <p className="mt-1 text-[11px] text-[#FFF9F2]/50">All erasure requests cleared</p>
+            <p className="mt-1 text-[11px] text-studio-text-muted/70">
+              All erasure requests cleared
+            </p>
           </div>
         </section>
 
         {/* 14-Day Wedding Readiness Checklist */}
-        <section className="rounded-2xl border border-[#C9933A]/20 bg-[#12070A] p-6 shadow-xl">
+        <section className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div>
-              <h2 className="font-serif text-xl text-[#FFF9F2]">14-Day Wedding Readiness Gate</h2>
-              <p className="text-xs text-[#FFF9F2]/60">
-                Audits all weddings scheduled in the next 14 days to ensure no ceremony arrives with
-                missing photos, broken UPI, or zero events.
+              <h2 className="font-serif text-xl font-light text-studio-text-primary">
+                14-Day Wedding Readiness Gate
+              </h2>
+              <p className="mt-1 text-xs text-studio-text-muted">
+                Audits all celebrations scheduled in the next 14 days to ensure no ceremony arrives
+                with missing photos, unconfigured UPI, or empty events.
               </p>
             </div>
-            <span className="text-xs text-[#C9933A]">
+            <span className="rounded-full border border-studio-champagne/30 bg-studio-champagne/10 px-3 py-1 text-xs font-medium text-studio-champagne">
               {upcomingWeddings.length} weddings in window
             </span>
           </div>
 
           <div className="mt-6 overflow-x-auto">
             {upcomingWeddings.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-white/10 p-8 text-center text-xs text-[#FFF9F2]/50">
-                No active weddings scheduled in the next 14 days. Concierge pipeline clear.
+              <div className="rounded-xl border border-dashed border-studio-border p-8 text-center text-xs text-studio-text-muted">
+                No active celebrations scheduled in the next 14 days. Concierge pipeline clear.
               </div>
             ) : (
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-white/10 text-[#C9933A]">
+                  <tr className="border-b border-studio-border text-studio-champagne">
                     <th className="pb-3 font-normal">Wedding / Couple</th>
                     <th className="pb-3 font-normal">Date</th>
                     <th className="pb-3 font-normal">Events Configured</th>
@@ -202,18 +201,23 @@ export default async function AdminHealthDashboardPage() {
                     <th className="pb-3 text-right font-normal">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-studio-border">
                   {upcomingWeddings.map((w) => {
                     const hasEvents = w.events.length > 0;
                     const hasUpi = Boolean(w.upiVpa);
 
                     return (
-                      <tr key={w.id} className="hover:bg-white/[0.02]">
-                        <td className="py-4 font-medium text-[#FFF9F2]">
-                          {w.brideName} & {w.groomName}
-                          <div className="text-[11px] text-[#FFF9F2]/50">/{w.slug}</div>
+                      <tr
+                        key={w.id}
+                        className="transition-colors hover:bg-studio-surfaceElevated/50"
+                      >
+                        <td className="py-4 font-medium text-studio-text-primary">
+                          {w.brideName} &amp; {w.groomName}
+                          <div className="font-mono text-[11px] text-studio-text-subtle">
+                            /{w.slug}
+                          </div>
                         </td>
-                        <td className="py-4 text-[#FFF9F2]/70">
+                        <td className="py-4 text-studio-text-muted">
                           {new Date(w.weddingDate).toLocaleDateString("en-IN", {
                             day: "numeric",
                             month: "short",
@@ -222,31 +226,31 @@ export default async function AdminHealthDashboardPage() {
                         </td>
                         <td className="py-4">
                           {hasEvents ? (
-                            <span className="inline-flex items-center gap-1 text-emerald-400">
+                            <span className="inline-flex items-center gap-1 font-medium text-emerald-400">
                               <CheckCircle2 className="h-3.5 w-3.5" />
                               {w.events.length} Ceremony events
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-amber-400">
+                            <span className="inline-flex items-center gap-1 font-medium text-amber-400">
                               <AlertTriangle className="h-3.5 w-3.5" />0 events configured
                             </span>
                           )}
                         </td>
                         <td className="py-4">
                           {hasUpi ? (
-                            <span className="inline-flex items-center gap-1 text-emerald-400">
+                            <span className="inline-flex items-center gap-1 font-mono text-emerald-400">
                               <CheckCircle2 className="h-3.5 w-3.5" />
                               {w.upiVpa}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-amber-400">
+                            <span className="inline-flex items-center gap-1 font-medium text-amber-400">
                               <AlertTriangle className="h-3.5 w-3.5" />
                               Missing UPI ID
                             </span>
                           )}
                         </td>
                         <td className="py-4">
-                          <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-[10px] uppercase tracking-wider text-[#FFF9F2]/70">
+                          <span className="rounded-full border border-studio-border bg-studio-surfaceElevated px-2.5 py-0.5 text-[10px] uppercase tracking-wider text-studio-text-muted">
                             5-Year Active
                           </span>
                         </td>
@@ -254,7 +258,7 @@ export default async function AdminHealthDashboardPage() {
                           <Link
                             href={`/${w.slug}`}
                             target="_blank"
-                            className="inline-flex items-center rounded-lg border border-white/10 px-2.5 py-1 text-[11px] text-[#FFF9F2]/80 hover:border-[#C9933A] hover:text-[#C9933A]"
+                            className="inline-flex items-center rounded-lg border border-studio-border bg-studio-surfaceElevated px-2.5 py-1 text-[11px] font-medium text-studio-text-primary transition hover:border-studio-champagne hover:text-studio-champagne"
                           >
                             Inspect Live
                           </Link>
@@ -270,12 +274,14 @@ export default async function AdminHealthDashboardPage() {
 
         {/* Telemetry Architecture Overview */}
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-6">
-            <h3 className="font-serif text-lg text-[#FFF9F2]">Server-Side Pino Log Drain</h3>
-            <p className="mt-1 text-xs text-[#FFF9F2]/60">
+          <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+            <h3 className="font-serif text-lg font-light text-studio-text-primary">
+              Server-Side Pino Log Drain
+            </h3>
+            <p className="mt-1 text-xs text-studio-text-muted">
               Structured JSON emitted per request with strict allowlist redaction.
             </p>
-            <div className="mt-4 rounded-xl bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-[#FFF9F2]/70">
+            <div className="mt-4 rounded-xl border border-studio-border bg-studio-canvas p-4 font-mono text-[11px] leading-relaxed text-studio-text-muted">
               <div>
                 • Service: <span className="text-emerald-400">shadify-web</span>
               </div>
@@ -284,7 +290,9 @@ export default async function AdminHealthDashboardPage() {
               </div>
               <div>
                 • Redacted Paths:{" "}
-                <span className="text-[#C9933A]">password, phone, upiVpa, tokens, names</span>
+                <span className="text-studio-champagne">
+                  password, phone, upiVpa, tokens, names
+                </span>
               </div>
               <div>
                 • Retention:{" "}
@@ -293,22 +301,26 @@ export default async function AdminHealthDashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-[#170B0E] p-6">
-            <h3 className="font-serif text-lg text-[#FFF9F2]">Client Error & Vitals Policy</h3>
-            <p className="mt-1 text-xs text-[#FFF9F2]/60">
+          <div className="rounded-2xl border border-studio-border bg-studio-surface p-6 shadow-sm">
+            <h3 className="font-serif text-lg font-light text-studio-text-primary">
+              Client Error &amp; Vitals Policy
+            </h3>
+            <p className="mt-1 text-xs text-studio-text-muted">
               Captures real user uncaught exceptions without invasive session recording.
             </p>
-            <div className="mt-4 rounded-xl bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-[#FFF9F2]/70">
+            <div className="mt-4 rounded-xl border border-studio-border bg-studio-canvas p-4 font-mono text-[11px] leading-relaxed text-studio-text-muted">
               <div>
                 • Tracker: <span className="text-emerald-400">Sentry / GlitchTip</span>
               </div>
               <div>
                 • Session Replay:{" "}
-                <span className="font-bold text-red-400">DISABLED (DPDP Zero-PII)</span>
+                <span className="font-bold text-rose-400">DISABLED (DPDP Zero-PII)</span>
               </div>
               <div>
                 • Query Params:{" "}
-                <span className="text-[#C9933A]">Tokens & secrets stripped before send</span>
+                <span className="text-studio-champagne">
+                  Tokens &amp; secrets stripped before send
+                </span>
               </div>
               <div>
                 • Core Web Vitals:{" "}

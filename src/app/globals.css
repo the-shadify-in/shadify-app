@@ -28,6 +28,20 @@
   --brand-border: #eaddcf;
   --brand-tint: #fff1f6;
 
+  /* Imperial Atelier — Concierge Operations & Admin Studio Tokens */
+  --studio-canvas: #0a0b10;
+  --studio-surface: #12141d;
+  --studio-surface-elevated: #1a1d2b;
+  --studio-surface-highlight: #222638;
+  --studio-border: rgba(255, 255, 255, 0.08);
+  --studio-border-subtle: rgba(255, 255, 255, 0.12);
+  --studio-champagne: #c5a059;
+  --studio-champagne-light: #d8b570;
+  --studio-ruby: #b91c1c;
+  --studio-text-primary: #f8fafc;
+  --studio-text-muted: #94a3b8;
+  --studio-text-subtle: #64748b;
+
   /* Motion Tokens (GPU-accelerated transitions) */
   --motion-fast: 150ms;
   --motion-base: 300ms;
