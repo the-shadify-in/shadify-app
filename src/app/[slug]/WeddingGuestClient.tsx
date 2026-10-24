@@ -46,6 +46,39 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Guest PIN state for private weddings
+  const [pinValue, setPinValue] = useState("");
+  const [pinError, setPinError] = useState<string | null>(null);
+  const [isVerifyingPin, setIsVerifyingPin] = useState(false);
+
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinError(null);
+    const cleanPin = pinValue.trim();
+    if (cleanPin.length < 4 || cleanPin.length > 12) {
+      setPinError("Please enter a valid 4 to 12 character access PIN.");
+      return;
+    }
+    setIsVerifyingPin(true);
+    try {
+      const res = await fetch(`/api/weddings/${wedding.slug}/verify-pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: cleanPin }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        setPinError(data.error || "Incorrect access PIN. Please check your invitation card.");
+        return;
+      }
+      window.location.reload();
+    } catch {
+      setPinError("Unable to verify PIN right now. Please check your connection.");
+    } finally {
+      setIsVerifyingPin(false);
+    }
+  };
+
   // Check localStorage for seen state on mount
   useEffect(() => {
     try {
@@ -208,6 +241,91 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
     "--theme-envelope-bg": c.envelopeBg,
     "--theme-wax-seal": c.waxSeal,
   };
+
+  if (wedding.isLocked) {
+    return (
+      <main
+        id="wedding-guest-root"
+        style={themeStyles}
+        className="selection:text-theme-on-accent relative flex min-h-screen flex-col items-center justify-center bg-theme-bg px-4 py-12 font-sans text-theme-text-primary selection:bg-theme-accent"
+      >
+        <canvas
+          ref={canvasRef}
+          id="petals-canvas"
+          className="pointer-events-none fixed inset-0 z-0 h-full w-full opacity-60"
+          aria-hidden="true"
+        />
+
+        <div className="bg-theme-surface/95 relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-white/10 p-8 text-center shadow-2xl backdrop-blur-xl sm:p-10">
+          <div className="border-theme-accent/40 bg-theme-accent/10 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border font-serif text-2xl text-theme-accent shadow-inner">
+            {wedding.monogram || "✦"}
+          </div>
+
+          <span className="border-theme-accent/30 bg-theme-accent/10 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 font-serif text-xs font-medium uppercase tracking-widest text-theme-accent">
+            <span>🔒</span> Private Celebration
+          </span>
+
+          {wedding.bride !== "Private" ? (
+            <>
+              <h1 className="mt-4 font-serif text-2xl font-light tracking-wide sm:text-3xl">
+                {wedding.bride} &amp; {wedding.groom}
+              </h1>
+              {wedding.date && (
+                <p className="mt-1 font-serif text-xs text-theme-text-muted sm:text-sm">
+                  {wedding.date}
+                </p>
+              )}
+            </>
+          ) : (
+            <h1 className="mt-4 font-serif text-2xl font-light tracking-wide sm:text-3xl">
+              Private Celebration
+            </h1>
+          )}
+
+          <p className="mt-5 text-xs leading-relaxed text-theme-text-muted">
+            This celebration itinerary is private. Please enter the access PIN printed on your
+            invitation card to view ceremony venues, times, and RSVP.
+          </p>
+
+          <form onSubmit={handleUnlock} className="mt-6 space-y-4">
+            <div>
+              <input
+                id="guest-pin-input"
+                type="password"
+                maxLength={12}
+                value={pinValue}
+                onChange={(e) => {
+                  setPinValue(e.target.value);
+                  setPinError(null);
+                }}
+                placeholder="••••"
+                className="bg-theme-bg/90 placeholder:text-theme-text-muted/30 focus:ring-theme-accent/30 w-full rounded-2xl border border-white/20 px-4 py-3.5 text-center font-mono text-2xl tracking-[0.4em] text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-2"
+                autoComplete="off"
+                autoFocus
+              />
+            </div>
+
+            {pinError && <p className="text-xs font-medium text-rose-400">{pinError}</p>}
+
+            <button
+              id="guest-pin-submit-btn"
+              type="submit"
+              disabled={isVerifyingPin || pinValue.length < 4}
+              className="text-theme-on-accent w-full rounded-2xl bg-theme-accent py-3.5 font-serif text-sm font-medium shadow-lg transition-all hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isVerifyingPin ? "Verifying Access..." : "Unlock Celebration ✦"}
+            </button>
+          </form>
+
+          <div className="mt-8 border-t border-white/10 pt-4">
+            <p className="text-theme-text-muted/60 text-[11px]">
+              Need assistance? Please contact the couple or Shadify Concierge.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import { normalizePhoneNumber } from "@/lib/phone";
+import { GUEST_PIN_COOKIE_NAME, verifyGuestPinToken } from "@/lib/auth";
 
 const RsvpSubmissionSchema = z.object({
   weddingId: z.string().optional(),
@@ -77,14 +78,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Resolve weddingId if weddingSlug is supplied
+    // Resolve weddingId and enforce private PIN gate if applicable
     let weddingId = rawWeddingId;
-    if (!weddingId && weddingSlug) {
+    const lookupWhere = weddingId
+      ? { id: weddingId }
+      : weddingSlug
+        ? { slug: String(weddingSlug).toLowerCase().trim() }
+        : null;
+
+    if (lookupWhere && prisma.wedding?.findUnique) {
       const w = await prisma.wedding.findUnique({
-        where: { slug: String(weddingSlug).toLowerCase().trim() },
-        select: { id: true },
+        where: lookupWhere,
+        select: { id: true, privatePinHash: true },
       });
-      if (w) weddingId = w.id;
+      if (w) {
+        weddingId = w.id;
+        if (w.privatePinHash) {
+          const pinCookie =
+            request.cookies.get(GUEST_PIN_COOKIE_NAME) ||
+            request.cookies.get("__Host-shadify_guest_access") ||
+            request.cookies.get("shadify_guest_access") ||
+            // Legacy fallback
+            request.cookies.get(`__Host-shadify_pin_${w.id}`) ||
+            request.cookies.get(`shadify_pin_${w.id}`);
+
+          if (!pinCookie?.value || !verifyGuestPinToken(pinCookie.value, w.id, w.privatePinHash)) {
+            return NextResponse.json(
+              { error: "Access denied. PIN verification required for this private celebration." },
+              {
+                status: 403,
+                headers: { "Cache-Control": "private, no-store, must-revalidate" },
+              },
+            );
+          }
+        }
+      }
     }
 
     const normalizedName = (rawRespondentName || guestName || "").trim();

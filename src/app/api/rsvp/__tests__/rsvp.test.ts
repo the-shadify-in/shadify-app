@@ -16,6 +16,9 @@ vi.mock("@/lib/ratelimit", () => ({
 
 vi.mock("@/lib/db", () => ({
   prisma: {
+    wedding: {
+      findUnique: vi.fn(),
+    },
     eventRsvp: {
       create: vi.fn(),
     },

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
+import { GUEST_PIN_COOKIE_NAME, verifyGuestPinToken } from "@/lib/auth";
 
 const GuestbookPostSchema = z.object({
   weddingId: z.string().uuid().optional(),
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
         OR: searchConditions,
         deletedAt: null,
       },
-      select: { id: true, status: true },
+      select: { id: true, status: true, privatePinHash: true },
     });
 
     if (!wedding) {
@@ -78,6 +79,29 @@ export async function POST(request: NextRequest) {
         { error: "This celebration is archived. Guestbook entries are closed." },
         { status: 403 },
       );
+    }
+
+    // Private wedding PIN authorization check
+    if (wedding.privatePinHash) {
+      const pinCookie =
+        request.cookies.get(GUEST_PIN_COOKIE_NAME) ||
+        request.cookies.get("__Host-shadify_guest_access") ||
+        request.cookies.get("shadify_guest_access") ||
+        request.cookies.get(`__Host-shadify_pin_${wedding.id}`) ||
+        request.cookies.get(`shadify_pin_${wedding.id}`);
+
+      if (
+        !pinCookie?.value ||
+        !verifyGuestPinToken(pinCookie.value, wedding.id, wedding.privatePinHash)
+      ) {
+        return NextResponse.json(
+          { error: "Access denied. PIN verification required for this private celebration." },
+          {
+            status: 403,
+            headers: { "Cache-Control": "private, no-store, must-revalidate" },
+          },
+        );
+      }
     }
 
     // 4. Create Guestbook Entry (default status: pending review)
@@ -97,7 +121,10 @@ export async function POST(request: NextRequest) {
         id: entry.id,
         status: entry.status,
       },
-      { status: 201 },
+      {
+        status: 201,
+        headers: { "Cache-Control": "private, no-store, must-revalidate" },
+      },
     );
   } catch (error) {
     console.error("Guestbook post error:", error);
@@ -130,11 +157,34 @@ export async function GET(request: NextRequest) {
         OR: getConditions,
         deletedAt: null,
       },
-      select: { id: true },
+      select: { id: true, privatePinHash: true },
     });
 
     if (!wedding) {
       return NextResponse.json({ error: "Wedding celebration not found." }, { status: 404 });
+    }
+
+    // Private wedding PIN authorization check
+    if (wedding.privatePinHash) {
+      const pinCookie =
+        request.cookies.get(GUEST_PIN_COOKIE_NAME) ||
+        request.cookies.get("__Host-shadify_guest_access") ||
+        request.cookies.get("shadify_guest_access") ||
+        request.cookies.get(`__Host-shadify_pin_${wedding.id}`) ||
+        request.cookies.get(`shadify_pin_${wedding.id}`);
+
+      if (
+        !pinCookie?.value ||
+        !verifyGuestPinToken(pinCookie.value, wedding.id, wedding.privatePinHash)
+      ) {
+        return NextResponse.json(
+          { error: "Access denied. PIN verification required for this private celebration." },
+          {
+            status: 403,
+            headers: { "Cache-Control": "private, no-store, must-revalidate" },
+          },
+        );
+      }
     }
 
     const entries = await prisma.guestbookEntry.findMany({
@@ -152,10 +202,15 @@ export async function GET(request: NextRequest) {
       take: 100,
     });
 
-    return NextResponse.json({
-      success: true,
-      entries,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        entries,
+      },
+      {
+        headers: { "Cache-Control": "private, no-store, must-revalidate" },
+      },
+    );
   } catch (error) {
     console.error("Guestbook get error:", error);
     return NextResponse.json({ error: "Failed to fetch guestbook entries." }, { status: 500 });

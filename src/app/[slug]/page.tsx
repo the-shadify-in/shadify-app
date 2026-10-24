@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { resolveTheme, type PresetId } from "@/lib/themes/tokens";
 import { getWeddingBySlug, mapWeddingToDto, type WeddingDataDto } from "@/features/weddings";
+import { getGuestPinSession } from "@/lib/auth";
 import WeddingGuestClient from "./WeddingGuestClient";
 
 // Revalidate every hour, or via on-demand tag revalidation when wedding content changes
@@ -526,6 +527,34 @@ export async function generateMetadata({
     };
   }
 
+  // If private wedding is locked and teaser is not explicitly permitted, return zero PII in metadata
+  if (dbWedding?.privatePinHash) {
+    const isUnlocked = await getGuestPinSession(dbWedding.id, dbWedding.privatePinHash);
+    const privacySettings = (dbWedding.themeConfig as Record<string, unknown> | null)?.privacy as
+      { allowTeaser?: boolean } | undefined;
+    const allowTeaser = Boolean(privacySettings?.allowTeaser);
+
+    if (!isUnlocked && !allowTeaser) {
+      return {
+        title: "Private Celebration",
+        description:
+          "This is a private wedding celebration. Please enter your guest PIN to access the celebration itinerary.",
+        robots: { index: false, follow: false, nocache: true },
+        openGraph: {
+          title: "Private Celebration",
+          description: "Private wedding invitation and ceremony itinerary.",
+          type: "website",
+          siteName: "Shadify",
+        },
+        twitter: {
+          card: "summary",
+          title: "Private Celebration",
+          description: "Private wedding invitation and ceremony itinerary.",
+        },
+      };
+    }
+  }
+
   const coupleNames = dbWedding
     ? `${dbWedding.brideName} & ${dbWedding.groomName}`
     : demoData
@@ -630,10 +659,24 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
 
   const fallbackDemo = (demoData || DEMO_WEDDINGS["priya-rahul"]) as DemoWeddingRecord;
 
+  // 4. Server-Enforced Privacy & Private PIN Verification Gate
+  const hasPrivatePin = Boolean(dbWedding?.privatePinHash);
+  let isLocked = false;
+  if (hasPrivatePin && dbWedding) {
+    const isUnlocked = await getGuestPinSession(dbWedding.id, dbWedding.privatePinHash);
+    if (!isUnlocked) {
+      isLocked = true;
+    }
+  }
+
   // Format wedding data using the queries DTO mapper or fallback demo
-  // Check section toggles configured on the wedding
+  // Check section toggles and explicit pre-unlock teaser privacy setting
   const themeSections = (dbWedding?.themeConfig as Record<string, unknown> | null)?.sections as
     Record<string, boolean> | undefined;
+  const privacySettings = (dbWedding?.themeConfig as Record<string, unknown> | null)?.privacy as
+    { allowTeaser?: boolean } | undefined;
+  const allowTeaser = Boolean(privacySettings?.allowTeaser);
+
   const allowLoveStory =
     isDemoSlug || (themeSections ? themeSections.showLoveStory !== false : true);
   const allowGallery = isDemoSlug || (themeSections ? themeSections.showGallery !== false : true);
@@ -641,32 +684,58 @@ export default async function WeddingGuestPage({ params }: { params: { slug: str
   const dbDto = dbWedding ? mapWeddingToDto(dbWedding) : null;
 
   const wedding: WeddingDataDto = dbDto
-    ? {
-        ...dbDto,
-        isDemo: isDemoSlug,
-        venueCity: dbDto.venueCity || fallbackDemo.venueCity,
-        heroImage: fallbackDemo.heroImage,
-        loveStory: allowLoveStory
-          ? dbDto.loveStory || (isDemoSlug ? fallbackDemo.loveStory : undefined)
-          : undefined,
-        gallery: allowGallery
-          ? dbDto.gallery && dbDto.gallery.length > 0
-            ? dbDto.gallery
-            : isDemoSlug
-              ? fallbackDemo.gallery
-              : []
-          : [],
-        showBranding: isDemoSlug ? true : dbDto.showBranding,
-        events: dbDto.events.length > 0 ? dbDto.events : fallbackDemo.events,
-        vips: allowVips
-          ? dbDto.vips && dbDto.vips.length > 0
-            ? dbDto.vips
-            : fallbackDemo.vips
-          : [],
-      }
+    ? isLocked
+      ? {
+          slug: dbDto.slug,
+          bride: allowTeaser ? dbDto.bride : "Private",
+          groom: allowTeaser ? dbDto.groom : "Celebration",
+          date: allowTeaser ? dbDto.date : "Private Ceremony",
+          weddingDateIso: allowTeaser ? dbDto.weddingDateIso : undefined,
+          hostingUntil: dbDto.hostingUntil,
+          venueCity: "",
+          monogram: allowTeaser ? dbDto.monogram : "✦",
+          upiVpa: "",
+          showBranding: dbDto.showBranding,
+          invocation: undefined,
+          isDemo: false,
+          heroImage: fallbackDemo.heroImage,
+          events: [],
+          vips: [],
+          gallery: [],
+          loveStory: undefined,
+          hasPrivatePin: true,
+          isLocked: true,
+        }
+      : {
+          ...dbDto,
+          isDemo: isDemoSlug,
+          venueCity: dbDto.venueCity || fallbackDemo.venueCity,
+          heroImage: fallbackDemo.heroImage,
+          loveStory: allowLoveStory
+            ? dbDto.loveStory || (isDemoSlug ? fallbackDemo.loveStory : undefined)
+            : undefined,
+          gallery: allowGallery
+            ? dbDto.gallery && dbDto.gallery.length > 0
+              ? dbDto.gallery
+              : isDemoSlug
+                ? fallbackDemo.gallery
+                : []
+            : [],
+          showBranding: isDemoSlug ? true : dbDto.showBranding,
+          events: dbDto.events.length > 0 ? dbDto.events : fallbackDemo.events,
+          vips: allowVips
+            ? dbDto.vips && dbDto.vips.length > 0
+              ? dbDto.vips
+              : fallbackDemo.vips
+            : [],
+          hasPrivatePin,
+          isLocked: false,
+        }
     : {
         ...fallbackDemo,
         isDemo: true,
+        hasPrivatePin: false,
+        isLocked: false,
       };
 
   // Resolve the official published wedding theme (preset + verified overrides)

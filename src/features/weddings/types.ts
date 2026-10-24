@@ -59,4 +59,6 @@ export interface WeddingDataDto {
   gallery?: GalleryPhotoDto[];
   events: WeddingEventDto[];
   vips: VipEntryDto[];
+  hasPrivatePin?: boolean;
+  isLocked?: boolean;
 }
