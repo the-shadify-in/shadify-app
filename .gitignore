@@ -41,8 +41,9 @@ yarn-error.log*
 next-env.d.ts
 .neon
 
-# private client data and seeds
+# private client, admin data and seeds
 clients/
 prisma/clients/
+prisma/admin/
 prisma/seed.client*.ts
 prisma/seeds/
