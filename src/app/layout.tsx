@@ -19,7 +19,6 @@ const plusJakarta = Plus_Jakarta_Sans({
 const cinzel = Cinzel({
   subsets: ["latin"],
   variable: "--font-cinzel",
-  weight: ["400", "600", "700"],
   display: "swap",
 });
 
