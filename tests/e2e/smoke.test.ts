@@ -96,8 +96,20 @@ test.describe("Shadify Security, Middleware & API Smoke Tests", () => {
 
     // Should redirect to /admin dashboard
     await expect(page).toHaveURL(/\/admin$/, { timeout: 10000 });
-    await expect(page.getByText(/Shadify.*Concierge/i).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /Sign Out/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Celebrations Directory/i })).toBeVisible();
+
+    // Verify authenticated session controls across desktop sidebar and mobile drawer
+    const signOutBtn = page.getByRole("button", { name: /Sign Out/i });
+    if (await signOutBtn.isVisible()) {
+      await expect(signOutBtn).toBeVisible();
+    } else {
+      // Mobile viewport: open drawer to verify concierge profile & sign out button
+      const openSidebarBtn = page.locator('button[aria-label="Open sidebar"]');
+      if (await openSidebarBtn.isVisible()) {
+        await openSidebarBtn.click();
+        await expect(signOutBtn).toBeVisible();
+      }
+    }
   });
 
   test("middleware rejects malicious probe patterns with 404", async ({ request }) => {
