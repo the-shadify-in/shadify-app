@@ -42,6 +42,7 @@ next-env.d.ts
 .neon
 
 # private client data and seeds
+clients/
+prisma/clients/
 prisma/seed.client*.ts
 prisma/seeds/
-prisma/*client*.ts
