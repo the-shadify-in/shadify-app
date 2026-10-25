@@ -127,6 +127,14 @@ export default function PrivacyPage() {
               keystroke monitoring tools (such as Hotjar or Microsoft Clarity).
             </li>
             <li>
+              <strong>Upstash Serverless Redis (Rate Limiting Defense):</strong> To protect private
+              wedding PIN gates, staff logins, and RSVP submission endpoints against brute-force and
+              denial-of-service attacks, we utilize Upstash Redis. Client IP addresses are
+              cryptographically hashed with a salted SHA-256 HMAC before evaluation, ensuring raw IP
+              addresses are never transmitted to or persisted in the Redis cache. Counters expire
+              automatically within 15 minutes.
+            </li>
+            <li>
               <strong>First-Party Anonymous Counters Only:</strong> When guests interact with
               logistics chips in the &quot;Ask&quot; drawer (such as timings, venue maps, dress
               codes, or digital Shagun), we record strictly anonymous aggregate daily counters. No

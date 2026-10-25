@@ -11,13 +11,18 @@ vi.mock("@/lib/turnstile", () => ({
 
 vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: vi.fn(),
+  checkRateLimitDistributed: vi.fn().mockResolvedValue({ success: true, remaining: 59 }),
   getClientIp: vi.fn(() => "203.0.113.80"),
+  hashIpForStorage: vi.fn((ip: string) => `hashed_${ip}`),
 }));
 
 vi.mock("@/lib/db", () => ({
   prisma: {
     wedding: {
       findUnique: vi.fn(),
+    },
+    event: {
+      findFirst: vi.fn(),
     },
     eventRsvp: {
       create: vi.fn(),
@@ -39,19 +44,22 @@ function createRsvpRequest(body: unknown, ip: string = "203.0.113.80") {
 describe("RSVP API Route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(ratelimit.checkRateLimit).mockReturnValue({
+    vi.mocked(ratelimit.checkRateLimitDistributed).mockResolvedValue({
       success: true,
-      limit: 5,
-      remaining: 4,
+      limit: 60,
+      remaining: 59,
       resetMs: 60000,
     });
     vi.mocked(turnstile.verifyTurnstileToken).mockResolvedValue({
       success: true,
     });
+    vi.mocked(prisma.event.findFirst).mockResolvedValue({
+      id: "e-1",
+    } as unknown as Awaited<ReturnType<typeof prisma.event.findFirst>>);
   });
 
   it("returns 429 when rate limit is exceeded", async () => {
-    vi.mocked(ratelimit.checkRateLimit).mockReturnValue({
+    vi.mocked(ratelimit.checkRateLimitDistributed).mockResolvedValueOnce({
       success: false,
       limit: 5,
       remaining: 0,
@@ -98,6 +106,35 @@ describe("RSVP API Route", () => {
 
     const res = await POST(req);
     expect(res.status).toBe(400);
+  });
+
+  it("returns 404 when ceremony event does not belong to the target wedding, is soft-deleted, or wedding is not accepting RSVPs", async () => {
+    vi.mocked(prisma.event.findFirst).mockResolvedValueOnce(null);
+
+    const req = createRsvpRequest({
+      weddingId: "wedding-b",
+      eventId: "event-belonging-to-wedding-a",
+      respondentName: "Intruder",
+      attending: true,
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(404);
+    const json = await res.json();
+    expect(json.error).toContain("is unavailable, not accepting RSVPs, or does not belong");
+
+    // Verify query criteria includes deletedAt: null and wedding active status
+    expect(prisma.event.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          deletedAt: null,
+          wedding: expect.objectContaining({
+            deletedAt: null,
+            status: { in: ["published", "preview"] },
+          }),
+        }),
+      }),
+    );
   });
 
   it("returns 409 when duplicate RSVP is detected", async () => {

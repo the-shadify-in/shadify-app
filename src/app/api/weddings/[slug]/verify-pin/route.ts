@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { verifyPassword, signGuestPinToken, GUEST_PIN_COOKIE_NAME } from "@/lib/auth";
-import { checkRateLimitDistributed, getClientIp } from "@/lib/ratelimit";
+import { checkRateLimitDistributed, getClientIp, hashIpForStorage } from "@/lib/ratelimit";
 import { logRequest } from "@/lib/log";
 
 interface RouteParams {
@@ -23,10 +23,12 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
   const ip = getClientIp(req);
+  const ipHash = hashIpForStorage(ip);
 
-  // 1. Dual-Boundary Rate Limiting:
-  // Layer A: Global IP rate limit (max 15 attempts across any weddings per 15 minutes = 900s)
-  const ipRateResult = await checkRateLimitDistributed(`pin-ip:${ip}`, 15, 900);
+  // Layer A: Global IP rate limit (max 15 attempts across any weddings per 15 minutes = 900s, fails closed on Redis outage)
+  const ipRateResult = await checkRateLimitDistributed(`pin-ip:${ipHash}`, 15, 900, {
+    failClosed: true,
+  });
   if (!ipRateResult.success) {
     return NextResponse.json(
       { error: "Too many access attempts. Please wait 15 minutes before trying again." },
@@ -83,9 +85,10 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     // Keying by canonical wedding ID (or cleanSlug if unknown) ensures aliases share the exact same bucket
     const targetKey = wedding ? wedding.id : cleanSlug;
     const targetRateResult = await checkRateLimitDistributed(
-      `pin-target:${targetKey}:${ip}`,
+      `pin-target:${targetKey}:${ipHash}`,
       5,
       900,
+      { failClosed: true },
     );
     if (!targetRateResult.success) {
       return NextResponse.json(

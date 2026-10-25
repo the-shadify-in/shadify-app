@@ -6,7 +6,7 @@ import {
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
 } from "@/lib/auth";
-import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
+import { checkRateLimitDistributed, getClientIp, hashIpForStorage } from "@/lib/ratelimit";
 import { prisma } from "@/lib/db";
 
 const LoginSchema = z.object({
@@ -16,18 +16,31 @@ const LoginSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
+  const ipHash = hashIpForStorage(ip);
 
-  // 1. Strict IP rate limit: 10 attempts per 15 minutes per IP
+  // 1. Strict IP rate limit: 10 attempts per 15 minutes per IP across cluster (fails closed on Redis outage)
   const isTest = process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_TEST === "true";
   const ipLimit = isTest ? 100 : 10;
-  const ipRateLimit = checkRateLimit(`admin-login-ip:${ip}`, ipLimit, 15 * 60 * 1000);
+  const ipRateLimit = await checkRateLimitDistributed(
+    `admin-login-ip:${ipHash}`,
+    ipLimit,
+    15 * 60,
+    { failClosed: true, isLogin: true },
+  );
   if (!ipRateLimit.success) {
+    const retryAfterSec = Math.max(1, Math.ceil(ipRateLimit.resetMs / 1000));
     return NextResponse.json(
       {
         error:
           "Too many login attempts from this network. Please wait 15 minutes before trying again.",
       },
-      { status: 429 },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": retryAfterSec.toString(),
+          "Cache-Control": "private, no-store, must-revalidate",
+        },
+      },
     );
   }
 
@@ -37,15 +50,23 @@ export async function POST(req: NextRequest) {
 
     // 2. Strict Account rate limit: 5 attempts per 15 minutes per account + IP
     const accountLimit = isTest ? 100 : 5;
-    const accountRateLimit = checkRateLimit(
-      `admin-login-acc:${ip}:${email}`,
+    const accountRateLimit = await checkRateLimitDistributed(
+      `admin-login-acc:${ipHash}:${email}`,
       accountLimit,
-      15 * 60 * 1000,
+      15 * 60,
+      { failClosed: true, isLogin: true },
     );
     if (!accountRateLimit.success) {
+      const retryAfterSec = Math.max(1, Math.ceil(accountRateLimit.resetMs / 1000));
       return NextResponse.json(
         { error: "Too many attempts for this account. Please wait 15 minutes." },
-        { status: 429 },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": retryAfterSec.toString(),
+            "Cache-Control": "private, no-store, must-revalidate",
+          },
+        },
       );
     }
 

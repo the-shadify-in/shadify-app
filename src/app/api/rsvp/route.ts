@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
+import { checkRateLimitDistributed, getClientIp, hashIpForStorage } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import { normalizePhoneNumber } from "@/lib/phone";
 import { GUEST_PIN_COOKIE_NAME, verifyGuestPinToken } from "@/lib/auth";
@@ -29,6 +29,7 @@ const RsvpSubmissionSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
+    const ipHash = hashIpForStorage(ip);
     const rawBody: unknown = await request.json();
     const parseResult = RsvpSubmissionSchema.safeParse(rawBody);
     if (!parseResult.success) {
@@ -58,10 +59,13 @@ export async function POST(request: NextRequest) {
       turnstileToken,
     } = parseResult.data;
 
-    // 1. Rate Limiting: Keyed by wedding AND client IP with generous allowance (60/min) for shared venue Wi-Fi
-    // Primary bot defense is Cloudflare Turnstile token verification
+    // 1. Distributed Rate Limiting: Keyed by wedding AND hashed client IP (60/min) for shared venue Wi-Fi
+    // Primary bot defense is Cloudflare Turnstile token verification; gracefully degrades to local limiter on Redis outage
     const weddingKey = (weddingSlug || rawWeddingId || "global").toString().toLowerCase().trim();
-    const rateCheck = checkRateLimit(`rsvp:${weddingKey}:${ip}`, 60, 60000);
+    const rateCheck = await checkRateLimitDistributed(`rsvp:${weddingKey}:${ipHash}`, 60, 60, {
+      failClosed: false,
+      fallbackLocalLimit: 30,
+    });
     if (!rateCheck.success) {
       return NextResponse.json(
         { error: "Too many requests. Please wait a moment before trying again." },
@@ -152,6 +156,32 @@ export async function POST(request: NextRequest) {
     // 3. Validate mandatory fields
     if (!weddingId || !eventId || !normalizedName) {
       return NextResponse.json({ error: "Missing required RSVP fields." }, { status: 400 });
+    }
+
+    // Tenant isolation: verify that the event ceremony actually belongs to this wedding celebration,
+    // has not been deleted, and the parent wedding is not deleted and active/accepting RSVPs
+    if (prisma.event?.findFirst) {
+      const eventBelongsToWedding = await prisma.event.findFirst({
+        where: {
+          id: eventId,
+          weddingId,
+          deletedAt: null,
+          wedding: {
+            deletedAt: null,
+            status: { in: ["published", "preview"] },
+          },
+        },
+        select: { id: true },
+      });
+      if (!eventBelongsToWedding) {
+        return NextResponse.json(
+          {
+            error:
+              "The specified ceremony event is unavailable, not accepting RSVPs, or does not belong to this wedding celebration.",
+          },
+          { status: 404 },
+        );
+      }
     }
 
     // Party size check (1 to 20)
