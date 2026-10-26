@@ -88,6 +88,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Cross-tenant protection: staff/super_admin have platform scope; couple/other roles must be a verified member of this wedding
+    if (session && session.role !== "super_admin" && session.role !== "staff") {
+      const membership = await prisma.weddingMember?.findUnique?.({
+        where: {
+          weddingId_userId: {
+            weddingId: wedding.id,
+            userId: session.userId,
+          },
+        },
+      });
+      if (!membership) {
+        return NextResponse.json(
+          { error: "Forbidden. You do not have permission to upload media for this celebration." },
+          { status: 403 },
+        );
+      }
+    }
+
     if (wedding.status === "archived" || wedding.status === "expired") {
       return NextResponse.json(
         { error: `Wedding is ${wedding.status}. Media uploads are closed.` },

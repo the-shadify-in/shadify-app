@@ -10,10 +10,32 @@ interface RouteParams {
 export async function GET(req: NextRequest, { params }: RouteParams) {
   const { id } = params;
 
-  // 1. Strict Staff Authorization Guard
+  // 1. Strict Staff & Couple Authorization Guard
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized. Staff session required." }, { status: 401 });
+  }
+
+  // Cross-tenant protection: staff/super_admin have platform scope; couple must be a member of this wedding
+  if (session.role !== "super_admin" && session.role !== "staff") {
+    if (session.role === "couple") {
+      const membership = await prisma.weddingMember?.findUnique?.({
+        where: {
+          weddingId_userId: {
+            weddingId: id,
+            userId: session.userId,
+          },
+        },
+      });
+      if (!membership) {
+        return NextResponse.json(
+          { error: "Forbidden. You do not have permission to export RSVPs for this wedding." },
+          { status: 403 },
+        );
+      }
+    } else {
+      return NextResponse.json({ error: "Forbidden. Insufficient permissions." }, { status: 403 });
+    }
   }
 
   try {

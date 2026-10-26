@@ -135,6 +135,9 @@ describe("RSVP API Route", () => {
         }),
       }),
     );
+
+    // Strictly assert that no RSVP record is created when tenant event validation fails
+    expect(prisma.eventRsvp.create).not.toHaveBeenCalled();
   });
 
   it("returns 409 when duplicate RSVP is detected", async () => {

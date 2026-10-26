@@ -13,6 +13,9 @@ vi.mock("@/lib/db", () => ({
     wedding: {
       findUnique: vi.fn(),
     },
+    weddingMember: {
+      findUnique: vi.fn(),
+    },
     auditLog: {
       create: vi.fn(),
     },
@@ -147,5 +150,99 @@ describe("GET /api/admin/weddings/[id]/export-rsvps", () => {
     expect(res.status).toBe(403);
     const json = (await res.json()) as { error: string };
     expect(json.error).toContain("RSVP catering export requires the Premium or Platinum plan");
+  });
+
+  it("strictly rejects couple user attempting to export RSVPs of another wedding (cross-tenant denial)", async () => {
+    vi.mocked(auth.getAdminSession).mockResolvedValue({
+      userId: "couple-user-A",
+      role: "couple",
+      exp: Date.now() + 100000,
+    });
+
+    // Mock membership lookup returning null: couple-user-A is NOT a member of wedding B
+    vi.mocked(prisma.weddingMember.findUnique).mockResolvedValue(null);
+
+    const req = new NextRequest(
+      `http://localhost:3000/api/admin/weddings/${weddingId}/export-rsvps`,
+    );
+    const res = await GET(req, { params: { id: weddingId } });
+
+    expect(res.status).toBe(403);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toContain(
+      "Forbidden. You do not have permission to export RSVPs for this wedding.",
+    );
+
+    // Verify wedding data is never fetched and no CSV is produced
+    expect(prisma.wedding.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("allows couple user to export RSVPs for their own wedding celebration (positive control)", async () => {
+    vi.mocked(auth.getAdminSession).mockResolvedValue({
+      userId: "couple-user-A",
+      role: "couple",
+      exp: Date.now() + 100000,
+    });
+
+    // User A is a verified member of their own wedding
+    vi.mocked(prisma.weddingMember.findUnique).mockResolvedValue({
+      weddingId,
+      userId: "couple-user-A",
+      memberRole: "owner",
+      createdAt: new Date(),
+    });
+
+    const mockWedding = {
+      id: weddingId,
+      slug: "ananya-rohit",
+      plan: "premium",
+      rsvps: [
+        {
+          id: "rsvp-10",
+          respondentName: "Devendra Sharma",
+          respondentPhone: "+919876543210",
+          attending: true,
+          partySize: 2,
+          mealPreference: "pure_veg",
+          needsStay: false,
+          arrivalNotes: "Arriving by train",
+          blessingMessage: "Hearty congratulations!",
+          createdAt: new Date("2026-10-24T10:00:00Z"),
+          event: { title: "Main Wedding Ceremony" },
+        },
+      ],
+    };
+
+    vi.mocked(prisma.wedding.findUnique).mockResolvedValue(
+      mockWedding as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>,
+    );
+
+    const req = new NextRequest(
+      `http://localhost:3000/api/admin/weddings/${weddingId}/export-rsvps`,
+    );
+    const res = await GET(req, { params: { id: weddingId } });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/csv");
+    const text = await res.text();
+    expect(text).toContain("Devendra Sharma");
+    expect(text).toContain("Main Wedding Ceremony");
+  });
+
+  it("rejects unauthorized roles (e.g. photographer) attempting to export catering RSVPs", async () => {
+    vi.mocked(auth.getAdminSession).mockResolvedValue({
+      userId: "photographer-1",
+      role: "photographer",
+      exp: Date.now() + 100000,
+    });
+
+    const req = new NextRequest(
+      `http://localhost:3000/api/admin/weddings/${weddingId}/export-rsvps`,
+    );
+    const res = await GET(req, { params: { id: weddingId } });
+
+    expect(res.status).toBe(403);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toContain("Forbidden. Insufficient permissions.");
   });
 });

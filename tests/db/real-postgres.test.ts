@@ -710,9 +710,120 @@ describe("Real PostgreSQL Database Protections, Isolation & Erasure Suite", () =
       const verifiedRsvpA = await prisma.eventRsvp.findUnique({ where: { id: rsvpA.id } });
       expect(verifiedRsvpA?.partySize).toBe(3);
 
+      // Attempting to delete RSVP A with Wedding B scope must touch 0 records
+      const crossRsvpDelete = await prisma.eventRsvp.deleteMany({
+        where: {
+          id: rsvpA.id,
+          weddingId: weddingB.id,
+        },
+      });
+      expect(crossRsvpDelete.count).toBe(0);
+
+      // Verify RSVP A still exists
+      const intactRsvpA = await prisma.eventRsvp.findUnique({ where: { id: rsvpA.id } });
+      expect(intactRsvpA).not.toBeNull();
+
       // Clean up Photo & RSVP
       await prisma.photo.delete({ where: { id: photoA.id } });
       await prisma.eventRsvp.delete({ where: { id: rsvpA.id } });
+    });
+
+    it("strictly isolates Shagun entries across tenants: negative list, read, update, and delete checks", async () => {
+      if (!isDbAvailable) return;
+
+      const suffixA = crypto.randomUUID().slice(0, 8);
+      const suffixB = crypto.randomUUID().slice(0, 8);
+
+      // Seed Wedding A
+      const weddingA = await prisma.wedding.create({
+        data: {
+          slug: `shagun-tenant-a-${suffixA}`,
+          brideName: "Bride A",
+          groomName: "Groom A",
+          weddingDate: new Date("2026-11-18"),
+        },
+      });
+      createdWeddingIds.push(weddingA.id);
+
+      // Seed Wedding B
+      const weddingB = await prisma.wedding.create({
+        data: {
+          slug: `shagun-tenant-b-${suffixB}`,
+          brideName: "Bride B",
+          groomName: "Groom B",
+          weddingDate: new Date("2026-11-28"),
+        },
+      });
+      createdWeddingIds.push(weddingB.id);
+
+      // Seed Shagun gift entry belonging to Wedding A
+      const shagunA = await prisma.shagunEntry.create({
+        data: {
+          weddingId: weddingA.id,
+          senderName: "Uncle Sharma",
+          amountPaise: BigInt(510000), // 5,100 INR
+          upiRefId: `UPI-REF-${suffixA}-1`,
+          blessingNote: "Warmest congratulations and blessings from Sharma family!",
+          status: "declared",
+        },
+      });
+
+      // 1. List isolation: querying entries scoped to Wedding B must NOT return Wedding A's entries
+      const shagunForB = await prisma.shagunEntry.findMany({
+        where: { weddingId: weddingB.id },
+      });
+      expect(shagunForB).toHaveLength(0);
+
+      // 2. ID plus tenant isolation: querying Wedding A's entry ID with Wedding B's ID returns null
+      const crossShagunRead = await prisma.shagunEntry.findFirst({
+        where: {
+          id: shagunA.id,
+          weddingId: weddingB.id,
+        },
+      });
+      expect(crossShagunRead).toBeNull();
+
+      // 3. Update isolation: tenant-scoped updateMany using Wedding A's entry ID and Wedding B's weddingId must touch 0 records
+      const crossShagunUpdate = await prisma.shagunEntry.updateMany({
+        where: {
+          id: shagunA.id,
+          weddingId: weddingB.id,
+        },
+        data: {
+          amountPaise: BigInt(100),
+          status: "confirmed",
+          blessingNote: "Malicious cross-tenant modification attempt",
+        },
+      });
+      expect(crossShagunUpdate.count).toBe(0);
+
+      // Verify Wedding A's record remains completely unchanged in real DB
+      const verifiedShagunA = await prisma.shagunEntry.findUnique({
+        where: { id: shagunA.id },
+      });
+      expect(verifiedShagunA?.amountPaise).toBe(BigInt(510000));
+      expect(verifiedShagunA?.status).toBe("declared");
+      expect(verifiedShagunA?.blessingNote).toBe(
+        "Warmest congratulations and blessings from Sharma family!",
+      );
+
+      // 4. Delete isolation: tenant-scoped deleteMany using wrong weddingId must delete 0 records
+      const crossShagunDelete = await prisma.shagunEntry.deleteMany({
+        where: {
+          id: shagunA.id,
+          weddingId: weddingB.id,
+        },
+      });
+      expect(crossShagunDelete.count).toBe(0);
+
+      // Verify Wedding A's record still exists in real DB
+      const intactShagunA = await prisma.shagunEntry.findUnique({
+        where: { id: shagunA.id },
+      });
+      expect(intactShagunA).not.toBeNull();
+
+      // Clean up Shagun entry
+      await prisma.shagunEntry.delete({ where: { id: shagunA.id } });
     });
   });
 

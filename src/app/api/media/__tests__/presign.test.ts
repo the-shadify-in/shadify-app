@@ -21,6 +21,9 @@ vi.mock("@/lib/db", () => ({
     wedding: {
       findUnique: vi.fn(),
     },
+    weddingMember: {
+      findUnique: vi.fn(),
+    },
     photo: {
       count: vi.fn(),
     },
@@ -201,5 +204,110 @@ describe("Media Presign Route Hardening", () => {
     expect(json.uploadUrl).toBe("https://shadify-media.r2.cloudflarestorage.com/presigned-url");
     expect(json.key).toContain("weddings/w-1234/preview/");
     expect(json.plan).toBe("premium");
+  });
+
+  it("strictly rejects cross-tenant media upload when couple attempts to upload to another wedding", async () => {
+    vi.mocked(auth.getAdminSession).mockResolvedValue({
+      userId: "couple-user-A",
+      role: "couple",
+      exp: Date.now() + 10000,
+    });
+    vi.mocked(prisma.wedding.findUnique).mockResolvedValue({
+      id: "w-tenant-B",
+      plan: "premium",
+      status: "published",
+      deletedAt: null,
+    } as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>);
+
+    // User A is NOT a member of Wedding B
+    vi.mocked(prisma.weddingMember.findUnique).mockResolvedValue(null);
+
+    const req = createJsonRequest({
+      weddingSlug: "tenant-b-wedding",
+      filename: "tampered-photo.jpg",
+      contentType: "image/jpeg",
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toContain(
+      "Forbidden. You do not have permission to upload media for this celebration.",
+    );
+
+    // Verify zero presigned capability or key was generated for the unauthorized tenant
+    expect(r2.createPresignedUploadUrl).not.toHaveBeenCalled();
+  });
+
+  it("allows couple to presign media upload for their own wedding (positive control)", async () => {
+    vi.mocked(auth.getAdminSession).mockResolvedValue({
+      userId: "couple-user-A",
+      role: "couple",
+      exp: Date.now() + 10000,
+    });
+    vi.mocked(prisma.wedding.findUnique).mockResolvedValue({
+      id: "w-tenant-A",
+      plan: "premium",
+      status: "published",
+      deletedAt: null,
+    } as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>);
+
+    // User A is a verified member of Wedding A
+    vi.mocked(prisma.weddingMember.findUnique).mockResolvedValue({
+      weddingId: "w-tenant-A",
+      userId: "couple-user-A",
+      memberRole: "owner",
+      createdAt: new Date(),
+    });
+    vi.mocked(prisma.photo.count).mockResolvedValue(10);
+    vi.mocked(r2.createPresignedUploadUrl).mockResolvedValue(
+      "https://shadify-media.r2.cloudflarestorage.com/authorized-upload-url",
+    );
+
+    const req = createJsonRequest({
+      weddingSlug: "tenant-a-wedding",
+      filename: "mehendi-smile.jpg",
+      contentType: "image/jpeg",
+      fileSizeBytes: 2 * 1024 * 1024,
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.uploadUrl).toBe(
+      "https://shadify-media.r2.cloudflarestorage.com/authorized-upload-url",
+    );
+    expect(json.key).toContain("weddings/w-tenant-A/preview/");
+  });
+
+  it("strictly rejects media presigning when photographer crew pass is for a different wedding", async () => {
+    vi.mocked(auth.getAdminSession).mockResolvedValue(null);
+    vi.mocked(prisma.crewPass.findUnique).mockResolvedValue({
+      weddingId: "w-wedding-A",
+      expiresAt: new Date(Date.now() + 100000),
+      revokedAt: null,
+    } as unknown as Awaited<ReturnType<typeof prisma.crewPass.findUnique>>);
+
+    vi.mocked(prisma.wedding.findUnique).mockResolvedValue({
+      id: "w-wedding-B",
+      plan: "premium",
+      status: "published",
+      deletedAt: null,
+    } as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>);
+
+    const req = createJsonRequest(
+      {
+        weddingSlug: "wedding-b",
+        filename: "crew-photo.jpg",
+        contentType: "image/jpeg",
+      },
+      { "x-crew-token": "crew-token-for-wedding-A" },
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    const json = await res.json();
+    expect(json.error).toBe("Crew pass is not valid for this celebration.");
+    expect(r2.createPresignedUploadUrl).not.toHaveBeenCalled();
   });
 });
