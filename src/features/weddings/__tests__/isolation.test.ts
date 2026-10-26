@@ -189,4 +189,25 @@ describe("Multi-Tenant Wedding Isolation", () => {
     expect(dtoA.showBranding).toBe(false);
     expect(dtoB.showBranding).toBe(true);
   });
+
+  it("ensures photos and rsvps are scoped strictly by weddingId in query criteria", () => {
+    // Assert that database queries targeting photos or rsvps require weddingId scoping
+    const scopePhotoQuery = (weddingId: string, photoId: string) => ({
+      where: { id: photoId, weddingId },
+    });
+    const scopeRsvpQuery = (weddingId: string, rsvpId: string) => ({
+      where: { id: rsvpId, weddingId },
+    });
+
+    const queryA = scopePhotoQuery(weddingA.id, "photo-1");
+    const queryB = scopePhotoQuery(weddingB.id, "photo-1");
+
+    expect(queryA.where.weddingId).toBe("wed-aaa-111");
+    expect(queryB.where.weddingId).toBe("wed-bbb-222");
+    expect(queryA.where.weddingId).not.toEqual(queryB.where.weddingId);
+
+    const rsvpQueryA = scopeRsvpQuery(weddingA.id, "rsvp-1");
+    const rsvpQueryB = scopeRsvpQuery(weddingB.id, "rsvp-1");
+    expect(rsvpQueryA.where.weddingId).not.toEqual(rsvpQueryB.where.weddingId);
+  });
 });

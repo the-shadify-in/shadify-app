@@ -58,6 +58,24 @@ const envSchema = z
     NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY: z.string().optional(),
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
     TURNSTILE_SECRET_KEY: z.string().optional(),
+
+    // Distributed Rate Limiting (Upstash Redis)
+    UPSTASH_REDIS_REST_URL: z.string().url("UPSTASH_REDIS_REST_URL must be a valid URL").optional(),
+    UPSTASH_REDIS_REST_TOKEN: z
+      .string()
+      .min(1, "UPSTASH_REDIS_REST_TOKEN cannot be empty")
+      .optional(),
+    RATE_LIMIT_FAIL_CLOSED: z.enum(["true", "false"]).default("false"),
+
+    // Trusted Edge Proxy Boundary
+    TRUSTED_PROXY_PROVIDER: z.enum(["cloudflare", "vercel", "direct"]).default("vercel"),
+    CLOUDFLARE_ORIGIN_VERIFY_SECRET: z.string().optional(),
+
+    // Dedicated privacy-preserving IP hashing secret (never reused)
+    RATE_LIMIT_HASH_SECRET: z
+      .string()
+      .min(32, "RATE_LIMIT_HASH_SECRET must be at least 32 characters long")
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === "production" && process.env.NEXT_PHASE !== "phase-production-build") {
@@ -94,11 +112,94 @@ const envSchema = z
           message: "ERASURE_HMAC_SECRET must not share the same value as GUEST_ACCESS_SECRET.",
         });
       }
+
+      // Pairwise independence check for RATE_LIMIT_HASH_SECRET
+      if (!data.RATE_LIMIT_HASH_SECRET) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["RATE_LIMIT_HASH_SECRET"],
+          message:
+            "RATE_LIMIT_HASH_SECRET (min 32 characters) is required in production for privacy-preserving IP hashing.",
+        });
+      } else {
+        if (data.RATE_LIMIT_HASH_SECRET === data.ADMIN_SESSION_SECRET) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["RATE_LIMIT_HASH_SECRET"],
+            message:
+              "RATE_LIMIT_HASH_SECRET must not share the same value as ADMIN_SESSION_SECRET.",
+          });
+        }
+        if (data.RATE_LIMIT_HASH_SECRET === data.GUEST_ACCESS_SECRET) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["RATE_LIMIT_HASH_SECRET"],
+            message: "RATE_LIMIT_HASH_SECRET must not share the same value as GUEST_ACCESS_SECRET.",
+          });
+        }
+        if (data.RATE_LIMIT_HASH_SECRET === data.ERASURE_HMAC_SECRET) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["RATE_LIMIT_HASH_SECRET"],
+            message: "RATE_LIMIT_HASH_SECRET must not share the same value as ERASURE_HMAC_SECRET.",
+          });
+        }
+      }
+
+      // Operational Guarantee: Distributed rate limiting in production
+      if (!data.UPSTASH_REDIS_REST_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["UPSTASH_REDIS_REST_URL"],
+          message:
+            "UPSTASH_REDIS_REST_URL is required in production for distributed rate limiting across serverless instances.",
+        });
+      }
+      if (!data.UPSTASH_REDIS_REST_TOKEN) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["UPSTASH_REDIS_REST_TOKEN"],
+          message:
+            "UPSTASH_REDIS_REST_TOKEN is required in production for distributed rate limiting.",
+        });
+      }
+      if (data.RATE_LIMIT_FAIL_CLOSED !== "true") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["RATE_LIMIT_FAIL_CLOSED"],
+          message:
+            "RATE_LIMIT_FAIL_CLOSED must be set to 'true' in production to guarantee fail-closed enforcement under Redis outages.",
+        });
+      }
+
+      if (data.TRUSTED_PROXY_PROVIDER === "direct") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["TRUSTED_PROXY_PROVIDER"],
+          message:
+            "TRUSTED_PROXY_PROVIDER cannot be 'direct' in production. Must be 'cloudflare' or 'vercel' behind a verified edge proxy.",
+        });
+      }
+
+      if (
+        data.TRUSTED_PROXY_PROVIDER === "cloudflare" &&
+        (!data.CLOUDFLARE_ORIGIN_VERIFY_SECRET ||
+          data.CLOUDFLARE_ORIGIN_VERIFY_SECRET.trim().length === 0)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["CLOUDFLARE_ORIGIN_VERIFY_SECRET"],
+          message:
+            "CLOUDFLARE_ORIGIN_VERIFY_SECRET is required in production when TRUSTED_PROXY_PROVIDER is set to 'cloudflare' to prevent origin header spoofing.",
+        });
+      }
     }
   });
 
-function validateEnv() {
-  const parsed = envSchema.safeParse(process.env);
+export { envSchema };
+
+export function validateEnv(customEnv?: Record<string, string | undefined>) {
+  const parsed = envSchema.safeParse(customEnv ?? process.env);
 
   if (!parsed.success) {
     console.error("❌ Invalid environment variables detected:");

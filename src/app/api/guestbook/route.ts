@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
+import { checkRateLimitDistributed, getClientIp, hashIpForStorage } from "@/lib/ratelimit";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import { GUEST_PIN_COOKIE_NAME, verifyGuestPinToken } from "@/lib/auth";
 
@@ -20,16 +20,6 @@ const GuestbookPostSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. IP Rate Limiting (5 guestbook posts per minute per IP)
-    const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(`guestbook:${ip}`, 5, 60000);
-    if (!rateCheck.success) {
-      return NextResponse.json(
-        { error: "Too many submissions. Please wait a moment before sending another blessing." },
-        { status: 429, headers: { "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)) } },
-      );
-    }
-
     const body: unknown = await request.json();
     const parseResult = GuestbookPostSchema.safeParse(body);
     if (!parseResult.success) {
@@ -45,6 +35,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Either weddingId or weddingSlug must be provided." },
         { status: 400 },
+      );
+    }
+
+    // 1. Distributed Rate Limiting: Keyed by wedding AND hashed client IP (5/min across cluster)
+    // Primary bot defense is Cloudflare Turnstile; degrades gracefully to local limiter on Redis outage
+    // Scoping by wedding prevents a shared sentinel or single wedding attack from exhausting global limits
+    const ip = getClientIp(request);
+    const ipHash = hashIpForStorage(ip);
+    const weddingKey = (weddingSlug || weddingId || "global").toString().toLowerCase().trim();
+    const rateCheck = await checkRateLimitDistributed(`guestbook:${weddingKey}:${ipHash}`, 5, 60, {
+      failClosed: false,
+      fallbackLocalLimit: 5,
+    });
+    if (!rateCheck.success) {
+      return NextResponse.json(
+        {
+          error: "Too many submissions. Please wait a moment before sending another blessing.",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.ceil(rateCheck.resetMs / 1000)) },
+        },
       );
     }
 

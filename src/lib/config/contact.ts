@@ -3,24 +3,27 @@
  * All public WhatsApp inquiries and support channels resolve from environment variables.
  */
 
-const isProduction = process.env.NODE_ENV === "production";
-const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+const isProductionTarget =
+  (process.env.VERCEL_ENV === "production" ||
+    process.env.BUILD_TARGET === "production" ||
+    (process.env.NODE_ENV === "production" && process.env.CI !== "true")) &&
+  process.env.NEXT_PHASE !== "phase-production-build";
 
 const rawWhatsapp = process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP?.replace(/\D/g, "");
 
-// In production runtime, fail fast if the concierge number is missing, placeholder, or test mock
-if (isProduction && !isBuildPhase) {
+// In production builds and runtime, fail fast if the concierge number is missing, placeholder, or test mock
+if (isProductionTarget) {
   if (!rawWhatsapp || rawWhatsapp === "918000000000" || rawWhatsapp === "919876543210") {
     throw new Error(
-      "FATAL_CONFIG_ERROR: In production runtime, NEXT_PUBLIC_CONCIERGE_WHATSAPP must be configured with a real business phone number and cannot be unconfigured or set to test placeholder 918000000000/919876543210.",
+      "FATAL_CONFIG_ERROR: In production builds and runtime, NEXT_PUBLIC_CONCIERGE_WHATSAPP must be configured with a real business phone number and cannot be unconfigured or set to test placeholder 918000000000/919876543210.",
     );
   }
 }
 
-const envWhatsapp = rawWhatsapp || (isProduction ? "" : "919876543210");
+const envWhatsapp = rawWhatsapp || (isProductionTarget ? "" : "919876543210");
 const envWhatsappDisplay =
   process.env.NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY ||
-  (isProduction ? (envWhatsapp ? `+${envWhatsapp}` : "") : "+91 98765 43210");
+  (isProductionTarget ? (envWhatsapp ? `+${envWhatsapp}` : "") : "+91 98765 43210");
 
 export const SITE_CONFIG = {
   name: "Shadify",

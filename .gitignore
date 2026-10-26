@@ -47,3 +47,9 @@ prisma/clients/
 prisma/admin/
 prisma/seed.client*.ts
 prisma/seeds/
+
+# Local-only experiments and scratch scripts
+/scratch/
+
+# Local-only status reports and scratch checklists
+/docs/status/

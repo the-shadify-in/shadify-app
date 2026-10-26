@@ -15,6 +15,7 @@ vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: vi.fn(),
   checkRateLimitDistributed: vi.fn(),
   getClientIp: vi.fn(() => "203.0.113.195"),
+  hashIpForStorage: vi.fn((ip: string) => `hashed_${ip}`),
 }));
 
 vi.mock("@/lib/turnstile", () => ({

@@ -555,6 +555,165 @@ describe("Real PostgreSQL Database Protections, Isolation & Erasure Suite", () =
       });
       expect(crossTenantQuery).toBeNull();
     });
+
+    it("strictly isolates photos and RSVPs across tenants: negative read, update, delete, and cross-reference checks", async () => {
+      if (!isDbAvailable) return;
+
+      const suffixA = crypto.randomUUID().slice(0, 8);
+      const suffixB = crypto.randomUUID().slice(0, 8);
+
+      // Seed Wedding A with an Event
+      const weddingA = await prisma.wedding.create({
+        data: {
+          slug: `photo-tenant-a-${suffixA}`,
+          brideName: "Bride A",
+          groomName: "Groom A",
+          weddingDate: new Date("2026-11-15"),
+          events: {
+            create: [
+              {
+                eventType: "sangeet",
+                title: "Wedding A Sangeet",
+                startsAt: new Date("2026-11-15T18:00:00Z"),
+                venueName: "Venue A",
+              },
+            ],
+          },
+        },
+        include: { events: true },
+      });
+      createdWeddingIds.push(weddingA.id);
+
+      // Seed Wedding B with an Event
+      const weddingB = await prisma.wedding.create({
+        data: {
+          slug: `photo-tenant-b-${suffixB}`,
+          brideName: "Bride B",
+          groomName: "Groom B",
+          weddingDate: new Date("2026-11-25"),
+          events: {
+            create: [
+              {
+                eventType: "reception",
+                title: "Wedding B Reception",
+                startsAt: new Date("2026-11-25T19:00:00Z"),
+                venueName: "Venue B",
+              },
+            ],
+          },
+        },
+        include: { events: true },
+      });
+      createdWeddingIds.push(weddingB.id);
+
+      const eventAId = weddingA.events[0]?.id;
+      expect(eventAId).toBeDefined();
+
+      // Seed a photo belonging to Wedding A
+      const photoA = await prisma.photo.create({
+        data: {
+          weddingId: weddingA.id,
+          eventId: eventAId,
+          keyPreview: `weddings/${weddingA.id}/photos/photoA_preview.webp`,
+          keyThumb: `weddings/${weddingA.id}/photos/photoA_thumb.webp`,
+          width: 1920,
+          height: 1080,
+          sha256: crypto.createHash("sha256").update(`photo-a-${suffixA}`).digest("hex"),
+          status: "approved",
+          visibility: "visibility_public",
+        },
+      });
+
+      // Seed an RSVP belonging to Wedding A
+      const rsvpA = await prisma.eventRsvp.create({
+        data: {
+          weddingId: weddingA.id,
+          eventId: eventAId!,
+          respondentName: "Family of Alpha",
+          respondentPhone: "9888888888",
+          attending: true,
+          partySize: 3,
+        },
+      });
+
+      // 1. Negative Photo Read Check:
+      // Wedding B queries photos: must return 0 records
+      const photosForB = await prisma.photo.findMany({
+        where: { weddingId: weddingB.id },
+      });
+      expect(photosForB).toHaveLength(0);
+
+      // Direct read of Photo A with Wedding B scope: must return null
+      const crossPhotoRead = await prisma.photo.findFirst({
+        where: {
+          id: photoA.id,
+          weddingId: weddingB.id,
+        },
+      });
+      expect(crossPhotoRead).toBeNull();
+
+      // 2. Negative Photo Mutation & Deletion Check:
+      // Attempting to update Photo A with Wedding B scope must touch 0 records
+      const crossPhotoUpdate = await prisma.photo.updateMany({
+        where: {
+          id: photoA.id,
+          weddingId: weddingB.id,
+        },
+        data: { status: "rejected" },
+      });
+      expect(crossPhotoUpdate.count).toBe(0);
+
+      // Verify Photo A was NOT modified
+      const verifiedPhotoA = await prisma.photo.findUnique({ where: { id: photoA.id } });
+      expect(verifiedPhotoA?.status).toBe("approved");
+
+      // Attempting to delete Photo A with Wedding B scope must delete 0 records
+      const crossPhotoDelete = await prisma.photo.deleteMany({
+        where: {
+          id: photoA.id,
+          weddingId: weddingB.id,
+        },
+      });
+      expect(crossPhotoDelete.count).toBe(0);
+
+      // Verify Photo A still exists
+      const intactPhotoA = await prisma.photo.findUnique({ where: { id: photoA.id } });
+      expect(intactPhotoA).not.toBeNull();
+
+      // 3. Negative RSVP Read & Mutation Check:
+      // Wedding B queries RSVPs: must return 0 records
+      const rsvpsForB = await prisma.eventRsvp.findMany({
+        where: { weddingId: weddingB.id },
+      });
+      expect(rsvpsForB).toHaveLength(0);
+
+      // Direct read of RSVP A with Wedding B scope: must return null
+      const crossRsvpRead = await prisma.eventRsvp.findFirst({
+        where: {
+          id: rsvpA.id,
+          weddingId: weddingB.id,
+        },
+      });
+      expect(crossRsvpRead).toBeNull();
+
+      // Attempting to update RSVP A with Wedding B scope must touch 0 records
+      const crossRsvpUpdate = await prisma.eventRsvp.updateMany({
+        where: {
+          id: rsvpA.id,
+          weddingId: weddingB.id,
+        },
+        data: { partySize: 100 },
+      });
+      expect(crossRsvpUpdate.count).toBe(0);
+
+      // Verify RSVP A was NOT modified
+      const verifiedRsvpA = await prisma.eventRsvp.findUnique({ where: { id: rsvpA.id } });
+      expect(verifiedRsvpA?.partySize).toBe(3);
+
+      // Clean up Photo & RSVP
+      await prisma.photo.delete({ where: { id: photoA.id } });
+      await prisma.eventRsvp.delete({ where: { id: rsvpA.id } });
+    });
   });
 
   // -------------------------------------------------------------------------
