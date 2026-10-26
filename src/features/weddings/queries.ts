@@ -1,6 +1,6 @@
 import React from "react";
 import { prisma } from "@/lib/db";
-import type { WeddingDataDto } from "./types";
+import type { WeddingDataDto, GalleryPhotoDto } from "./types";
 
 const reactCache =
   typeof React.cache === "function"
@@ -81,6 +81,50 @@ export function mapWeddingToDto(
     return addr;
   })();
 
+  // Explicit persisted demo flag check only (no hardcoded slug matching)
+  const isDemo = Boolean(rawConfig?.isDemo);
+
+  // Validate allowed external RSVP URL scheme (strictly https: to prevent unsafe redirects)
+  // Rejects embedded credentials (e.g. user:pass@), invalid hostnames, and unsafe protocols
+  let externalRsvpUrl: string | undefined = undefined;
+  if (typeof rawConfig?.externalRsvpUrl === "string") {
+    const trimmed = rawConfig.externalRsvpUrl.trim();
+    try {
+      const parsed = new URL(trimmed);
+      const host = parsed.hostname.toLowerCase();
+      const hasValidHost =
+        host.includes(".") && !host.startsWith(".") && !host.endsWith(".") && host !== "localhost";
+      const hasNoAuth = !parsed.username && !parsed.password;
+
+      if (parsed.protocol === "https:" && hasValidHost && hasNoAuth) {
+        externalRsvpUrl = parsed.href;
+      }
+    } catch {
+      // Invalid URL ignored
+    }
+  }
+
+  // Preserve existing real-wedding Shagun behavior:
+  // Respect explicit boolean setting if configured; otherwise default to true if upiVpa is configured in DB.
+  // Demo weddings enable simulated Shagun by default.
+  const shagunEnabled =
+    typeof rawConfig?.shagunEnabled === "boolean"
+      ? rawConfig.shagunEnabled
+      : Boolean(isDemo || (wedding.upiVpa && wedding.upiVpa.trim().length > 0));
+
+  // Populate gallery: static demo assets for demo wedding, or custom gallery from config
+  const gallery: GalleryPhotoDto[] = isDemo
+    ? [
+        { url: "/demo/couple.jpg", caption: "Our Journey by Lake Pichola", aspect: "tall" },
+        { url: "/demo/mandap.jpg", caption: "Sacred Vows & Auspicious Pheras", aspect: "wide" },
+        { url: "/demo/mehendi.jpg", caption: "Colors, Laughs & Festive Henna", aspect: "square" },
+        { url: "/demo/sangeet.jpg", caption: "Sangeet Glitz & Electric Beats", aspect: "wide" },
+        { url: "/demo/hero.jpg", caption: "The Grand Royal Reception", aspect: "square" },
+      ]
+    : Array.isArray(rawConfig?.gallery)
+      ? (rawConfig.gallery as GalleryPhotoDto[])
+      : [];
+
   return {
     slug: wedding.slug,
     bride: wedding.brideName,
@@ -104,6 +148,10 @@ export function mapWeddingToDto(
     upiVpa: wedding.upiVpa || "",
     showBranding: wedding.showBranding,
     invocation,
+    isDemo,
+    externalRsvpUrl,
+    shagunEnabled,
+    gallery,
     events:
       wedding.events.length > 0
         ? wedding.events.map((e) => ({

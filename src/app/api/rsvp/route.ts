@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     if (lookupWhere && prisma.wedding?.findUnique) {
       let w = await prisma.wedding.findUnique({
         where: lookupWhere,
-        select: { id: true, privatePinHash: true },
+        select: { id: true, privatePinHash: true, themeConfig: true },
       });
 
       if (!w && weddingSlug && prisma.weddingAlias?.findUnique) {
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           where: { alias: String(weddingSlug).toLowerCase().trim() },
           select: {
             retiredAt: true,
-            wedding: { select: { id: true, privatePinHash: true } },
+            wedding: { select: { id: true, privatePinHash: true, themeConfig: true } },
           },
         });
         if (alias && !alias.retiredAt && alias.wedding) {
@@ -111,6 +111,19 @@ export async function POST(request: NextRequest) {
 
       if (w) {
         weddingId = w.id;
+
+        // Demo celebrations strictly simulate responses and never persist guest data to the database
+        const isDemo = Boolean((w.themeConfig as Record<string, unknown> | null)?.isDemo);
+        if (isDemo) {
+          return NextResponse.json({
+            success: true,
+            isDemo: true,
+            message:
+              "Demo celebration — your response was simulated and not saved to any database.",
+            rsvpId: "demo-simulated-rsvp-id",
+          });
+        }
+
         if (w.privatePinHash) {
           const pinCookie =
             request.cookies.get(GUEST_PIN_COOKIE_NAME) ||
@@ -171,7 +184,10 @@ export async function POST(request: NextRequest) {
             status: { in: ["published", "preview"] },
           },
         },
-        select: { id: true },
+        select: {
+          id: true,
+          wedding: { select: { themeConfig: true } },
+        },
       });
       if (!eventBelongsToWedding) {
         return NextResponse.json(
@@ -181,6 +197,20 @@ export async function POST(request: NextRequest) {
           },
           { status: 404 },
         );
+      }
+
+      // Trusted database relation check: If the ceremony's parent wedding in the DB has themeConfig.isDemo,
+      // simulate response and strictly prevent real RSVP persistence.
+      const isEventWeddingDemo = Boolean(
+        (eventBelongsToWedding.wedding?.themeConfig as Record<string, unknown> | null)?.isDemo,
+      );
+      if (isEventWeddingDemo) {
+        return NextResponse.json({
+          success: true,
+          isDemo: true,
+          message: "Demo celebration — your response was simulated and not saved to any database.",
+          rsvpId: "demo-simulated-rsvp-id",
+        });
       }
     }
 

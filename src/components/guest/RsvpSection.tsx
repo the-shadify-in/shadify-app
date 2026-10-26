@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,9 +15,20 @@ interface RsvpSectionProps {
   defaultEventId?: string;
   events?: WeddingEventDto[];
   onToast: (msg: string) => void;
+  externalRsvpUrl?: string;
+  coupleNames?: string;
+  isDemo?: boolean;
 }
 
-export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: RsvpSectionProps) {
+export function RsvpSection({
+  weddingSlug,
+  defaultEventId,
+  events,
+  onToast,
+  externalRsvpUrl,
+  coupleNames,
+  isDemo,
+}: RsvpSectionProps) {
   const [selectedEventId, setSelectedEventId] = useState(
     defaultEventId || events?.[0]?.id || "main-wedding",
   );
@@ -43,6 +54,16 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
     }
 
     setIsSubmitting(true);
+
+    // Demo celebrations simulate success and never write to the real database
+    if (isDemo) {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+      setIsSubmitted(true);
+      onToast(`Demo RSVP simulated for ${guestName.split(" ")[0]}! Nothing was saved.`);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/rsvp", {
         method: "POST",
@@ -79,6 +100,80 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
     }
   };
 
+  // Strictly enforce HTTPS-only external RSVP URLs to prevent unsafe schemes or MITM redirects
+  // Rejects embedded credentials (user:pass@) and non-FQDN destinations
+  let safeExternalUrl: string | null = null;
+  let externalDomain: string | null = null;
+  if (externalRsvpUrl) {
+    try {
+      const u = new URL(externalRsvpUrl);
+      const host = u.hostname.toLowerCase();
+      const hasValidHost =
+        host.includes(".") && !host.startsWith(".") && !host.endsWith(".") && host !== "localhost";
+      const hasNoAuth = !u.username && !u.password;
+
+      if (u.protocol === "https:" && hasValidHost && hasNoAuth) {
+        safeExternalUrl = u.href;
+        externalDomain = u.hostname;
+      }
+    } catch {
+      safeExternalUrl = null;
+    }
+  }
+
+  if (safeExternalUrl && externalDomain) {
+    return (
+      <section id="rsvp" className="relative px-6 py-24 sm:py-32">
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-12 text-center sm:mb-16">
+            <span className="text-xs font-semibold uppercase tracking-[0.35em] text-theme-accent">
+              ✦ CELEBRATION ATTENDANCE ✦
+            </span>
+            <h2 className="mt-2 font-serif text-3xl font-normal text-theme-text-primary sm:text-4xl md:text-5xl">
+              Will You <em>Join Us?</em>
+            </h2>
+            <p className="mt-3 font-serif text-base text-theme-text-muted sm:text-lg">
+              Your presence is the most cherished blessing on our special day.
+            </p>
+          </div>
+
+          <div className="relative rounded-3xl border-2 border-[#D4AF37] bg-theme-surface p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.3)] sm:p-12">
+            <div className="pointer-events-none absolute inset-3 rounded-2xl border border-dashed border-[#D4AF37]/40" />
+            <div className="relative z-10 py-4">
+              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#D4AF37] bg-theme-bg shadow-md">
+                <ExternalLink className="h-7 w-7 text-[#D4AF37]" />
+              </div>
+              <h3 className="font-serif text-2xl font-semibold text-theme-text-primary">
+                Official RSVP Form
+              </h3>
+              <p className="mx-auto mt-3 max-w-md font-serif text-sm leading-relaxed text-theme-text-muted">
+                {coupleNames ? `${coupleNames}` : "The couple"} is collecting responses via their
+                official form on{" "}
+                <span className="font-semibold text-theme-accent">{externalDomain}</span>. Tap below
+                to confirm your presence and preferences.
+              </p>
+              <div className="mt-8">
+                <a
+                  href={safeExternalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-theme-on-primary inline-flex items-center gap-2 rounded-xl border border-[#D4AF37] bg-theme-primary px-8 py-4 font-serif text-sm font-semibold tracking-wider shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl"
+                >
+                  <span>Open Official RSVP Form</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
+              <p className="mt-4 text-xs text-theme-text-muted opacity-80">
+                You will be redirected securely to{" "}
+                <span className="font-mono">{externalDomain}</span>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="rsvp" className="relative px-6 py-24 sm:py-32">
       <div className="mx-auto max-w-2xl">
@@ -111,6 +206,11 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
               <p className="mx-auto mt-3 max-w-md font-serif text-base text-theme-text-muted">
                 Thank you, {guestName}! We cannot wait to celebrate our union with you in Rajasthan.
               </p>
+              {isDemo && (
+                <p className="mx-auto mt-2 max-w-md text-xs font-medium text-amber-500">
+                  ✦ Demo Celebration: Simulated response only. No personal data was saved.
+                </p>
+              )}
               <Button
                 type="button"
                 variant="outline"
@@ -122,6 +222,14 @@ export function RsvpSection({ weddingSlug, defaultEventId, events, onToast }: Rs
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="relative z-10 space-y-6">
+              {isDemo && (
+                <div className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3.5 text-xs font-medium text-amber-600 dark:text-amber-300">
+                  <span className="font-bold uppercase tracking-wider">Demo Mode:</span>
+                  <span>
+                    Responses are simulated for demonstration and never saved to the database.
+                  </span>
+                </div>
+              )}
               {errorMessage && (
                 <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-xs font-medium text-red-400">
                   <AlertCircle className="h-4 w-4 shrink-0" />

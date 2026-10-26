@@ -225,4 +225,67 @@ describe("RSVP API Route", () => {
       }),
     );
   });
+
+  it("simulates RSVP success and strictly never calls prisma.eventRsvp.create when wedding is flagged as demo in wedding lookup", async () => {
+    vi.mocked(prisma.wedding.findUnique).mockResolvedValue({
+      id: "demo-w-1",
+      privatePinHash: null,
+      themeConfig: { isDemo: true },
+    } as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>);
+
+    const req = createRsvpRequest({
+      weddingId: "demo-w-1",
+      eventId: "e-1",
+      respondentName: "Demo Guest",
+      respondentPhone: "+91 98765 43210",
+      attending: true,
+      turnstileToken: "test-turnstile-token",
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = (await res.json()) as { success: boolean; isDemo: boolean; message: string };
+    expect(json.success).toBe(true);
+    expect(json.isDemo).toBe(true);
+    expect(json.message).toContain("Demo celebration");
+
+    // Strictly assert zero database write operation
+    expect(prisma.eventRsvp.create).not.toHaveBeenCalled();
+  });
+
+  it("simulates RSVP success and strictly never calls prisma.eventRsvp.create when event's parent wedding in DB relation is flagged as demo (relation defense-in-depth)", async () => {
+    vi.mocked(prisma.wedding.findUnique).mockResolvedValue({
+      id: "demo-w-2",
+      privatePinHash: null,
+      themeConfig: null,
+    } as unknown as Awaited<ReturnType<typeof prisma.wedding.findUnique>>);
+
+    vi.mocked(prisma.event.findFirst).mockResolvedValue({
+      id: "e-2",
+      wedding: {
+        themeConfig: { isDemo: true },
+      },
+    } as unknown as Awaited<ReturnType<typeof prisma.event.findFirst>>);
+
+    const req = createRsvpRequest({
+      weddingId: "demo-w-2",
+      eventId: "e-2",
+      respondentName: "Demo Guest",
+      respondentPhone: "+91 98765 43210",
+      attending: true,
+      turnstileToken: "test-turnstile-token",
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const json = (await res.json()) as { success: boolean; isDemo: boolean; message: string };
+    expect(json.success).toBe(true);
+    expect(json.isDemo).toBe(true);
+    expect(json.message).toContain("Demo celebration");
+
+    // Strictly assert zero database write operation
+    expect(prisma.eventRsvp.create).not.toHaveBeenCalled();
+  });
 });

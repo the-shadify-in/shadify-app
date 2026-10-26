@@ -16,15 +16,9 @@ const TARGET_VOLUME = 0.45;
 const FADE_STEP_INTERVAL_MS = 50;
 const FADE_DURATION_MS = 500;
 
-export function MusicToggle({
-  audio,
-  isEnvelopeOpened = false,
-  className = "",
-  variant = "floating",
-}: MusicToggleProps) {
+export function MusicToggle({ audio, className = "", variant = "floating" }: MusicToggleProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const [hasInteracted, setHasInteracted] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fadeIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -115,36 +109,9 @@ export function MusicToggle({
     };
   }, [audioUrl, getStoredMutePreference]);
 
-  // 4. Trigger playback upon explicit guest interaction ("OPEN INVITATION")
-  useEffect(() => {
-    if (!activeAudio || !isEnvelopeOpened || hasInteracted) return;
-
-    setHasInteracted(true);
-    const storedMute = getStoredMutePreference();
-    if (storedMute) {
-      setIsMuted(true);
-      return;
-    }
-
-    const audioElement = audioRef.current;
-    if (audioElement) {
-      audioElement.volume = 0;
-      const playPromise = audioElement.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-            setIsMuted(false);
-            fadeVolume(TARGET_VOLUME);
-          })
-          .catch(() => {
-            // Browser autoplay rejection handled gracefully
-            setIsPlaying(false);
-            setIsMuted(true);
-          });
-      }
-    }
-  }, [activeAudio, isEnvelopeOpened, hasInteracted, getStoredMutePreference, fadeVolume]);
+  // 4. Note: Background audio is strictly user-controlled.
+  // Playback will NEVER start automatically upon envelope opening or page load.
+  // It begins only when the guest explicitly clicks or taps the floating music toggle.
 
   // 5. User toggle handler (min 44x44px accessible button)
   const handleToggle = () => {

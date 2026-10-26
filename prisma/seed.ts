@@ -196,6 +196,7 @@ async function main() {
         accentColor: w.accentColor,
         monogramText: w.monogramText,
         upiVpa: w.upiVpa,
+        themeConfig: { isDemo: true },
       },
       create: {
         slug: w.slug,
@@ -205,6 +206,7 @@ async function main() {
         plan: "premium",
         status: "published",
         themeId: w.themeId,
+        themeConfig: { isDemo: true },
         monogramText: w.monogramText,
         primaryColor: w.primaryColor,
         accentColor: w.accentColor,

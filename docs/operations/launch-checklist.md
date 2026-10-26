@@ -13,8 +13,8 @@
       Exempted `/api/admin/auth/*` from middleware missing-session guard. Valid credentials return 200 and set the HMAC session cookie; invalid credentials return 401; `/api/admin/weddings` returns 401 without cookie.
       **Done when:** verified by automated unit tests in `src/middleware.test.ts` and full end-to-end Playwright browser login test in `tests/e2e/smoke.test.ts`.
 
-- [x] **A2 `[BLOCKER]` `@founder` — WhatsApp concierge number looks like a placeholder (`919876543210`).**
-      Centralized in `src/lib/config/contact.ts` reading from `NEXT_PUBLIC_CONCIERGE_WHATSAPP` and `NEXT_PUBLIC_CONCIERGE_WHATSAPP_DISPLAY`.
+- [ ] **A2 `[BLOCKER]` `@founder` — WhatsApp concierge number looks like a placeholder (`919876543210`).**
+      Centralized in `src/lib/config/contact.ts` with strict production fail-closed validation. Incomplete pending acquisition and provisioning of real founder/business WhatsApp number (Decision D3 target: 28 October) and eliminating sample number occurrences from fixtures.
       **Done when:** `grep -r 9876543210 src` returns zero matches.
 
 - [x] **A3 `[BLOCKER]` `@founder` `@lead-eng` — Landing page promises features that are not built.**
@@ -40,9 +40,9 @@
       Server component in `src/app/[slug]/page.tsx` checks `hostingUntil` and `contentExpiresAt`.
       **Done when:** expired weddings return a minimal server response with zero couple PII, zero events, and zero signed media URLs in HTML or RSC payload.
 
-- [x] **A9 `[BLOCKER]` `@lead-eng` — Tenant isolation test must run against a real Postgres.**
+- [ ] **A9 `[BLOCKER]` `@lead-eng` — Tenant isolation test must run against a real Postgres.**
       A two-test file that may use mocks does not prove isolation.
-      **Done when:** a CI test seeds two weddings in a real database and shows wedding A can never read B's events, RSVPs, Shagun, photos or guests through any query function; removing a `wedding_id` filter from one function makes the test fail. Verified in `tests/db/real-postgres.test.ts` and GitHub Actions `db-gate` against `postgres:16-alpine`. Note: Current real-database assertions strictly isolate events, guests, and erasure cascades; expanding assertions to photos, RSVPs, and Shagun before final production traffic.
+      **Done when:** a CI test seeds two weddings in a real database and shows wedding A can never read B's events, RSVPs, Shagun, photos or guests through any query function; removing a `wedding_id` filter from one function makes the test fail. Status: Core event, guest, and erasure cascade isolation verified in `tests/db/real-postgres.test.ts` and GitHub Actions `db-gate` against `postgres:16-alpine`. Incomplete pending expansion of real-Postgres cross-tenant isolation assertions to photos, RSVPs, and Shagun prior to production traffic.
 
 - [x] **A10 `[BLOCKER]` `@lead-eng` — CI must apply the migrations and test the database protections.**
       **Done when:** a CI job with a Postgres 16 service applies all migrations from empty; tests show slug `admin` is rejected, `reserved_slugs` cannot be changed, shared-phone RSVPs with different names succeed, and duplicates fail; a `prisma migrate diff` from migrations to schema shows no difference; `prisma/migrations` is untouched by Prettier. Verified in `tests/db/real-postgres.test.ts` and `.github/workflows/ci.yml` (all 8 migrations deployed, `db:migrate:status` verified).
@@ -79,7 +79,7 @@
       **Done when:** page title and OG tags render "Bride & Groom's Wedding Celebration | Shadify" with `robots: noindex`.
 
 - [x] **A19 `[BLOCKER]` `@lead-eng` — Zero `any`, zero `@ts-ignore`, and strict type-aware enforcement across codebase.**
-      Enforced in `tsconfig.json` (`strict: true`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `noUncheckedIndexedAccess: true`), `tsconfig.eslint.json`, and `.eslintrc.json` (extending `plugin:@typescript-eslint/recommended-type-checked` with `parserOptions.project: true`, `@typescript-eslint/no-explicit-any: error`, `@typescript-eslint/ban-ts-comment: error`, and type-aware unsafe checks). All untyped ingress boundaries (`req.json()`, `JSON.parse()`) are typed as `unknown` and validated through Zod schemas.
+      Enforced in `tsconfig.json` (`strict: true`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `noUncheckedIndexedAccess: true`), `tsconfig.eslint.json`, and `.eslintrc.json` (extending `plugin:@typescript-eslint/recommended-type-checked` with `parserOptions.project: true`, `@typescript-eslint/no-explicit-any: error`, `@typescript-eslint/ban-ts-comment: error`, and type-aware unsafe checks). All untyped ingress boundaries (`req.json()`, `JSON.parse()`) are typed as `unknown` and validated through Zod schemas. Verified passing with 0 errors and 0 warnings repo-wide via `npm run typecheck` and `npm run lint`.
       **Done when:** `npm run typecheck` (`tsc --noEmit` with `noUncheckedIndexedAccess`) and repo-wide `npm run lint` (`eslint . --ext .ts,.tsx` covering `src`, `tests`, `prisma`, `scripts`) pass with 0 errors.
 
 ---
@@ -327,3 +327,7 @@
 - [ ] **G20 `[LATER]` `@ops` — Measure setup minutes before and after.**
       Measure staff time to draft and create a wedding using the intake assistant vs manual data entry.
       **Done when:** a recorded comparison on at least five pilot weddings.
+
+- [ ] **G21 `[BEFORE-LAUNCH]` `@lead-eng` — GitHub Stateless Token Format Advisory (`AUDIT-SEC-2026-GH-TOKEN`).**
+      GitHub announced migration to stateless, variable-length tokens (~377 chars for Actions `GITHUB_TOKEN`, ~520 chars for GitHub App installation tokens; internal engineering buffer target: 1,024 chars). Internal runtime, Prisma schema, and standard CI workflow reviewed with no impact identified. Standard workflows must not be modified unnecessarily.
+      **Done when:** external verification of organization-level GitHub Apps, deployment relays, and automation bots confirms tokens are treated as opaque strings before the November 30, 2026 deprecation deadline.

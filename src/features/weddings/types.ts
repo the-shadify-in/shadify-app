@@ -61,4 +61,6 @@ export interface WeddingDataDto {
   vips: VipEntryDto[];
   hasPrivatePin?: boolean;
   isLocked?: boolean;
+  externalRsvpUrl?: string;
+  shagunEnabled?: boolean;
 }

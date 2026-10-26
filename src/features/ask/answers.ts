@@ -154,7 +154,12 @@ export function buildAskAnswers(wedding: WeddingDataDto): AskAnswersData {
     }),
   );
 
-  const hasGiftsUpi = Boolean(wedding.upiVpa && wedding.upiVpa.trim().length > 0);
+  const hasGiftsUpi = Boolean(
+    wedding.shagunEnabled !== false && wedding.upiVpa && wedding.upiVpa.trim().length > 0,
+  );
+  const effectiveUpiVpa = wedding.isDemo
+    ? "demo.only.do.not.pay@okhdfcbank"
+    : wedding.upiVpa || null;
 
   return {
     topics: {
@@ -187,7 +192,7 @@ export function buildAskAnswers(wedding: WeddingDataDto): AskAnswersData {
     timeZone,
     scheduleByDay,
     hasGiftsUpi,
-    upiVpa: hasGiftsUpi ? wedding.upiVpa : null,
+    upiVpa: hasGiftsUpi ? effectiveUpiVpa : null,
     helpText: "Please ask the family who invited you.",
   };
 }

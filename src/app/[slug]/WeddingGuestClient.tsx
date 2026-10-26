@@ -389,7 +389,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
         showLoveStory={!!loveStory}
         showGallery={gallery.length > 0}
         showVips={wedding.vips.length > 0}
-        showShagun={true}
+        showShagun={wedding.shagunEnabled ?? false}
         isAfterWedding={isAfterWedding}
         isDemo={wedding.isDemo}
         onOpenShagun={() => setIsShagunModalOpen(true)}
@@ -430,6 +430,9 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
         defaultEventId={wedding.events[0]?.id}
         events={wedding.events}
         onToast={showToast}
+        externalRsvpUrl={wedding.externalRsvpUrl}
+        coupleNames={`${wedding.bride} & ${wedding.groom}`}
+        isDemo={wedding.isDemo}
       />
 
       {/* 9. Auspicious Digital Shagun Modal with Radix Dialog */}
@@ -439,6 +442,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
         bride={wedding.bride}
         groom={wedding.groom}
         upiVpa={wedding.upiVpa}
+        isDemo={wedding.isDemo}
       />
 
       {/* 10. Ceremony Specific RSVP Modal with Radix Dialog */}
@@ -475,7 +479,7 @@ export default function WeddingGuestClient({ wedding, theme }: WeddingGuestClien
       <MobileDock
         onOpenShagun={() => setIsShagunModalOpen(true)}
         onOpenAsk={() => setIsAskDrawerOpen(true)}
-        showShagun={true}
+        showShagun={wedding.shagunEnabled ?? false}
       />
 
       {/* 15. Guest "Ask" Chips Drawer (Zero AI, Zero LLM, Instant Answers) */}
