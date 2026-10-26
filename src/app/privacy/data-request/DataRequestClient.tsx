@@ -209,7 +209,7 @@ export default function DataRequestClient() {
                     required
                     value={requesterPhone}
                     onChange={(e) => setRequesterPhone(e.target.value)}
-                    placeholder="10-digit mobile (e.g. 9876543210)"
+                    placeholder="10-digit mobile (e.g. 98123 45678)"
                     className="w-full rounded-lg border border-white/15 bg-black/40 px-3.5 py-2 text-xs text-white placeholder-stone-500 focus:border-[#C9933A] focus:outline-none"
                   />
                 </div>

@@ -45,7 +45,10 @@ export const ProvisionWeddingSchema = z.object({
   couplePhone: z
     .string()
     .trim()
-    .regex(/^(\+?[1-9]\d{6,14}|[6-9]\d{9})$/, "Must be a valid mobile number (e.g. +91 9876543210)")
+    .regex(
+      /^(\+?[1-9]\d{6,14}|[6-9]\d{9})$/,
+      "Must be a valid mobile number (e.g. +91 98123 45678)",
+    )
     .optional()
     .or(z.literal("")),
   coupleEmail: z.string().trim().email("Must be a valid email").optional().or(z.literal("")),
