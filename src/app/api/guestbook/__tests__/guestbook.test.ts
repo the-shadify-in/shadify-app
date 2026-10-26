@@ -11,7 +11,9 @@ vi.mock("@/lib/turnstile", () => ({
 
 vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: vi.fn(),
+  checkRateLimitDistributed: vi.fn(),
   getClientIp: vi.fn(() => "203.0.113.80"),
+  hashIpForStorage: vi.fn((ip) => `hash_${ip}`),
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -46,7 +48,7 @@ function createGetRequest(queryString: string) {
 describe("Guestbook API Endpoint", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(ratelimit.checkRateLimit).mockReturnValue({
+    vi.mocked(ratelimit.checkRateLimitDistributed).mockResolvedValue({
       success: true,
       limit: 5,
       remaining: 4,
@@ -59,7 +61,7 @@ describe("Guestbook API Endpoint", () => {
 
   describe("POST /api/guestbook", () => {
     it("returns 429 when rate limited", async () => {
-      vi.mocked(ratelimit.checkRateLimit).mockReturnValue({
+      vi.mocked(ratelimit.checkRateLimitDistributed).mockResolvedValue({
         success: false,
         limit: 5,
         remaining: 0,
@@ -75,6 +77,25 @@ describe("Guestbook API Endpoint", () => {
       const res = await POST(req);
       expect(res.status).toBe(429);
       expect(res.headers.get("Retry-After")).toBe("45");
+    });
+
+    it("scopes distributed rate limit to wedding slug and hashed IP with graceful degradation (failClosed: false, fallback: 5)", async () => {
+      const req = createPostRequest({
+        weddingSlug: "Priya-Rahul",
+        authorName: "Amit Sharma",
+        message: "Wishing you a lifetime of joy!",
+      });
+
+      await POST(req);
+      expect(ratelimit.checkRateLimitDistributed).toHaveBeenCalledWith(
+        "guestbook:priya-rahul:hash_203.0.113.80",
+        5,
+        60,
+        {
+          failClosed: false,
+          fallbackLocalLimit: 5,
+        },
+      );
     });
 
     it("returns 403 when Turnstile verification fails", async () => {
