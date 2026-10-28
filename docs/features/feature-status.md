@@ -110,47 +110,54 @@ To give all stakeholders an unambiguous, unvarnished picture of platform readine
 
 The following matrix illustrates the exact contrast between what the platform is capable of delivering today versus what is being turned **ON** for the upcoming pilot client:
 
-| Feature Dimension            | Full Shadify Suite (Capability in Repo)                      | November 12 Pilot Configuration                        | Rational Rationale / Decision Basis                                                         |
-| :--------------------------- | :----------------------------------------------------------- | :----------------------------------------------------- | :------------------------------------------------------------------------------------------ |
-| **Visual Presentation**      | Editorial photography + Photo gallery (up to 300 photos)     | **Pure Typographic Hero + Planned Vector Motifs**      | Client explicitly requested zero personal photos online.                                    |
-| **RSVP Handling**            | Native per-event RSVP, dietary counters, concierge dashboard | **Option B: Native RSVP OFF (Outbound WhatsApp link)** | Client has an active website with a Nov 5 RSVP deadline. Prevents duplicate channels.       |
-| **Digital Shagun (Gifts)**   | Client-side UPI deep links & instant QR generation           | **DISABLED (`enabled: false`)**                        | Client requested no gifts/shagun; Shadify holds zero custodial funds.                       |
-| **Background Audio**         | Traditional pre-cleared instrumental library                 | **DISABLED (`enabled: false`)**                        | No verified audio license file; sitar/flute loops do not fit a traditional Tamil muhurtham. |
-| **Guest Access Control**     | Optional 4-digit bcrypt guest entry PIN                      | **DISABLED (Publicly accessible via slug)**            | Pilot couple wants frictionless guest viewing across extended family networks.              |
-| **Domain Routing**           | Subdomain / Custom Domain / Canonical slug                   | **Canonical Slug (`https://shadify.in/<slug>`)**       | Custom domain management is a future Platinum tier capability.                              |
-| **Branding Mark**            | Option to remove branding (Premium/Platinum)                 | **Discreet "Made with Shadify" Footer Mark**           | Free pilot showcase agreement; branding retained.                                           |
-| **Printed Card Integration** | Scan & proof Shadify QR on physical card                     | **Digital QR Distribution Only**                       | Physical printed card contains no Shadify QR (points directly to map navigation).           |
+| Feature Dimension            | Full Shadify Suite (Capability in Repo)                      | November 12 Pilot Configuration                                                                                                                                                                                                                                                                                           | Rational Rationale / Decision Basis                                                                                           |
+| :--------------------------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------- |
+| **Visual Presentation**      | Editorial photography + Photo gallery (up to 300 photos)     | **Pure Typographic Hero + Planned Vector Motifs**                                                                                                                                                                                                                                                                         | Client explicitly requested zero personal photos online.                                                                      |
+| **RSVP Handling**            | Native per-event RSVP, dietary counters, concierge dashboard | **Option B: Native RSVP OFF (Outbound WhatsApp link)**                                                                                                                                                                                                                                                                    | Client has an active website with a Nov 5 RSVP deadline. Prevents duplicate channels.                                         |
+| **Digital Shagun (Gifts)**   | Client-side UPI deep links & instant QR generation           | **DISABLED (`enabled: false`)**                                                                                                                                                                                                                                                                                           | Client requested no gifts/shagun; Shadify holds zero custodial funds.                                                         |
+| **Background Audio**         | Traditional pre-cleared instrumental library                 | **DISABLED (`enabled: false`)**                                                                                                                                                                                                                                                                                           | No verified audio license file; sitar/flute loops do not fit a traditional Tamil muhurtham.                                   |
+| **Guest Access Control**     | Optional 4-digit bcrypt guest entry PIN                      | **DISABLED (Publicly accessible via slug)**                                                                                                                                                                                                                                                                               | Pilot couple wants frictionless guest viewing across extended family networks.                                                |
+| **Domain Routing**           | Subdomain / Custom Domain / Canonical slug                   | **Canonical Slug (`https://shadify.in/<slug>`)**                                                                                                                                                                                                                                                                          | Custom domain management is a future Platinum tier capability.                                                                |
+| **Branding Mark**            | Option to remove branding (Premium/Platinum)                 | **Discreet "Made with Shadify" Footer Mark**                                                                                                                                                                                                                                                                              | Free pilot showcase agreement; branding retained.                                                                             |
+| **Printed Card Integration** | Scan & proof Shadify QR on physical card                     | **Two Distinct QR Verifications**: (1) Printed card QR: Scan to confirm where it actually leads (expected: Google Maps or venue directions, NOT Shadify); do NOT treat this as proof of invitation URL. (2) Shadify digital QR: Independently test generated QR (`https://shadify.in/<slug>`) on multiple device cameras. | Physical card contains no Shadify QR (its printed QR points to venue navigation). Digital QR is distributed via WhatsApp/PDF. |
 
 ---
 
-## 8. Hard Launch Blockers Before November 10 Freeze
+## 8. Hard Launch Blockers & 6-Gate Release Readiness
 
-Before the November 12 pilot can transition from staging draft to public live state, the following 6 hard gates must be resolved:
+> **Operational Status**: 🔴 **0 of 6 Gates Cleared** (Branch frozen for new features; no merge to `main` or production deployment permitted until all 6 gates pass).
 
 ```mermaid
 graph LR
     classDef red fill:#c62828,stroke:#b71c1c,color:#fff;
-    classDef amber fill:#f57f17,stroke:#e65100,color:#fff;
-    classDef green fill:#2e7d32,stroke:#1b5e20,color:#fff;
 
-    B1[B1: Domain & Upstash & Vercel Secrets]:::red
-    B2[B2: Next.js Production Security Advisories]:::red
-    B3[B3: Security Commits Worktree Verification]:::red
-    B4[B4: Client Confirmations & Tamil Proofread]:::red
-    B5[B5: Legal Terms & CA Free-Pilot Tax Ruling]:::red
-    B6[B6: 2FA & Secret Rotation & Real Device Test]:::red
+    G1[Gate 1: Client Sign-off 0/1]:::red
+    G2[Gate 2: Security Decision 0/1]:::red
+    G3[Gate 3: Infrastructure 0/1]:::red
+    G4[Gate 4: Customer Experience 0/1]:::red
+    G5[Gate 5: Operational Readiness 0/1]:::red
+    G6[Gate 6: Legal & Accounting 0/1]:::red
 
-    B1 --> Live[November 12 Pilot Live]
-    B2 --> Live
-    B3 --> Live
-    B4 --> Live
-    B5 --> Live
-    B6 --> Live
+    G1 --> Freeze[Deploy Freeze Nov 10]
+    G2 --> Freeze
+    G3 --> Freeze
+    G4 --> Freeze
+    G5 --> Freeze
+    G6 --> Freeze
+    Freeze --> Live[November 12 Pilot Go-Live]
 ```
 
-1. **B1: Infrastructure**: Link `shadify.in` on DNS, provision production Upstash Redis, set all Vercel production secrets.
-2. **B2: Framework Security**: Conclude Next.js 14 advisory audit / Next 16 upgrade evaluation before the November 1 cutoff.
-3. **B3: Codebase Verification**: Execute test suites in a clean worktree for security commits (`0658cf5`, `e88546e`, `a2093fe`).
-4. **B4: Client Sign-off**: Secure written confirmation for all 10 fields in the Client Confirmation Matrix, native Tamil proofread, and signed pilot agreement.
-5. **B5: Legal & Accounting**: Attorney sign-off on Terms/DPDP Privacy Notice and Chartered Accountant written ruling on tax treatment of free pilot.
-6. **B6: Operational Resilience**: 2FA enforced across all consoles, backup restore drill, phone-reaching pager alerts, and physical device test (iOS Safari, Android WhatsApp WebView).
+### November 12 Pilot Release Readiness Checklist (0 of 6 Cleared)
+
+- [ ] **Gate 1 — Client Sign-Off (`@ops`)**:  
+      Written approval of all 10 fields in the Client Confirmation Matrix: exact spelling of names/initials, family list, event timings, venue address, verified Google Maps link, native Tamil text proofread, dress code, and the verified WhatsApp RSVP destination. Option B is the platform owner's operational decision, but the client must confirm the arrangement in writing before publishing.
+- [ ] **Gate 2 — Security & Dependency Decision (`@lead-eng`)**:  
+      November 1 is the engineering/founder decision deadline, not an assumption that upgrading to Next.js 16 is automatic or sufficient. Review the live production dependency tree (`npm audit --omit=dev`), verify framework/package compatibility across all dependencies (React, Lucide, Sharp, Prisma, Tailwind), and validate the staging build in CI before deciding between merging `feat/next-16-migration` or applying backports. Separately, execute a clean worktree audit of commits `0658cf5`, `e88546e`, and `a2093fe`.
+- [ ] **Gate 3 — Production Infrastructure (`@lead-eng`)**:  
+      Verify real production configuration rather than relying on documentation alone: connect DNS for `shadify.in`, set and verify Vercel Preview/Production environment variables, provision production Upstash Redis, and verify live `/api/health` and `/admin/health` checks against real services.
+- [ ] **Gate 4 — Customer Experience Verification (`@ops` / `@lead-eng`)**:  
+      (1) Render the social share card (`@vercel/og`) with real Tamil Unicode text using production fonts; fallback to English-only if glyph shaping fails. (2) Scan the printed card's QR code and record where it actually resolves (ensuring venue navigation works). (3) Separately test the generated Shadify digital QR code on multiple smartphone cameras. (4) Verify that native RSVP remains disabled and cannot create database records. (5) Conduct multi-device tests (iPhone Safari, Android Chrome, WhatsApp in-app browser).
+- [ ] **Gate 5 — Operational Readiness & Disaster Recovery (`@ops` / `@lead-eng`)**:  
+      Enforce 2FA across Vercel, GitHub, Upstash, and DNS registrar consoles. Execute a cold backup restore drill from PostgreSQL dump. Configure and verify a phone-reaching alert (SMS/push). Test the rollback runbook on staging. Confirm the dedicated WhatsApp Business number is provisioned and responsive.
+- [ ] **Gate 6 — Legal & Accounting Clearance (`@legal` / `@finance`)**:  
+      Obtain formal attorney review and approval of Terms of Service, DPDP 2023 Privacy Notice, and the Pilot Agreement. Obtain written Chartered Accountant (CA) guidance on the GST/tax treatment of providing a free showcase pilot.
